@@ -13,7 +13,7 @@
 
 package main
 
-// Version represents the major, minor, and patch version of FireCTL.
+// Version represents the major, minor, and patch version of Agni.
 const Version = "0.2.0"
 
 // SupportedFirecrackerVersion is the firecracker version that the sdk supports
