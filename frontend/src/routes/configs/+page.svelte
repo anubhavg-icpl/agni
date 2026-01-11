@@ -7,16 +7,24 @@
 	let error = '';
 
 	onMount(async () => {
+		await loadConfigs();
+	});
+
+	async function loadConfigs() {
+		loading = true;
+		error = '';
 		try {
 			configs = await api.listConfigs();
 		} catch (e) {
-			error = (e as Error).message;
+			error = (e as Error).message || 'Failed to load templates';
+			configs = [];
+		} finally {
+			loading = false;
 		}
-		loading = false;
-	});
+	}
 
 	async function handleDelete(id: string, name: string) {
-		if (!confirm(`Shred template "${name}"? Gone forever. No backsies.`)) return;
+		if (!confirm(`Delete template "${name}"? This cannot be undone.`)) return;
 		try {
 			await api.deleteConfig(id);
 			configs = configs.filter((c) => c.id !== id);
@@ -30,81 +38,134 @@
 	<title>Config Templates | Agni</title>
 </svelte:head>
 
-<div class="space-y-4 sm:space-y-6">
+<div class="space-y-6 lg:space-y-8">
 	<!-- Header -->
-	<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+	<div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
 		<div>
-			<h1 class="text-xl sm:text-2xl font-bold">Config Templates</h1>
-			<p class="text-gray-500 text-xs sm:text-sm">Reusable VM configurations</p>
+			<h1 class="text-2xl sm:text-3xl font-bold text-white mb-1">Config Templates</h1>
+			<p class="text-gray-400 text-sm sm:text-base">Reusable VM configurations</p>
 		</div>
 	</div>
 
 	<!-- Content -->
 	{#if loading}
-		<div class="text-center py-16 flex flex-col items-center gap-3">
-			<svg class="w-8 h-8 animate-spin text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-			</svg>
-			<p class="text-gray-400">Loading templates...</p>
+		<div class="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50 rounded-2xl p-12">
+			<div class="flex flex-col items-center justify-center text-center">
+				<div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center mb-4">
+					<svg class="w-6 h-6 text-orange-400 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+					</svg>
+				</div>
+				<p class="text-gray-400">Loading templates...</p>
+			</div>
+		</div>
+	{:else if error}
+		<div class="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50 rounded-2xl p-12">
+			<div class="flex flex-col items-center justify-center text-center max-w-md mx-auto">
+				<div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-500/20 to-red-600/20 flex items-center justify-center mb-5">
+					<svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+					</svg>
+				</div>
+				<h3 class="text-xl font-semibold text-white mb-2">Failed to Load</h3>
+				<p class="text-gray-400 mb-6">{error}</p>
+				<button
+					on:click={loadConfigs}
+					class="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-medium rounded-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+				>
+					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+					</svg>
+					<span>Retry</span>
+				</button>
+			</div>
 		</div>
 	{:else if configs.length === 0}
-		<div class="card text-center py-12 sm:py-16">
-			<div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-800 flex items-center justify-center">
-				<svg class="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-				</svg>
+		<div class="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50 rounded-2xl p-12">
+			<div class="flex flex-col items-center justify-center text-center max-w-md mx-auto">
+				<div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-700/50 to-gray-800/50 flex items-center justify-center mb-5">
+					<svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+					</svg>
+				</div>
+				<h3 class="text-xl font-semibold text-white mb-2">No Templates</h3>
+				<p class="text-gray-400">Save a VM configuration as a template to reuse it later.</p>
 			</div>
-			<h3 class="text-lg sm:text-xl font-medium text-gray-300 mb-2">No Templates</h3>
-			<p class="text-gray-500 text-sm">Save a VM configuration as a template to reuse it.</p>
 		</div>
 	{:else}
-		<div class="grid gap-3 sm:gap-4">
-			{#each configs as config}
-				<div class="card hover:border-orange-500/30 transition-all duration-200">
-					<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
-						<div class="flex-1 min-w-0">
-							<div class="flex items-center gap-2">
-								<svg class="w-5 h-5 text-orange-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-								</svg>
-								<h3 class="font-semibold text-base sm:text-lg text-gray-100 truncate">{config.name}</h3>
+		<div>
+			<div class="flex items-center justify-between mb-4">
+				<h2 class="text-lg sm:text-xl font-semibold text-white">All Templates</h2>
+				<span class="text-sm text-gray-500">{configs.length} total</span>
+			</div>
+			<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+				{#each configs as config}
+					<div class="group relative bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50 rounded-2xl p-4 sm:p-5 hover:border-orange-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/5 overflow-hidden">
+						<div class="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+
+						<div class="relative">
+							<div class="flex items-start justify-between gap-3 mb-3">
+								<div class="flex items-center gap-3 min-w-0">
+									<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center flex-shrink-0">
+										<svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+										</svg>
+									</div>
+									<div class="min-w-0">
+										<h3 class="font-semibold text-base text-gray-100 truncate group-hover:text-white transition-colors">{config.name}</h3>
+										<p class="text-xs text-gray-500 font-mono">{config.id.slice(0, 8)}...</p>
+									</div>
+								</div>
+								<button
+									on:click={() => handleDelete(config.id, config.name)}
+									class="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all opacity-0 group-hover:opacity-100"
+									title="Delete template"
+								>
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+									</svg>
+								</button>
 							</div>
+
 							{#if config.description}
-								<p class="text-xs sm:text-sm text-gray-400 mt-1 ml-7 line-clamp-2">{config.description}</p>
+								<p class="text-sm text-gray-400 mb-4 line-clamp-2">{config.description}</p>
 							{/if}
-							<div class="flex flex-wrap gap-2 sm:gap-3 mt-2 sm:mt-3 ml-7">
-								<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-xs bg-gray-700/50 rounded-full text-gray-300">
-									{config.config.cpus} vCPU
-								</span>
-								<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-xs bg-gray-700/50 rounded-full text-gray-300">
-									{config.config.memory_mb} MB
-								</span>
-								<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-xs bg-gray-700/50 rounded-full text-gray-300 truncate max-w-[150px] sm:max-w-[200px]" title={config.config.kernel_path}>
-									{config.config.kernel_path.split('/').pop()}
-								</span>
+
+							<div class="grid grid-cols-3 gap-2 p-3 bg-black/30 rounded-xl border border-gray-700/30">
+								<div class="text-center">
+									<div class="flex items-center justify-center gap-1 mb-1">
+										<svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+										</svg>
+										<span class="text-xs text-gray-500">vCPU</span>
+									</div>
+									<div class="text-sm font-semibold text-gray-200">{config.config.cpus}</div>
+								</div>
+								<div class="text-center border-x border-gray-700/30">
+									<div class="flex items-center justify-center gap-1 mb-1">
+										<svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+										</svg>
+										<span class="text-xs text-gray-500">RAM</span>
+									</div>
+									<div class="text-sm font-semibold text-gray-200">{config.config.memory_mb} MB</div>
+								</div>
+								<div class="text-center">
+									<div class="flex items-center justify-center gap-1 mb-1">
+										<svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+										</svg>
+										<span class="text-xs text-gray-500">Kernel</span>
+									</div>
+									<div class="text-sm font-semibold text-gray-200 truncate" title={config.config.kernel_path}>
+										{config.config.kernel_path.split('/').pop()?.slice(0, 8) || 'N/A'}
+									</div>
+								</div>
 							</div>
 						</div>
-						<button
-							on:click={() => handleDelete(config.id, config.name)}
-							class="btn btn-danger text-sm py-1.5 px-3 opacity-60 hover:opacity-100 transition-opacity self-end sm:self-start"
-							title="Delete template"
-						>
-							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-							</svg>
-						</button>
 					</div>
-				</div>
-			{/each}
-		</div>
-	{/if}
-
-	{#if error}
-		<div class="bg-red-500/20 text-red-400 border border-red-500/50 rounded-lg p-4 flex items-center gap-2">
-			<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-			</svg>
-			<span>{error}</span>
+				{/each}
+			</div>
 		</div>
 	{/if}
 </div>

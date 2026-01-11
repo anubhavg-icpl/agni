@@ -54,7 +54,7 @@
 	<div class="min-h-screen bg-gray-900">
 		<!-- Navigation -->
 		<nav class="bg-gray-800/80 border-b border-gray-700/50 backdrop-blur-sm sticky top-0 z-50">
-			<div class="max-w-7xl mx-auto px-3 sm:px-4">
+			<div class="px-4 sm:px-6 lg:px-8">
 				<div class="flex items-center justify-between h-14 sm:h-16">
 					<div class="flex items-center gap-4 sm:gap-8">
 						<a href="/" class="flex items-center gap-2">
@@ -179,7 +179,7 @@
 		</nav>
 
 		<!-- Main content -->
-		<main class="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+		<main class="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
 			<slot />
 		</main>
 	</div>
