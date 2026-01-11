@@ -46,10 +46,12 @@ function createAuthStore() {
 				return true;
 			} catch (e) {
 				let msg = (e as Error).message;
-				if (msg.includes('Invalid username or password') || msg.includes('401')) {
-					msg = "Nice try. Do you even work here?";
+				if (msg.includes('Wrong credentials') || msg.includes('401') || msg.includes('Invalid')) {
+					msg = "Wrong credentials. Did your brain take a vacation?";
 				} else if (msg.includes('Failed to fetch')) {
-					msg = "The server is ghosting us. Check your connection.";
+					msg = "Server's ignoring you. Just like everyone else.";
+				} else if (msg.includes('three-dollar bill')) {
+					msg = "Your session expired. Time flies when you're unproductive.";
 				}
 				update((s) => ({ ...s, loading: false, error: msg }));
 				return false;
@@ -65,10 +67,12 @@ function createAuthStore() {
 				return true;
 			} catch (e) {
 				let msg = (e as Error).message;
-				if (msg.includes('already exists')) {
-					msg = "Someone beat you to it. Too slow.";
-				} else if (msg.includes('Invalid username or password') || msg.includes('401')) {
-					msg = "Nice try. Do you even work here?";
+				if (msg.includes('throne') || msg.includes('already')) {
+					msg = "Someone claimed admin before you. Slowpoke.";
+				} else if (msg.includes('weak') || msg.includes('8 characters')) {
+					msg = "That password is embarrassingly weak. Try harder.";
+				} else if (msg.includes('Failed to fetch')) {
+					msg = "Can't reach the server. It's avoiding you.";
 				}
 				update((s) => ({ ...s, loading: false, error: msg }));
 				return false;
