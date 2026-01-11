@@ -21,20 +21,20 @@
 		</div>
 
 		<h1 class="text-8xl font-bold text-fire mb-4">404</h1>
-		<h2 class="text-2xl font-semibold text-gray-300 mb-2">You're Lost, Aren't You?</h2>
+		<h2 class="text-2xl font-semibold text-gray-300 mb-2">Congratulations, Explorer!</h2>
 		<p class="text-gray-500 mb-8 max-w-md mx-auto">
-			This page is toast. Literally. 
-			It might have been moved, or maybe you just can't type.
+			You've discovered the void. There's nothing here.
+			Either the page ran away, or your typing skills need work. No judgment.
 		</p>
 
-		<a 
-			href="/" 
+		<a
+			href="/"
 			class="btn btn-primary px-8 py-3 text-lg inline-flex items-center gap-2"
 		>
 			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
 				<path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
 			</svg>
-			Go Back to Safety
+			Retreat to Safety
 		</a>
 	</div>
 </div>

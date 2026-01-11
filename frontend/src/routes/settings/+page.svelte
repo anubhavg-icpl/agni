@@ -71,8 +71,8 @@
 
 <div class="max-w-2xl mx-auto space-y-4 sm:space-y-6 px-2 sm:px-0">
 	<div>
-		<h1 class="text-xl sm:text-2xl font-bold">Settings</h1>
-		<p class="text-gray-500 text-xs sm:text-sm">Application configuration and preferences</p>
+		<h1 class="text-xl sm:text-2xl font-bold">The Control Room</h1>
+		<p class="text-gray-500 text-xs sm:text-sm">Tweak the knobs. Break everything. Blame someone else.</p>
 	</div>
 
 	<!-- Account Settings -->
@@ -81,7 +81,7 @@
 			<svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
 			</svg>
-			<span>Account</span>
+			<span>Your Identity Crisis</span>
 		</h2>
 		<div class="space-y-4">
 			<div>
@@ -91,7 +91,7 @@
 
 			<!-- Password Change -->
 			<div class="border-t border-gray-700 pt-4 mt-4">
-				<h3 class="font-medium mb-3">Change Password</h3>
+				<h3 class="font-medium mb-3">Forgot Your Password Already?</h3>
 				<form on:submit|preventDefault={handlePasswordChange} class="space-y-3">
 					<div>
 						<label for="currentPassword" class="label text-sm">Current Password</label>
@@ -137,14 +137,14 @@
 			<svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
 			</svg>
-			<span>System Information</span>
+			<span>The Machine's Guts</span>
 		</h2>
 		{#if loading}
 			<div class="text-gray-400 text-sm flex items-center gap-2">
 				<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
 				</svg>
-				Loading...
+				Interrogating the hardware...
 			</div>
 		{:else if systemInfo}
 			<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
@@ -174,7 +174,7 @@
 				</div>
 			</div>
 		{:else}
-			<div class="text-gray-500 text-sm">Unable to load system information</div>
+			<div class="text-gray-500 text-sm">The machine refused to talk. Typical.</div>
 		{/if}
 	</div>
 
@@ -184,13 +184,13 @@
 			<svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
 			</svg>
-			<span>API Configuration</span>
+			<span>The Nerdy Bits</span>
 		</h2>
 		<div class="space-y-4">
 			<div>
 				<label for="apiPort" class="label text-sm">API Port</label>
 				<input type="text" id="apiPort" bind:value={apiPort} class="input w-32" disabled />
-				<p class="text-sm text-gray-500 mt-1">API server port (requires restart to change)</p>
+				<p class="text-sm text-gray-500 mt-1">Can't touch this. Requires a restart anyway.</p>
 			</div>
 
 			<div class="bg-gray-900 rounded-lg p-3 font-mono text-sm">
@@ -208,12 +208,12 @@
 			<svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 			</svg>
-			<span>About Agni</span>
+			<span>The Legend of Agni</span>
 		</h2>
 		<div class="space-y-2 text-sm text-gray-400">
-			<p>Agni - Firecracker microVM management platform.</p>
+			<p>Agni - Because naming things after fire gods makes them faster. Science.</p>
 			<p class="text-gray-500">
-				Built on top of AWS Firecracker for lightweight, secure virtualization.
+				Riding on AWS Firecracker because we like living dangerously with microVMs.
 			</p>
 			<div class="flex gap-4 mt-4">
 				<a
@@ -248,19 +248,19 @@
 			<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
 			</svg>
-			<span>Session</span>
+			<span>The Escape Hatch</span>
 		</h2>
 		<div class="space-y-4">
 			<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 				<div>
-					<div class="font-medium text-gray-200 text-sm sm:text-base">Sign Out</div>
-					<div class="text-xs sm:text-sm text-gray-500">End your current session</div>
+					<div class="font-medium text-gray-200 text-sm sm:text-base">Abandon Ship</div>
+					<div class="text-xs sm:text-sm text-gray-500">Had enough? We get it. See ya.</div>
 				</div>
 				<Button variant="danger" on:click={handleLogout}>
 					<svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
 					</svg>
-					Sign Out
+					Run Away
 				</Button>
 			</div>
 		</div>

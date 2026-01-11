@@ -42,8 +42,8 @@
 	<!-- Header -->
 	<div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
 		<div>
-			<h1 class="text-2xl sm:text-3xl font-bold text-white mb-1">Config Templates</h1>
-			<p class="text-gray-400 text-sm sm:text-base">Reusable VM configurations</p>
+			<h1 class="text-2xl sm:text-3xl font-bold text-white mb-1">The Recipe Book</h1>
+			<p class="text-gray-400 text-sm sm:text-base">Pre-made suffering configurations. Work smarter, not harder.</p>
 		</div>
 	</div>
 
@@ -56,7 +56,7 @@
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
 					</svg>
 				</div>
-				<p class="text-gray-400">Loading templates...</p>
+				<p class="text-gray-400">Dusting off the ancient scrolls...</p>
 			</div>
 		</div>
 	{:else if error}
@@ -67,7 +67,7 @@
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 					</svg>
 				</div>
-				<h3 class="text-xl font-semibold text-white mb-2">Failed to Load</h3>
+				<h3 class="text-xl font-semibold text-white mb-2">The Scrolls Caught Fire</h3>
 				<p class="text-gray-400 mb-6">{error}</p>
 				<button
 					on:click={loadConfigs}
@@ -76,7 +76,7 @@
 					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
 					</svg>
-					<span>Retry</span>
+					<span>Try Again, Mortal</span>
 				</button>
 			</div>
 		</div>
@@ -88,15 +88,15 @@
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
 					</svg>
 				</div>
-				<h3 class="text-xl font-semibold text-white mb-2">No Templates</h3>
-				<p class="text-gray-400">Save a VM configuration as a template to reuse it later.</p>
+				<h3 class="text-xl font-semibold text-white mb-2">The Recipe Book is Empty</h3>
+				<p class="text-gray-400">No evil recipes yet? Save a VM config to reuse your dark creations.</p>
 			</div>
 		</div>
 	{:else}
 		<div>
 			<div class="flex items-center justify-between mb-4">
-				<h2 class="text-lg sm:text-xl font-semibold text-white">All Templates</h2>
-				<span class="text-sm text-gray-500">{configs.length} total</span>
+				<h2 class="text-lg sm:text-xl font-semibold text-white">Your Evil Recipes</h2>
+				<span class="text-sm text-gray-500">{configs.length} {configs.length === 1 ? 'recipe' : 'recipes'} of doom</span>
 			</div>
 			<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
 				{#each configs as config}
