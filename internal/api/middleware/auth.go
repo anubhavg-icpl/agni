@@ -18,8 +18,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/firecracker-microvm/firectl/internal/auth"
-	"github.com/firecracker-microvm/firectl/pkg/models"
+	"github.com/anubhavg-icpl/agni/internal/auth"
+	"github.com/anubhavg-icpl/agni/pkg/models"
 )
 
 // Context keys

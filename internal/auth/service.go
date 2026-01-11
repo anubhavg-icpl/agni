@@ -16,8 +16,8 @@ package auth
 import (
 	"time"
 
-	"github.com/firecracker-microvm/firectl/internal/storage"
-	"github.com/firecracker-microvm/firectl/pkg/models"
+	"github.com/anubhavg-icpl/agni/internal/storage"
+	"github.com/anubhavg-icpl/agni/pkg/models"
 	"github.com/google/uuid"
 )
 

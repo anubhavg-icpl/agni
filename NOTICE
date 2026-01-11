@@ -12,7 +12,7 @@ ORIGINAL WORK
 The firectl command-line tool was originally created by Amazon.com, Inc.
 as part of the Firecracker project for managing Firecracker microVMs.
 
-Repository: https://github.com/firecracker-microvm/firectl
+Repository: https://github.com/anubhavg-icpl/agni
 
 ---
 

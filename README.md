@@ -1,7 +1,7 @@
 Agni
 ===
 
-[![Build status](https://badge.buildkite.com/92fe02b4bd9564be0f7ea21d1ee782f6a6fe55cbd5465e3480.svg?branch=master)](https://buildkite.com/firecracker-microvm/firectl)
+[![Build status](https://badge.buildkite.com/92fe02b4bd9564be0f7ea21d1ee782f6a6fe55cbd5465e3480.svg?branch=master)](https://buildkite.com/anubhavg-icpl/agni)
 
 Agni is a powerful tool for managing Firecracker MicroVMs. It provides both a command-line interface (CLI) and a modern web-based graphical user interface (GUI) for creating, managing, and monitoring virtual machines.
 
@@ -214,7 +214,7 @@ SKIP_INTEG_TEST=1 make test  # Skip integration tests
 ## Questions?
 
 Please use
-[GitHub issues](https://github.com/firecracker-microvm/firectl/issues)
+[GitHub issues](https://github.com/anubhavg-icpl/agni/issues)
 to report problems, discuss roadmap items, or make feature requests.
 
 If you've discovered an issue that may have security implications to

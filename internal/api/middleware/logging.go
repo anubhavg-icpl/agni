@@ -17,7 +17,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/firecracker-microvm/firectl/internal/logging"
+	"github.com/anubhavg-icpl/agni/internal/logging"
 	"github.com/go-chi/chi/v5/middleware"
 )
 

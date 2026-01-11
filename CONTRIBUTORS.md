@@ -10,7 +10,7 @@ This file lists the contributors to the Agni project.
 - Core VM management functionality
 - Licensed under Apache License 2.0
 
-Original Repository: https://github.com/firecracker-microvm/firectl
+Original Repository: https://github.com/anubhavg-icpl/agni
 
 ## GUI Implementation
 

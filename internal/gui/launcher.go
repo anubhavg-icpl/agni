@@ -22,11 +22,11 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/firecracker-microvm/firectl/internal/api"
-	"github.com/firecracker-microvm/firectl/internal/auth"
-	"github.com/firecracker-microvm/firectl/internal/logging"
-	"github.com/firecracker-microvm/firectl/internal/storage"
-	"github.com/firecracker-microvm/firectl/internal/vm"
+	"github.com/anubhavg-icpl/agni/internal/api"
+	"github.com/anubhavg-icpl/agni/internal/auth"
+	"github.com/anubhavg-icpl/agni/internal/logging"
+	"github.com/anubhavg-icpl/agni/internal/storage"
+	"github.com/anubhavg-icpl/agni/internal/vm"
 )
 
 // Config holds the GUI launcher configuration

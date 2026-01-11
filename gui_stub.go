@@ -16,7 +16,7 @@
 package main
 
 import (
-	"github.com/firecracker-microvm/firectl/internal/gui"
+	"github.com/anubhavg-icpl/agni/internal/gui"
 )
 
 // runGUI starts the GUI mode (API server only without embedded frontend)

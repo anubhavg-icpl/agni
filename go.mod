@@ -1,4 +1,4 @@
-module github.com/firecracker-microvm/firectl
+module github.com/anubhavg-icpl/agni
 
 go 1.23.0
 

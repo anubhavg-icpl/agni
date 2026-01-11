@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/firecracker-microvm/firectl/pkg/models"
+	"github.com/anubhavg-icpl/agni/pkg/models"
 	"github.com/golang-jwt/jwt/v5"
 )
 

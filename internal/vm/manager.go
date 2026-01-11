@@ -23,9 +23,9 @@ import (
 
 	firecracker "github.com/firecracker-microvm/firecracker-go-sdk"
 	fcmodels "github.com/firecracker-microvm/firecracker-go-sdk/client/models"
-	"github.com/firecracker-microvm/firectl/internal/logging"
-	"github.com/firecracker-microvm/firectl/internal/storage"
-	"github.com/firecracker-microvm/firectl/pkg/models"
+	"github.com/anubhavg-icpl/agni/internal/logging"
+	"github.com/anubhavg-icpl/agni/internal/storage"
+	"github.com/anubhavg-icpl/agni/pkg/models"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 )

@@ -17,9 +17,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/firecracker-microvm/firectl/internal/auth"
-	"github.com/firecracker-microvm/firectl/internal/vm"
-	"github.com/firecracker-microvm/firectl/pkg/models"
+	"github.com/anubhavg-icpl/agni/internal/auth"
+	"github.com/anubhavg-icpl/agni/internal/vm"
+	"github.com/anubhavg-icpl/agni/pkg/models"
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/websocket"
 )

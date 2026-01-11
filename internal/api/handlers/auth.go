@@ -18,9 +18,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/firecracker-microvm/firectl/internal/api/middleware"
-	"github.com/firecracker-microvm/firectl/internal/auth"
-	"github.com/firecracker-microvm/firectl/pkg/models"
+	"github.com/anubhavg-icpl/agni/internal/api/middleware"
+	"github.com/anubhavg-icpl/agni/internal/auth"
+	"github.com/anubhavg-icpl/agni/pkg/models"
 )
 
 // AuthHandler handles authentication requests

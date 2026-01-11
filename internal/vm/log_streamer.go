@@ -17,7 +17,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/firecracker-microvm/firectl/pkg/models"
+	"github.com/anubhavg-icpl/agni/pkg/models"
 )
 
 // LogSubscriber represents a subscriber to VM logs

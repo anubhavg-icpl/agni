@@ -17,8 +17,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/firecracker-microvm/firectl/internal/storage"
-	"github.com/firecracker-microvm/firectl/pkg/models"
+	"github.com/anubhavg-icpl/agni/internal/storage"
+	"github.com/anubhavg-icpl/agni/pkg/models"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )

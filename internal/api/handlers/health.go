@@ -18,8 +18,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/firecracker-microvm/firectl/internal/vm"
-	"github.com/firecracker-microvm/firectl/pkg/models"
+	"github.com/anubhavg-icpl/agni/internal/vm"
+	"github.com/anubhavg-icpl/agni/pkg/models"
 )
 
 // Version information (set during build)

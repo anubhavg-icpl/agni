@@ -18,12 +18,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/firecracker-microvm/firectl/internal/api/handlers"
-	"github.com/firecracker-microvm/firectl/internal/api/middleware"
-	"github.com/firecracker-microvm/firectl/internal/auth"
-	"github.com/firecracker-microvm/firectl/internal/logging"
-	"github.com/firecracker-microvm/firectl/internal/storage"
-	"github.com/firecracker-microvm/firectl/internal/vm"
+	"github.com/anubhavg-icpl/agni/internal/api/handlers"
+	"github.com/anubhavg-icpl/agni/internal/api/middleware"
+	"github.com/anubhavg-icpl/agni/internal/auth"
+	"github.com/anubhavg-icpl/agni/internal/logging"
+	"github.com/anubhavg-icpl/agni/internal/storage"
+	"github.com/anubhavg-icpl/agni/internal/vm"
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 )

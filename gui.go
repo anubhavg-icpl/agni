@@ -18,7 +18,7 @@ package main
 import (
 	"embed"
 
-	"github.com/firecracker-microvm/firectl/internal/gui"
+	"github.com/anubhavg-icpl/agni/internal/gui"
 )
 
 //go:embed frontend/build

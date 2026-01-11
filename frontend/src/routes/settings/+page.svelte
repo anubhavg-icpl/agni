@@ -189,7 +189,7 @@
 			</p>
 			<div class="flex gap-4 mt-4">
 				<a
-					href="https://github.com/firecracker-microvm/firectl"
+					href="https://github.com/anubhavg-icpl/agni"
 					target="_blank"
 					rel="noopener noreferrer"
 					class="text-blue-400 hover:text-blue-300"
