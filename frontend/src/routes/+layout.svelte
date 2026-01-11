@@ -68,21 +68,21 @@
 								class="nav-link px-3 py-2 rounded-md text-sm font-medium"
 								class:nav-link-active={$page.url.pathname === '/'}
 							>
-								Mission Control
+								Dashboard
 							</a>
 							<a
 								href="/vms"
 								class="nav-link px-3 py-2 rounded-md text-sm font-medium"
 								class:nav-link-active={$page.url.pathname.startsWith('/vms')}
 							>
-								The Zoo
+								VMs
 							</a>
 							<a
 								href="/configs"
 								class="nav-link px-3 py-2 rounded-md text-sm font-medium"
 								class:nav-link-active={$page.url.pathname.startsWith('/configs')}
 							>
-								Cookie Cutters
+								Templates
 							</a>
 						</div>
 					</div>
@@ -92,9 +92,9 @@
 						</a>
 						<button
 							on:click={handleLogout}
-							class="hidden sm:block text-gray-300 hover:text-orange-400 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+							class="hidden sm:block text-gray-300 hover:text-red-400 px-3 py-2 rounded-md text-sm font-medium transition-colors"
 						>
-							Rage Quit
+							Sign Out
 						</button>
 						<!-- Mobile menu button -->
 						<button
@@ -122,39 +122,55 @@
 					<div class="px-3 py-3 space-y-1">
 						<a
 							href="/"
-							class="block nav-link px-3 py-2.5 rounded-md text-sm font-medium"
+							class="flex items-center gap-2 nav-link px-3 py-2.5 rounded-md text-sm font-medium"
 							class:nav-link-active={$page.url.pathname === '/'}
 						>
-							🎮 Mission Control
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+							</svg>
+							Dashboard
 						</a>
 						<a
 							href="/vms"
-							class="block nav-link px-3 py-2.5 rounded-md text-sm font-medium"
+							class="flex items-center gap-2 nav-link px-3 py-2.5 rounded-md text-sm font-medium"
 							class:nav-link-active={$page.url.pathname.startsWith('/vms')}
 						>
-							🦁 The Zoo
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2" />
+							</svg>
+							Virtual Machines
 						</a>
 						<a
 							href="/configs"
-							class="block nav-link px-3 py-2.5 rounded-md text-sm font-medium"
+							class="flex items-center gap-2 nav-link px-3 py-2.5 rounded-md text-sm font-medium"
 							class:nav-link-active={$page.url.pathname.startsWith('/configs')}
 						>
-							🍪 Cookie Cutters
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+							</svg>
+							Templates
 						</a>
 						<a
 							href="/settings"
-							class="block nav-link px-3 py-2.5 rounded-md text-sm font-medium"
+							class="flex items-center gap-2 nav-link px-3 py-2.5 rounded-md text-sm font-medium"
 							class:nav-link-active={$page.url.pathname.startsWith('/settings')}
 						>
-							⚙️ Settings
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+							</svg>
+							Settings
 						</a>
 						<div class="border-t border-gray-700/50 pt-2 mt-2">
 							<div class="px-3 py-1 text-xs text-gray-500">Signed in as {$auth.user?.username}</div>
 							<button
 								on:click={handleLogout}
-								class="w-full text-left px-3 py-2.5 rounded-md text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors"
+								class="w-full text-left px-3 py-2.5 rounded-md text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-2"
 							>
-								🚪 Rage Quit
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+								</svg>
+								Sign Out
 							</button>
 						</div>
 					</div>
