@@ -5,6 +5,11 @@
 // License is located at
 //
 //	http://aws.amazon.com/apache2.0/
+//
+// or in the "license" file accompanying this file. This file is distributed
+// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+// express or implied. See the License for the specific language governing
+// permissions and limitations under the License.
 
 package vm
 
@@ -106,7 +111,7 @@ func (m *Manager) Start(id string) error {
 	if err != nil {
 		vm.Status = models.VMStatusError
 		vm.Error = err.Error()
-		m.store.Update(vm)
+		_ = m.store.Update(vm)
 		return fmt.Errorf("failed to build config: %w", err)
 	}
 
@@ -115,7 +120,7 @@ func (m *Manager) Start(id string) error {
 	if err != nil {
 		vm.Status = models.VMStatusError
 		vm.Error = err.Error()
-		m.store.Update(vm)
+		_ = m.store.Update(vm)
 		return err
 	}
 
@@ -143,7 +148,7 @@ func (m *Manager) Start(id string) error {
 		cancel()
 		vm.Status = models.VMStatusError
 		vm.Error = err.Error()
-		m.store.Update(vm)
+		_ = m.store.Update(vm)
 		return fmt.Errorf("failed to create machine: %w", err)
 	}
 
@@ -152,7 +157,7 @@ func (m *Manager) Start(id string) error {
 		cancel()
 		vm.Status = models.VMStatusError
 		vm.Error = err.Error()
-		m.store.Update(vm)
+		_ = m.store.Update(vm)
 		return fmt.Errorf("failed to start machine: %w", err)
 	}
 
@@ -198,7 +203,7 @@ func (m *Manager) waitForVM(id string, machine *firecracker.Machine, ctx context
 		now := time.Now()
 		vm.Status = models.VMStatusStopped
 		vm.StoppedAt = &now
-		m.store.Update(vm)
+		_ = m.store.Update(vm)
 	}
 
 	m.logger.Info().Str("vm_id", id).Msg("VM stopped")
@@ -220,7 +225,7 @@ func (m *Manager) Stop(id string) error {
 	}
 
 	vm.Status = models.VMStatusStopping
-	m.store.Update(vm)
+	_ = m.store.Update(vm)
 
 	if err := running.Machine.StopVMM(); err != nil {
 		return fmt.Errorf("failed to stop VMM: %w", err)
@@ -232,7 +237,7 @@ func (m *Manager) Stop(id string) error {
 	now := time.Now()
 	vm.Status = models.VMStatusStopped
 	vm.StoppedAt = &now
-	m.store.Update(vm)
+	_ = m.store.Update(vm)
 
 	m.logger.Info().Str("vm_id", id).Msg("VM force stopped")
 	return nil
@@ -254,7 +259,7 @@ func (m *Manager) Shutdown(id string) error {
 	}
 
 	vm.Status = models.VMStatusStopping
-	m.store.Update(vm)
+	_ = m.store.Update(vm)
 
 	ctx := context.Background()
 	if err := running.Machine.Shutdown(ctx); err != nil {
@@ -330,7 +335,7 @@ func (m *Manager) StopAll() {
 
 	for id, running := range m.runningVMs {
 		m.logger.Info().Str("vm_id", id).Msg("Stopping VM during shutdown")
-		running.Machine.StopVMM()
+		_ = running.Machine.StopVMM()
 		running.Cancel()
 	}
 	m.runningVMs = make(map[string]*RunningVM)
