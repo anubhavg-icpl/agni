@@ -29,11 +29,23 @@ const (
 type User struct {
 	ID           string     `json:"id"`
 	Username     string     `json:"username"`
-	PasswordHash string     `json:"-"` // Never expose in JSON
+	PasswordHash string     `json:"password_hash,omitempty"` // Stored in DB, excluded in API responses via SafeUser()
 	Role         UserRole   `json:"role"`
 	CreatedAt    time.Time  `json:"created_at"`
 	UpdatedAt    time.Time  `json:"updated_at"`
 	LastLoginAt  *time.Time `json:"last_login_at,omitempty"`
+}
+
+// SafeUser returns a copy of the user without sensitive fields (for API responses)
+func (u *User) SafeUser() User {
+	return User{
+		ID:          u.ID,
+		Username:    u.Username,
+		Role:        u.Role,
+		CreatedAt:   u.CreatedAt,
+		UpdatedAt:   u.UpdatedAt,
+		LastLoginAt: u.LastLoginAt,
+	}
 }
 
 // Session represents an active user session
@@ -56,6 +68,15 @@ type LoginResponse struct {
 	Token     string    `json:"token"`
 	ExpiresAt time.Time `json:"expires_at"`
 	User      User      `json:"user"`
+}
+
+// SafeLoginResponse returns a response with password hash removed
+func (r *LoginResponse) SafeLoginResponse() LoginResponse {
+	return LoginResponse{
+		Token:     r.Token,
+		ExpiresAt: r.ExpiresAt,
+		User:      r.User.SafeUser(),
+	}
 }
 
 // SetupRequest represents the first-time setup request
