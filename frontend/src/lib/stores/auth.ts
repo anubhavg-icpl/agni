@@ -67,6 +67,8 @@ function createAuthStore() {
 				let msg = (e as Error).message;
 				if (msg.includes('already exists')) {
 					msg = "Someone beat you to it. Too slow.";
+				} else if (msg.includes('Invalid username or password') || msg.includes('401')) {
+					msg = "Nice try. Do you even work here?";
 				}
 				update((s) => ({ ...s, loading: false, error: msg }));
 				return false;

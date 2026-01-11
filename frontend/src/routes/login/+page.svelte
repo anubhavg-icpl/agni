@@ -32,7 +32,7 @@
 </script>
 
 <svelte:head>
-	<title>{$auth.setupRequired ? 'Setup' : 'Login'} - Agni</title>
+	<title>{$auth.setupRequired ? 'Setup' : 'Login'}</title>
 </svelte:head>
 
 <div class="min-h-screen bg-gray-900 flex items-center justify-center relative overflow-hidden">
