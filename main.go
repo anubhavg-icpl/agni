@@ -35,6 +35,20 @@ const (
 )
 
 func main() {
+	// Check for GUI mode flag before parsing other arguments
+	for _, arg := range os.Args[1:] {
+		if arg == "--gui" || arg == "-g" {
+			runGUI()
+			return
+		}
+	}
+
+	// Run CLI mode (original behavior)
+	runCLI()
+}
+
+// runCLI runs the original CLI mode
+func runCLI() {
 	opts := newOptions()
 	p := flags.NewParser(opts, flags.Default)
 	// if no args just print help
