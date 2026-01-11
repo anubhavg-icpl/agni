@@ -57,9 +57,9 @@
 
 <div class="min-h-screen bg-gray-950 flex">
 	<!-- Left Side - Rive Animation (50%) -->
-	<div class="hidden lg:flex w-1/2 relative overflow-hidden bg-black items-center justify-center">
+	<div class="hidden lg:flex w-1/2 relative overflow-hidden bg-gray-950 items-center justify-center">
 		<!-- Animated gradient background -->
-		<div class="absolute inset-0 bg-gradient-to-br from-orange-900/20 via-black to-red-900/20"></div>
+		<div class="absolute inset-0 bg-gradient-to-br from-orange-900/20 via-gray-950 to-red-900/20"></div>
 
 		<!-- Floating particles effect -->
 		<div class="absolute inset-0 overflow-hidden">
@@ -80,7 +80,7 @@
 					class="relative w-72 h-72 flex items-center justify-center rounded-full overflow-hidden rive-container"
 					in:scale={{ duration: 800, delay: 200, easing: elasticOut }}
 				>
-					<div class="absolute inset-0 bg-black rounded-full"></div>
+					<div class="absolute inset-0 bg-gray-950 rounded-full"></div>
 					<div class="relative z-10">
 						<RiveAnimation
 							src="/skull-fire-logo.riv"
@@ -115,7 +115,7 @@
 	<div class="w-full lg:w-1/2 flex items-center justify-center p-8 relative">
 		<!-- Mobile logo (shown only on small screens) -->
 		<div class="absolute top-8 left-1/2 -translate-x-1/2 lg:hidden">
-			<div class="w-20 h-20 flex items-center justify-center rounded-full overflow-hidden bg-black">
+			<div class="w-20 h-20 flex items-center justify-center rounded-full overflow-hidden bg-gray-950">
 				<RiveAnimation src="/skull-fire-logo.riv" width={76} height={76} />
 			</div>
 		</div>
