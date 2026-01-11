@@ -1,6 +1,6 @@
 # Contributors
 
-This file lists the contributors to the Firectl project.
+This file lists the contributors to the Agni project.
 
 ## Original Authors
 
@@ -10,7 +10,7 @@ This file lists the contributors to the Firectl project.
 - Core VM management functionality
 - Licensed under Apache License 2.0
 
-Repository: https://github.com/firecracker-microvm/firectl
+Original Repository: https://github.com/firecracker-microvm/firectl
 
 ## GUI Implementation
 

@@ -1,4 +1,4 @@
-Firectl
+Agni (formerly firectl)
 Copyright 2018-2024 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 Copyright 2024 Anubhav Gain. All Rights Reserved.
 
@@ -18,7 +18,7 @@ Repository: https://github.com/firecracker-microvm/firectl
 
 GUI IMPLEMENTATION
 
-The graphical user interface (GUI) for firectl was developed by Anubhav Gain
+The graphical user interface (GUI) for Agni was developed by Anubhav Gain
 as a derivative work, adding the following features:
 
 - Web-based GUI with Svelte + TypeScript frontend
@@ -30,7 +30,7 @@ as a derivative work, adding the following features:
 - JWT-based authentication system
 - BoltDB persistence layer
 
-The GUI can be enabled by running: firectl --gui
+The GUI can be enabled by running: agni --gui
 
 ---
 
@@ -45,3 +45,4 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+

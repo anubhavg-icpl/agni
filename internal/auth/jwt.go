@@ -53,7 +53,7 @@ func NewJWTService(secret string, expiration time.Duration) *JWTService {
 	return &JWTService{
 		secret:     []byte(secret),
 		expiration: expiration,
-		issuer:     "firectl",
+		issuer:     "agni",
 	}
 }
 

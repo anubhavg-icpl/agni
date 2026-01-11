@@ -46,9 +46,9 @@ func TestFireCTL(t *testing.T) {
 		t.Skip()
 	}
 
-	const firectlName = "./firectl"
-	if _, err := os.Stat(firectlName); os.IsNotExist(err) {
-		t.Fatalf("Missing firectl binary, %s", firectlName)
+	const agniName = "./agni"
+	if _, err := os.Stat(agniName); os.IsNotExist(err) {
+		t.Fatalf("Missing agni binary, %s", agniName)
 	}
 
 	if _, err := os.Stat(kernelImagePath); os.IsNotExist(err) {
@@ -78,7 +78,7 @@ func TestFireCTL(t *testing.T) {
 		firectlArgs = append(firectlArgs, "--disable-smt") // Disable simultaneous multithreading is supported by aarch64
 	}
 
-	cmd := exec.CommandContext(ctlCtx, firectlName, firectlArgs...)
+	cmd := exec.CommandContext(ctlCtx, agniName, firectlArgs...)
 	if err := cmd.Start(); err != nil {
 		t.Fatalf("Failed to run command: %v", err)
 	}
@@ -91,7 +91,7 @@ func TestFireCTL(t *testing.T) {
 		// We signal SIGQUIT to the Firecracker process due to the application
 		// using SIGQUIT to shutdown with
 		if err := cmd.Process.Signal(syscall.SIGQUIT); err != nil {
-			t.Log("Failed to kill firectl process")
+			t.Log("Failed to kill agni process")
 		}
 	}()
 
