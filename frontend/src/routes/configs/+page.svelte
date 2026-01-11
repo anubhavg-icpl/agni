@@ -30,12 +30,12 @@
 	<title>Cookie Cutters | Agni</title>
 </svelte:head>
 
-<div class="space-y-6">
+<div class="space-y-4 sm:space-y-6">
 	<!-- Header -->
-	<div class="flex items-center justify-between">
+	<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
 		<div>
-			<h1 class="text-2xl font-bold">Cookie Cutters</h1>
-			<p class="text-gray-500 text-sm">Reusable configs for the lazy (that's a compliment)</p>
+			<h1 class="text-xl sm:text-2xl font-bold">Cookie Cutters</h1>
+			<p class="text-gray-500 text-xs sm:text-sm">Reusable configs for the lazy (that's a compliment)</p>
 		</div>
 	</div>
 
@@ -53,33 +53,33 @@
 			<p class="text-gray-600 text-sm">Because copy-paste is beneath you.</p>
 		</div>
 	{:else}
-		<div class="grid gap-4">
+		<div class="grid gap-3 sm:gap-4">
 			{#each configs as config}
 				<div class="card hover:border-orange-500/30 transition-all duration-200">
-					<div class="flex items-start justify-between gap-4">
+					<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
 						<div class="flex-1 min-w-0">
 							<div class="flex items-center gap-2">
-								<span class="text-lg">📋</span>
-								<h3 class="font-semibold text-lg text-gray-100">{config.name}</h3>
+								<span class="text-base sm:text-lg">📋</span>
+								<h3 class="font-semibold text-base sm:text-lg text-gray-100 truncate">{config.name}</h3>
 							</div>
 							{#if config.description}
-								<p class="text-sm text-gray-400 mt-1 ml-7">{config.description}</p>
+								<p class="text-xs sm:text-sm text-gray-400 mt-1 ml-6 sm:ml-7 line-clamp-2">{config.description}</p>
 							{/if}
-							<div class="flex flex-wrap gap-3 mt-3 ml-7">
-								<span class="px-2.5 py-1 text-xs bg-gray-700/50 rounded-full text-gray-300">
+							<div class="flex flex-wrap gap-2 sm:gap-3 mt-2 sm:mt-3 ml-6 sm:ml-7">
+								<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-xs bg-gray-700/50 rounded-full text-gray-300">
 									🧠 {config.config.cpus} CPUs
 								</span>
-								<span class="px-2.5 py-1 text-xs bg-gray-700/50 rounded-full text-gray-300">
+								<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-xs bg-gray-700/50 rounded-full text-gray-300">
 									💾 {config.config.memory_mb} MB
 								</span>
-								<span class="px-2.5 py-1 text-xs bg-gray-700/50 rounded-full text-gray-300 truncate max-w-[200px]" title={config.config.kernel_path}>
+								<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-xs bg-gray-700/50 rounded-full text-gray-300 truncate max-w-[150px] sm:max-w-[200px]" title={config.config.kernel_path}>
 									🔧 {config.config.kernel_path.split('/').pop()}
 								</span>
 							</div>
 						</div>
 						<button
 							on:click={() => handleDelete(config.id, config.name)}
-							class="btn btn-danger text-sm py-1.5 px-3 opacity-60 hover:opacity-100 transition-opacity"
+							class="btn btn-danger text-sm py-1.5 px-3 opacity-60 hover:opacity-100 transition-opacity self-end sm:self-start"
 							title="Delete template"
 						>
 							🗑️

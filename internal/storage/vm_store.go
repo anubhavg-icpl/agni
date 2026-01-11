@@ -78,12 +78,13 @@ func (vs *VMStore) Delete(id string) error {
 
 // List returns all VMs
 func (vs *VMStore) List() ([]*models.VM, error) {
-	var vms []*models.VM
+	vms := make([]*models.VM, 0)
 
 	err := vs.store.ViewTransaction(func(tx *bolt.Tx) error {
 		b := tx.Bucket(BucketVMs)
 		if b == nil {
-			return fmt.Errorf("bucket not found")
+			// Bucket doesn't exist yet, return empty list
+			return nil
 		}
 
 		return b.ForEach(func(k, v []byte) error {

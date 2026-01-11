@@ -33,40 +33,40 @@
 	}
 </script>
 
-<div class="card hover:border-orange-500/30 transition-all duration-200 hover:shadow-lg hover:shadow-orange-500/5">
+<div class="card hover:border-orange-500/30 transition-all duration-200 hover:shadow-lg hover:shadow-orange-500/5 p-3 sm:p-4">
 	<!-- Header -->
-	<div class="flex items-start justify-between mb-4">
+	<div class="flex items-start justify-between mb-3 sm:mb-4">
 		<div class="flex-1 min-w-0">
-			<h3 class="font-semibold text-lg text-gray-100 truncate">{vm.name}</h3>
+			<h3 class="font-semibold text-base sm:text-lg text-gray-100 truncate">{vm.name}</h3>
 			<p class="text-xs text-gray-500 font-mono mt-0.5">{vm.id.slice(0, 8)}...</p>
 		</div>
-		<span class="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full {status.class}">
+		<span class="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 text-xs font-medium rounded-full {status.class}">
 			<span>{status.icon}</span>
-			{status.label}
+			<span class="hidden xs:inline">{status.label}</span>
 		</span>
 	</div>
 
 	<!-- Specs -->
-	<div class="grid grid-cols-3 gap-3 mb-4 p-3 bg-black/20 rounded-lg">
+	<div class="grid grid-cols-3 gap-2 sm:gap-3 mb-3 sm:mb-4 p-2 sm:p-3 bg-black/20 rounded-lg">
 		<div class="text-center">
 			<div class="text-xs text-gray-500 mb-0.5">Brains</div>
-			<div class="text-sm font-medium text-gray-200">{vm.config.cpus} CPU</div>
+			<div class="text-xs sm:text-sm font-medium text-gray-200">{vm.config.cpus} CPU</div>
 		</div>
 		<div class="text-center border-x border-gray-700/50">
 			<div class="text-xs text-gray-500 mb-0.5">Memory</div>
-			<div class="text-sm font-medium text-gray-200">{vm.config.memory_mb} MB</div>
+			<div class="text-xs sm:text-sm font-medium text-gray-200">{vm.config.memory_mb} MB</div>
 		</div>
 		<div class="text-center">
 			<div class="text-xs text-gray-500 mb-0.5">Kernel</div>
-			<div class="text-sm font-medium text-gray-200 truncate" title={vm.config.kernel_path}>
-				{vm.config.kernel_path.split('/').pop()?.slice(0, 10) || 'N/A'}
+			<div class="text-xs sm:text-sm font-medium text-gray-200 truncate" title={vm.config.kernel_path}>
+				{vm.config.kernel_path.split('/').pop()?.slice(0, 8) || 'N/A'}
 			</div>
 		</div>
 	</div>
 
 	<!-- Error Message -->
 	{#if vm.error}
-		<div class="text-sm text-red-400 mb-4 p-2.5 bg-red-500/10 rounded-lg border border-red-500/20">
+		<div class="text-xs sm:text-sm text-red-400 mb-3 sm:mb-4 p-2 sm:p-2.5 bg-red-500/10 rounded-lg border border-red-500/20">
 			<span class="font-medium">Uh oh:</span> {vm.error}
 		</div>
 	{/if}
@@ -74,21 +74,21 @@
 	<!-- Actions -->
 	<div class="flex gap-2">
 		{#if vm.status === 'stopped' || vm.status === 'error'}
-			<button on:click={handleStart} class="btn btn-success flex-1 text-sm py-2">
-				⚡ Resurrect
+			<button on:click={handleStart} class="btn btn-success flex-1 text-xs sm:text-sm py-1.5 sm:py-2">
+				⚡ <span class="hidden xs:inline">Resurrect</span><span class="xs:hidden">Start</span>
 			</button>
-			<button on:click={handleDelete} class="btn btn-danger text-sm py-2 px-3" title="Delete VM">
+			<button on:click={handleDelete} class="btn btn-danger text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-3" title="Delete VM">
 				🗑️
 			</button>
 		{:else if vm.status === 'running'}
-			<button on:click={handleShutdown} class="btn btn-secondary flex-1 text-sm py-2">
-				😴 Sleep
+			<button on:click={handleShutdown} class="btn btn-secondary flex-1 text-xs sm:text-sm py-1.5 sm:py-2">
+				😴 <span class="hidden xs:inline">Sleep</span><span class="xs:hidden">Stop</span>
 			</button>
-			<button on:click={handleStop} class="btn btn-danger text-sm py-2 px-3" title="Force kill">
+			<button on:click={handleStop} class="btn btn-danger text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-3" title="Force kill">
 				💀
 			</button>
 		{:else}
-			<button disabled class="btn btn-secondary flex-1 text-sm py-2 opacity-50 cursor-wait">
+			<button disabled class="btn btn-secondary flex-1 text-xs sm:text-sm py-1.5 sm:py-2 opacity-50 cursor-wait">
 				{status.icon} {status.label}
 			</button>
 		{/if}

@@ -82,12 +82,13 @@ func (cs *ConfigStore) Delete(id string) error {
 
 // List returns all configuration templates
 func (cs *ConfigStore) List() ([]*models.ConfigTemplate, error) {
-	var configs []*models.ConfigTemplate
+	configs := make([]*models.ConfigTemplate, 0)
 
 	err := cs.store.ViewTransaction(func(tx *bolt.Tx) error {
 		b := tx.Bucket(BucketConfigs)
 		if b == nil {
-			return fmt.Errorf("bucket not found")
+			// Bucket doesn't exist yet, return empty list
+			return nil
 		}
 
 		return b.ForEach(func(k, v []byte) error {

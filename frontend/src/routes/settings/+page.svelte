@@ -69,15 +69,15 @@
 	<title>Tweak Things | Agni</title>
 </svelte:head>
 
-<div class="max-w-2xl mx-auto space-y-6">
+<div class="max-w-2xl mx-auto space-y-4 sm:space-y-6 px-2 sm:px-0">
 	<div>
-		<h1 class="text-2xl font-bold">Settings</h1>
-		<p class="text-gray-500 text-sm">For when the defaults aren't good enough for you</p>
+		<h1 class="text-xl sm:text-2xl font-bold">Settings</h1>
+		<p class="text-gray-500 text-xs sm:text-sm">For when the defaults aren't good enough for you</p>
 	</div>
 
 	<!-- Account Settings -->
 	<div class="card">
-		<h2 class="text-lg font-medium mb-4 flex items-center gap-2">
+		<h2 class="text-base sm:text-lg font-medium mb-3 sm:mb-4 flex items-center gap-2">
 			<span>👤</span> Account
 		</h2>
 		<div class="space-y-4">
@@ -130,46 +130,46 @@
 
 	<!-- System Information -->
 	<div class="card">
-		<h2 class="text-lg font-medium mb-4 flex items-center gap-2">
+		<h2 class="text-base sm:text-lg font-medium mb-3 sm:mb-4 flex items-center gap-2">
 			<span>🖥️</span> System Information
 		</h2>
 		{#if loading}
-			<div class="text-gray-400">Loading...</div>
+			<div class="text-gray-400 text-sm">Loading...</div>
 		{:else if systemInfo}
-			<div class="grid grid-cols-2 gap-4 text-sm">
-				<div>
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
+				<div class="flex justify-between sm:block">
 					<span class="text-gray-400">Version:</span>
-					<span class="ml-2">{systemInfo.version}</span>
+					<span class="sm:ml-2">{systemInfo.version}</span>
 				</div>
-				<div>
+				<div class="flex justify-between sm:block">
 					<span class="text-gray-400">Go Version:</span>
-					<span class="ml-2">{systemInfo.go_version}</span>
+					<span class="sm:ml-2">{systemInfo.go_version}</span>
 				</div>
-				<div>
+				<div class="flex justify-between sm:block">
 					<span class="text-gray-400">Firecracker:</span>
-					<span class="ml-2">{systemInfo.firecracker_version}</span>
+					<span class="sm:ml-2">{systemInfo.firecracker_version}</span>
 				</div>
-				<div>
+				<div class="flex justify-between sm:block">
 					<span class="text-gray-400">OS:</span>
-					<span class="ml-2">{systemInfo.os}</span>
+					<span class="sm:ml-2">{systemInfo.os}</span>
 				</div>
-				<div>
+				<div class="flex justify-between sm:block">
 					<span class="text-gray-400">Architecture:</span>
-					<span class="ml-2">{systemInfo.arch}</span>
+					<span class="sm:ml-2">{systemInfo.arch}</span>
 				</div>
-				<div>
+				<div class="flex justify-between sm:block">
 					<span class="text-gray-400">CPUs:</span>
-					<span class="ml-2">{systemInfo.num_cpu}</span>
+					<span class="sm:ml-2">{systemInfo.num_cpu}</span>
 				</div>
 			</div>
 		{:else}
-			<div class="text-gray-500">Unable to load system information</div>
+			<div class="text-gray-500 text-sm">Unable to load system information</div>
 		{/if}
 	</div>
 
 	<!-- API Configuration -->
 	<div class="card">
-		<h2 class="text-lg font-medium mb-4 flex items-center gap-2">
+		<h2 class="text-base sm:text-lg font-medium mb-3 sm:mb-4 flex items-center gap-2">
 			<span>🔌</span> API Configuration
 		</h2>
 		<div class="space-y-4">
@@ -190,7 +190,7 @@
 
 	<!-- About -->
 	<div class="card">
-		<h2 class="text-lg font-medium mb-4 flex items-center gap-2">
+		<h2 class="text-base sm:text-lg font-medium mb-3 sm:mb-4 flex items-center gap-2">
 			<span>🔥</span> About Agni
 		</h2>
 		<div class="space-y-2 text-sm text-gray-400">
@@ -221,14 +221,14 @@
 
 	<!-- Danger Zone -->
 	<div class="card border-red-500/30 bg-red-500/5">
-		<h2 class="text-lg font-medium mb-4 text-red-400 flex items-center gap-2">
+		<h2 class="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-red-400 flex items-center gap-2">
 			<span>☠️</span> Danger Zone
 		</h2>
 		<div class="space-y-4">
-			<div class="flex items-center justify-between">
+			<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 				<div>
-					<div class="font-medium text-gray-200">Rage Quit</div>
-					<div class="text-sm text-gray-500">Storm off dramatically. We won't judge.</div>
+					<div class="font-medium text-gray-200 text-sm sm:text-base">Rage Quit</div>
+					<div class="text-xs sm:text-sm text-gray-500">Storm off dramatically. We won't judge.</div>
 				</div>
 				<Button variant="danger" on:click={handleLogout}>🚪 Leave</Button>
 			</div>

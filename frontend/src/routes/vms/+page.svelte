@@ -21,14 +21,14 @@
 	<title>The Zoo | Agni</title>
 </svelte:head>
 
-<div class="space-y-6">
+<div class="space-y-4 sm:space-y-6">
 	<!-- Header -->
-	<div class="flex items-center justify-between">
+	<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 		<div>
-			<h1 class="text-2xl font-bold">The Zoo</h1>
-			<p class="text-gray-500 text-sm">All your little monsters in one place</p>
+			<h1 class="text-xl sm:text-2xl font-bold">The Zoo</h1>
+			<p class="text-gray-500 text-xs sm:text-sm">All your little monsters in one place</p>
 		</div>
-		<a href="/vms/new" class="btn btn-primary">+ Summon New Demon</a>
+		<a href="/vms/new" class="btn btn-primary text-sm sm:text-base whitespace-nowrap">+ Summon New Demon</a>
 	</div>
 
 	<!-- VM List -->
@@ -45,7 +45,7 @@
 			<a href="/vms/new" class="btn btn-primary">Summon Your First Demon</a>
 		</div>
 	{:else}
-		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
 			{#each $vms.vms as vm (vm.id)}
 				<VMCard {vm} />
 			{/each}

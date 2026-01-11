@@ -78,14 +78,14 @@
 		</div>
 	</div>
 {:else}
-	<div class="space-y-8">
+	<div class="space-y-4 sm:space-y-6 lg:space-y-8">
 		<!-- Header -->
-		<div class="flex items-center justify-between">
+		<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 			<div>
-				<h1 class="text-2xl font-bold">Mission Control</h1>
-				<p class="text-gray-500 text-sm">Where chaos is managed (barely)</p>
+				<h1 class="text-xl sm:text-2xl font-bold">Mission Control</h1>
+				<p class="text-gray-500 text-xs sm:text-sm">Where chaos is managed (barely)</p>
 			</div>
-			<a href="/vms/new" class="btn btn-primary"> + Spawn Another </a>
+			<a href="/vms/new" class="btn btn-primary text-sm sm:text-base whitespace-nowrap"> + Spawn Another </a>
 		</div>
 
 		<!-- Quick Stats -->
@@ -93,15 +93,15 @@
 
 		<!-- VM Grid -->
 		{#if $vms.loading && $vms.vms.length === 0}
-			<div class="text-center py-12 text-gray-400">Waking up the minions...</div>
+			<div class="text-center py-8 sm:py-12 text-gray-400 text-sm sm:text-base">Waking up the minions...</div>
 		{:else if $vms.vms.length === 0}
-			<div class="card text-center py-12">
-				<h3 class="text-lg font-medium text-gray-300 mb-2">Tumbleweeds...</h3>
-				<p class="text-gray-500 mb-4">No VMs yet. This emptiness is judging you.</p>
+			<div class="card text-center py-8 sm:py-12">
+				<h3 class="text-base sm:text-lg font-medium text-gray-300 mb-2">Tumbleweeds...</h3>
+				<p class="text-gray-500 mb-4 text-sm">No VMs yet. This emptiness is judging you.</p>
 				<a href="/vms/new" class="btn btn-primary">Create Something</a>
 			</div>
 		{:else}
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
 				{#each $vms.vms as vm (vm.id)}
 					<VMCard {vm} />
 				{/each}
@@ -109,7 +109,7 @@
 		{/if}
 
 		{#if $vms.error}
-			<div class="bg-red-500/20 text-red-400 border border-red-500/50 rounded-lg p-4">
+			<div class="bg-red-500/20 text-red-400 border border-red-500/50 rounded-lg p-3 sm:p-4 text-sm">
 				Well, that didn't work: {$vms.error}
 			</div>
 		{/if}
