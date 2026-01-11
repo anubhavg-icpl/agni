@@ -293,6 +293,11 @@ func (m *Manager) Get(id string) (*models.VM, error) {
 	return m.store.Get(id)
 }
 
+// Update updates a VM configuration (must be stopped)
+func (m *Manager) Update(vm *models.VM) error {
+	return m.store.Update(vm)
+}
+
 // List returns all VMs
 func (m *Manager) List() ([]*models.VM, error) {
 	return m.store.List()
