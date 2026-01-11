@@ -17,6 +17,7 @@ import (
 	"context"
 	"embed"
 	"io/fs"
+	"mime"
 	"net/http"
 	"strings"
 	"time"
@@ -166,9 +167,6 @@ func (s *Server) serveStaticFiles() {
 
 	s.logger.Info().Msg("Static file serving enabled for embedded frontend")
 
-	// Create file server with proper MIME type handling
-	fileServer := http.FileServer(http.FS(distFS))
-
 	// Handle all non-API routes
 	s.router.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
@@ -179,25 +177,45 @@ func (s *Server) serveStaticFiles() {
 			return
 		}
 
-		// For root path, serve index.html
-		if path == "/" {
-			r.URL.Path = "/index.html"
-			fileServer.ServeHTTP(w, r)
-			return
+		// Determine the file to serve
+		filePath := strings.TrimPrefix(path, "/")
+		if filePath == "" {
+			filePath = "index.html"
 		}
 
-		// Check if the file exists in the embedded filesystem
-		cleanPath := strings.TrimPrefix(path, "/")
-		if _, err := fs.Stat(distFS, cleanPath); err == nil {
-			// File exists, serve it with http.FileServer (handles MIME types)
-			fileServer.ServeHTTP(w, r)
-			return
+		// Try to read the file
+		content, err := fs.ReadFile(distFS, filePath)
+		if err != nil {
+			// File not found - serve index.html for SPA routing
+			content, err = fs.ReadFile(distFS, "index.html")
+			if err != nil {
+				http.NotFound(w, r)
+				return
+			}
+			filePath = "index.html"
 		}
 
-		// File not found - serve index.html for SPA client-side routing
-		r.URL.Path = "/index.html"
-		fileServer.ServeHTTP(w, r)
+		// Set Content-Type using Go's built-in detection
+		contentType := mime.TypeByExtension("." + getFileExt(filePath))
+		if contentType == "" {
+			contentType = http.DetectContentType(content)
+		}
+		w.Header().Set("Content-Type", contentType)
+		w.Write(content)
 	})
+}
+
+// getFileExt returns the file extension without the dot
+func getFileExt(path string) string {
+	for i := len(path) - 1; i >= 0; i-- {
+		if path[i] == '.' {
+			return path[i+1:]
+		}
+		if path[i] == '/' {
+			break
+		}
+	}
+	return ""
 }
 
 // serveSPAIndex serves the index.html for SPA routing
