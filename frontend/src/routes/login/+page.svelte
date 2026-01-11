@@ -52,7 +52,7 @@
 </script>
 
 <svelte:head>
-	<title>{$auth.setupRequired ? 'First Timer?' : 'Prove Yourself'} | Agni</title>
+	<title>{$auth.setupRequired ? 'Fresh Meat Detected' : 'Prove Yourself'} | Agni</title>
 </svelte:head>
 
 <div class="min-h-screen bg-gray-950 flex">
@@ -77,14 +77,17 @@
 
 			{#if mounted}
 				<div
-					class="relative w-80 h-80 flex items-center justify-center rive-container"
+					class="relative w-72 h-72 flex items-center justify-center rounded-full overflow-hidden rive-container"
 					in:scale={{ duration: 800, delay: 200, easing: elasticOut }}
 				>
-					<RiveAnimation
-						src="/skull-fire-logo.riv"
-						width={320}
-						height={320}
-					/>
+					<div class="absolute inset-0 bg-black rounded-full"></div>
+					<div class="relative z-10">
+						<RiveAnimation
+							src="/skull-fire-logo.riv"
+							width={280}
+							height={280}
+						/>
+					</div>
 				</div>
 
 				<div
@@ -96,6 +99,9 @@
 					</h1>
 					<p class="text-gray-500 mt-3 text-sm tracking-wider uppercase">
 						Firecracker VM Manager
+					</p>
+					<p class="text-gray-600 mt-2 text-xs italic">
+						"Your VMs won't manage themselves. Unfortunately."
 					</p>
 				</div>
 			{/if}
@@ -109,8 +115,8 @@
 	<div class="w-full lg:w-1/2 flex items-center justify-center p-8 relative">
 		<!-- Mobile logo (shown only on small screens) -->
 		<div class="absolute top-8 left-1/2 -translate-x-1/2 lg:hidden">
-			<div class="w-20 h-20 flex items-center justify-center">
-				<RiveAnimation src="/skull-fire-logo.riv" width={80} height={80} />
+			<div class="w-20 h-20 flex items-center justify-center rounded-full overflow-hidden bg-black">
+				<RiveAnimation src="/skull-fire-logo.riv" width={76} height={76} />
 			</div>
 		</div>
 
@@ -120,8 +126,8 @@
 					{#if $auth.setupRequired}
 						<!-- Setup Header -->
 						<div class="mb-8 lg:mt-0 mt-16">
-							<h2 class="text-3xl font-bold text-white mb-2">Welcome, Pioneer</h2>
-							<p class="text-gray-400">Let's set up your command center</p>
+							<h2 class="text-3xl font-bold text-white mb-2">Fresh Meat Detected</h2>
+							<p class="text-gray-400">Someone has to run this circus. Might as well be you.</p>
 						</div>
 
 						<!-- Setup Notice -->
@@ -136,8 +142,8 @@
 									</svg>
 								</div>
 								<div>
-									<h3 class="text-orange-400 font-semibold text-sm">Fresh Install Detected</h3>
-									<p class="text-gray-500 text-xs">Create your admin account to continue</p>
+									<h3 class="text-orange-400 font-semibold text-sm">First Time Here?</h3>
+									<p class="text-gray-500 text-xs">Create your admin account. No pressure.</p>
 								</div>
 							</div>
 						</div>
@@ -157,7 +163,7 @@
 										id="setup-username"
 										bind:value={username}
 										class="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200"
-										placeholder="Choose a username"
+										placeholder="Something you won't forget (hopefully)"
 										required
 									/>
 								</div>
@@ -176,7 +182,7 @@
 										id="setup-password"
 										bind:value={password}
 										class={passwordInputClass}
-										placeholder="Minimum 8 characters"
+										placeholder="Not 'password123' please"
 										required
 									/>
 								</div>
@@ -185,7 +191,7 @@
 										<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
 											<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
 										</svg>
-										Password must be at least 8 characters
+										8 characters minimum. Your cat's name doesn't count.
 									</p>
 								{/if}
 							</div>
@@ -203,7 +209,7 @@
 										id="setup-confirm"
 										bind:value={confirmPassword}
 										class={confirmInputClass}
-										placeholder="Type it again"
+										placeholder="Prove you can type it twice"
 										required
 									/>
 								</div>
@@ -212,7 +218,7 @@
 										<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
 											<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
 										</svg>
-										Passwords don't match
+										Passwords don't match. Shocking, I know.
 									</p>
 								{/if}
 							</div>
@@ -239,18 +245,18 @@
 										<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
 										</svg>
-										Creating Account...
+										Summoning powers...
 									</span>
 								{:else}
-									Create Admin Account
+									Crown Me Admin
 								{/if}
 							</button>
 						</form>
 					{:else}
 						<!-- Login Header -->
 						<div class="mb-8 lg:mt-0 mt-16">
-							<h2 class="text-3xl font-bold text-white mb-2">Welcome Back</h2>
-							<p class="text-gray-400">Sign in to access your command center</p>
+							<h2 class="text-3xl font-bold text-white mb-2">Back Already?</h2>
+							<p class="text-gray-400">Prove you're worthy of entering the command center.</p>
 						</div>
 
 						<!-- Login Form -->
@@ -268,7 +274,7 @@
 										id="login-username"
 										bind:value={username}
 										class="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200"
-										placeholder="Enter your username"
+										placeholder="State your identity, mortal"
 										required
 									/>
 								</div>
@@ -287,7 +293,7 @@
 										id="login-password"
 										bind:value={password}
 										class="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200"
-										placeholder="Enter your password"
+										placeholder="Whisper the secret phrase"
 										required
 									/>
 								</div>
@@ -315,17 +321,17 @@
 										<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
 										</svg>
-										Signing In...
+										Verifying your existence...
 									</span>
 								{:else}
-									Sign In
+									Grant Me Access
 								{/if}
 							</button>
 						</form>
 					{/if}
 
 					<p class="text-center text-gray-600 text-xs mt-8" in:fade={{ duration: 400, delay: 600 }}>
-						Powered by Firecracker
+						Powered by mass quantities of caffeine
 					</p>
 				</div>
 			{/if}
@@ -375,11 +381,7 @@
 	.particle-4 { left: 70%; animation-delay: 4.5s; animation-duration: 9s; }
 	.particle-5 { left: 90%; animation-delay: 6s; animation-duration: 11s; }
 
-	.bg-gradient-radial {
-		background: radial-gradient(circle, var(--tw-gradient-stops));
-	}
-
 	.rive-container :global(canvas) {
-		mix-blend-mode: lighten;
+		border-radius: 50%;
 	}
 </style>
