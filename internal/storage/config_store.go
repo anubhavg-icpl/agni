@@ -114,7 +114,8 @@ func (cs *ConfigStore) GetByName(name string) (*models.ConfigTemplate, error) {
 	err := cs.store.ViewTransaction(func(tx *bolt.Tx) error {
 		b := tx.Bucket(BucketConfigs)
 		if b == nil {
-			return fmt.Errorf("bucket not found")
+			// Bucket doesn't exist yet
+			return nil
 		}
 
 		return b.ForEach(func(k, v []byte) error {

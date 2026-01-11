@@ -15,7 +15,6 @@ package storage
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/anubhavg-icpl/agni/pkg/models"
 	bolt "go.etcd.io/bbolt"
@@ -110,7 +109,8 @@ func (vs *VMStore) GetByName(name string) (*models.VM, error) {
 	err := vs.store.ViewTransaction(func(tx *bolt.Tx) error {
 		b := tx.Bucket(BucketVMs)
 		if b == nil {
-			return fmt.Errorf("bucket not found")
+			// Bucket doesn't exist yet
+			return nil
 		}
 
 		return b.ForEach(func(k, v []byte) error {
