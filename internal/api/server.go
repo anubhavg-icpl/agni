@@ -186,9 +186,12 @@ func (s *Server) serveStaticFiles() {
 		// Try to read the file
 		content, err := fs.ReadFile(distFS, filePath)
 		if err != nil {
+			// Log the error for debugging
+			s.logger.Debug().Str("path", filePath).Err(err).Msg("File not found, serving index.html")
 			// File not found - serve index.html for SPA routing
 			content, err = fs.ReadFile(distFS, "index.html")
 			if err != nil {
+				s.logger.Error().Err(err).Msg("Failed to read index.html")
 				http.NotFound(w, r)
 				return
 			}
@@ -196,10 +199,12 @@ func (s *Server) serveStaticFiles() {
 		}
 
 		// Set Content-Type using Go's built-in detection
-		contentType := mime.TypeByExtension("." + getFileExt(filePath))
+		ext := "." + getFileExt(filePath)
+		contentType := mime.TypeByExtension(ext)
 		if contentType == "" {
 			contentType = http.DetectContentType(content)
 		}
+		s.logger.Debug().Str("path", filePath).Str("ext", ext).Str("contentType", contentType).Msg("Serving file")
 		w.Header().Set("Content-Type", contentType)
 		w.Write(content)
 	})
