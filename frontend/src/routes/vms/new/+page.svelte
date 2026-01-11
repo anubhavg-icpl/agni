@@ -3,6 +3,9 @@
 	import { vms } from '$lib/stores/vms';
 	import type { VMConfig } from '$lib/api/client';
 
+	// SvelteKit passes params to all route components
+	export let params: Record<string, string> = {};
+
 	let name = '';
 	let kernelPath = './vmlinux';
 	let kernelOpts = 'ro console=ttyS0 noapic reboot=k panic=1 pci=off nomodules';

@@ -5,6 +5,9 @@
 	import VMCard from '$lib/components/Dashboard/VMCard.svelte';
 	import QuickStats from '$lib/components/Dashboard/QuickStats.svelte';
 
+	// SvelteKit passes params to all route components
+	export let params: Record<string, string> = {};
+
 	let setupUsername = '';
 	let setupPassword = '';
 

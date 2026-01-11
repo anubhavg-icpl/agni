@@ -3,6 +3,9 @@
 	import { vms } from '$lib/stores/vms';
 	import VMCard from '$lib/components/Dashboard/VMCard.svelte';
 
+	// SvelteKit passes params to all route components
+	export let params: Record<string, string> = {};
+
 	onMount(() => {
 		vms.fetch();
 	});

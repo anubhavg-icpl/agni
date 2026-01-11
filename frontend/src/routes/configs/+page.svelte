@@ -2,6 +2,9 @@
 	import { onMount } from 'svelte';
 	import { api, type ConfigTemplate } from '$lib/api/client';
 
+	// SvelteKit passes params to all route components
+	export let params: Record<string, string> = {};
+
 	let configs: ConfigTemplate[] = [];
 	let loading = true;
 	let error = '';

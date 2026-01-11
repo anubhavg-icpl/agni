@@ -6,6 +6,9 @@
 	import { fly, fade, scale } from 'svelte/transition';
 	import { elasticOut, quintOut } from 'svelte/easing';
 
+	// SvelteKit passes params to all route components
+	export let params: Record<string, string> = {};
+
 	let username = '';
 	let password = '';
 	let confirmPassword = '';

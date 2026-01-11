@@ -5,6 +5,9 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 
+	// SvelteKit passes params to all route components
+	export let params: Record<string, string> = {};
+
 	let initialized = false;
 	let mobileMenuOpen = false;
 

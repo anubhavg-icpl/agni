@@ -6,6 +6,9 @@
 	import Button from '$lib/components/Common/Button.svelte';
 	import { toasts } from '$lib/components/Common/Toast.svelte';
 
+	// SvelteKit passes params to all route components
+	export let params: Record<string, string> = {};
+
 	let systemInfo: SystemInfo | null = null;
 	let loading = true;
 
