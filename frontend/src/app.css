@@ -68,7 +68,7 @@
 
 	.card-fire {
 		@apply rounded-2xl border border-white/10 p-8 backdrop-blur-xl;
-		background: radial-gradient(circle at center top, #000000 0%, #111111 100%);
+		background: #000000;
 		box-shadow:
 			0 0 50px -10px rgba(251, 146, 60, 0.15),
 			0 25px 50px -12px rgba(0, 0, 0, 0.5),

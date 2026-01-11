@@ -51,7 +51,8 @@
 			<!-- Glow effect behind logo -->
 			<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-orange-500/20 rounded-full blur-2xl pointer-events-none"></div>
 			
-			<div class="mb-2 relative z-10" style="mask-image: radial-gradient(circle, black 60%, transparent 100%); -webkit-mask-image: radial-gradient(circle, black 60%, transparent 100%);">
+			<div class="mb-2 relative z-10 w-40 h-40 flex items-center justify-center bg-black rounded-full overflow-hidden" style="mix-blend-mode: screen;">
+				<div class="absolute inset-0 z-20 pointer-events-none" style="background: radial-gradient(circle, transparent 50%, #000000 90%);"></div>
 				<RiveAnimation 
 					src="/skull-fire-logo.riv" 
 					width={160} 
