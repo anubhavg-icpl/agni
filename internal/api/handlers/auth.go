@@ -37,29 +37,30 @@ func NewAuthHandler(authService *auth.Service) *AuthHandler {
 func (h *AuthHandler) Setup(w http.ResponseWriter, r *http.Request) {
 	var req models.SetupRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "Invalid request body")
+		respondError(w, http.StatusBadRequest, "Can't even send valid JSON? We're off to a great start")
 		return
 	}
 
 	if req.Username == "" || req.Password == "" {
-		respondError(w, http.StatusBadRequest, "Username and password are required")
+		respondError(w, http.StatusBadRequest, "Username and password. Both of them. It's not optional")
 		return
 	}
 
 	user, err := h.authService.Setup(req.Username, req.Password)
 	if err != nil {
 		if err == models.ErrSetupAlreadyDone {
-			respondError(w, http.StatusConflict, "Setup already completed")
+			respondError(w, http.StatusConflict, "Someone already claimed the throne. You're too slow")
 			return
 		}
 		respondError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
+	safeUser := user.SafeUser()
 	respondJSON(w, http.StatusCreated, map[string]any{
 		"success": true,
-		"message": "Admin user created",
-		"user":    user,
+		"message": "Congratulations, you're the admin now. Try not to break everything",
+		"user":    safeUser,
 	})
 }
 
@@ -67,33 +68,35 @@ func (h *AuthHandler) Setup(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req models.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "Invalid request body")
+		respondError(w, http.StatusBadRequest, "Your request is as malformed as your life choices")
 		return
 	}
 
 	if req.Username == "" || req.Password == "" {
-		respondError(w, http.StatusBadRequest, "Username and password are required")
+		respondError(w, http.StatusBadRequest, "Username and password are required. This isn't rocket science")
 		return
 	}
 
 	resp, err := h.authService.Login(req.Username, req.Password)
 	if err != nil {
 		if err == models.ErrInvalidCredentials {
-			respondError(w, http.StatusUnauthorized, "Invalid username or password")
+			respondError(w, http.StatusUnauthorized, "Wrong credentials. Did you forget already? Impressive")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, err.Error())
+		respondError(w, http.StatusInternalServerError, "Something broke. Probably your fault somehow")
 		return
 	}
 
-	respondJSON(w, http.StatusOK, resp)
+	// Return safe response without password hash
+	safeResp := resp.SafeLoginResponse()
+	respondJSON(w, http.StatusOK, safeResp)
 }
 
 // Status returns the authentication status
 func (h *AuthHandler) Status(w http.ResponseWriter, r *http.Request) {
 	setupRequired, err := h.authService.IsSetupRequired()
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, err.Error())
+		respondError(w, http.StatusInternalServerError, "Database having an existential crisis")
 		return
 	}
 
@@ -106,10 +109,11 @@ func (h *AuthHandler) Status(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUser(r.Context())
 	if user == nil {
-		respondError(w, http.StatusUnauthorized, "Not authenticated")
+		respondError(w, http.StatusUnauthorized, "Who are you? No seriously, we have no idea")
 		return
 	}
-	respondJSON(w, http.StatusOK, user)
+	safeUser := user.SafeUser()
+	respondJSON(w, http.StatusOK, safeUser)
 }
 
 // Refresh refreshes the auth token
@@ -118,19 +122,20 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get("Authorization")
 	parts := strings.Split(authHeader, " ")
 	if len(parts) != 2 {
-		respondError(w, http.StatusBadRequest, "Invalid authorization header")
+		respondError(w, http.StatusBadRequest, "Your authorization header is a disaster")
 		return
 	}
 
 	token, expiresAt, err := h.authService.RefreshToken(parts[1])
 	if err != nil {
-		respondError(w, http.StatusUnauthorized, "Invalid token")
+		respondError(w, http.StatusUnauthorized, "This token is as expired as your excuses")
 		return
 	}
 
 	respondJSON(w, http.StatusOK, map[string]any{
 		"token":      token,
 		"expires_at": expiresAt,
+		"message":    "Here's more time. Don't waste it",
 	})
 }
 
@@ -141,6 +146,6 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	// For added security, we could maintain a blacklist of revoked tokens
 	respondJSON(w, http.StatusOK, map[string]any{
 		"success": true,
-		"message": "Logged out",
+		"message": "Fine, leave. See if we care",
 	})
 }
