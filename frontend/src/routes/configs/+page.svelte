@@ -16,7 +16,7 @@
 	});
 
 	async function handleDelete(id: string, name: string) {
-		if (!confirm(`Delete template "${name}"?`)) return;
+		if (!confirm(`Shred template "${name}"? Gone forever. No backsies.`)) return;
 		try {
 			await api.deleteConfig(id);
 			configs = configs.filter((c) => c.id !== id);
@@ -27,42 +27,62 @@
 </script>
 
 <svelte:head>
-	<title>Templates - Firectl</title>
+	<title>Cookie Cutters | Agni</title>
 </svelte:head>
 
 <div class="space-y-6">
+	<!-- Header -->
 	<div class="flex items-center justify-between">
-		<h1 class="text-2xl font-bold">Configuration Templates</h1>
+		<div>
+			<h1 class="text-2xl font-bold">Cookie Cutters</h1>
+			<p class="text-gray-500 text-sm">Reusable configs for the lazy (that's a compliment)</p>
+		</div>
 	</div>
 
+	<!-- Content -->
 	{#if loading}
-		<div class="text-center py-12 text-gray-400">Loading templates...</div>
+		<div class="text-center py-16">
+			<div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent"></div>
+			<p class="text-gray-400 mt-4">Rummaging through the drawer...</p>
+		</div>
 	{:else if configs.length === 0}
-		<div class="card text-center py-12">
-			<h3 class="text-lg font-medium text-gray-300 mb-2">No templates yet</h3>
-			<p class="text-gray-500">Save a VM configuration as a template to reuse it later</p>
+		<div class="card text-center py-16">
+			<div class="text-6xl mb-4">🍪</div>
+			<h3 class="text-xl font-medium text-gray-300 mb-2">No Cookie Cutters Yet</h3>
+			<p class="text-gray-500 mb-2">Save a VM configuration as a template to reuse it.</p>
+			<p class="text-gray-600 text-sm">Because copy-paste is beneath you.</p>
 		</div>
 	{:else}
 		<div class="grid gap-4">
 			{#each configs as config}
-				<div class="card">
-					<div class="flex items-start justify-between">
-						<div>
-							<h3 class="font-medium text-lg">{config.name}</h3>
+				<div class="card hover:border-orange-500/30 transition-all duration-200">
+					<div class="flex items-start justify-between gap-4">
+						<div class="flex-1 min-w-0">
+							<div class="flex items-center gap-2">
+								<span class="text-lg">📋</span>
+								<h3 class="font-semibold text-lg text-gray-100">{config.name}</h3>
+							</div>
 							{#if config.description}
-								<p class="text-sm text-gray-400 mt-1">{config.description}</p>
+								<p class="text-sm text-gray-400 mt-1 ml-7">{config.description}</p>
 							{/if}
-							<div class="flex gap-4 mt-2 text-sm text-gray-500">
-								<span>{config.config.cpus} CPUs</span>
-								<span>{config.config.memory_mb} MB</span>
-								<span>{config.config.kernel_path.split('/').pop()}</span>
+							<div class="flex flex-wrap gap-3 mt-3 ml-7">
+								<span class="px-2.5 py-1 text-xs bg-gray-700/50 rounded-full text-gray-300">
+									🧠 {config.config.cpus} CPUs
+								</span>
+								<span class="px-2.5 py-1 text-xs bg-gray-700/50 rounded-full text-gray-300">
+									💾 {config.config.memory_mb} MB
+								</span>
+								<span class="px-2.5 py-1 text-xs bg-gray-700/50 rounded-full text-gray-300 truncate max-w-[200px]" title={config.config.kernel_path}>
+									🔧 {config.config.kernel_path.split('/').pop()}
+								</span>
 							</div>
 						</div>
 						<button
 							on:click={() => handleDelete(config.id, config.name)}
-							class="text-red-400 hover:text-red-300 text-sm"
+							class="btn btn-danger text-sm py-1.5 px-3 opacity-60 hover:opacity-100 transition-opacity"
+							title="Delete template"
 						>
-							Delete
+							🗑️
 						</button>
 					</div>
 				</div>
@@ -72,7 +92,7 @@
 
 	{#if error}
 		<div class="bg-red-500/20 text-red-400 border border-red-500/50 rounded-lg p-4">
-			{error}
+			<span class="font-medium">Oops:</span> {error}
 		</div>
 	{/if}
 </div>

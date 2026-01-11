@@ -66,15 +66,20 @@
 </script>
 
 <svelte:head>
-	<title>Settings - Agni</title>
+	<title>Tweak Things | Agni</title>
 </svelte:head>
 
 <div class="max-w-2xl mx-auto space-y-6">
-	<h1 class="text-2xl font-bold">Settings</h1>
+	<div>
+		<h1 class="text-2xl font-bold">Settings</h1>
+		<p class="text-gray-500 text-sm">For when the defaults aren't good enough for you</p>
+	</div>
 
 	<!-- Account Settings -->
 	<div class="card">
-		<h2 class="text-lg font-medium mb-4">Account</h2>
+		<h2 class="text-lg font-medium mb-4 flex items-center gap-2">
+			<span>👤</span> Account
+		</h2>
 		<div class="space-y-4">
 			<div>
 				<span class="text-sm text-gray-400">Username:</span>
@@ -125,7 +130,9 @@
 
 	<!-- System Information -->
 	<div class="card">
-		<h2 class="text-lg font-medium mb-4">System Information</h2>
+		<h2 class="text-lg font-medium mb-4 flex items-center gap-2">
+			<span>🖥️</span> System Information
+		</h2>
 		{#if loading}
 			<div class="text-gray-400">Loading...</div>
 		{:else if systemInfo}
@@ -162,7 +169,9 @@
 
 	<!-- API Configuration -->
 	<div class="card">
-		<h2 class="text-lg font-medium mb-4">API Configuration</h2>
+		<h2 class="text-lg font-medium mb-4 flex items-center gap-2">
+			<span>🔌</span> API Configuration
+		</h2>
 		<div class="space-y-4">
 			<div>
 				<label for="apiPort" class="label text-sm">API Port</label>
@@ -181,43 +190,47 @@
 
 	<!-- About -->
 	<div class="card">
-		<h2 class="text-lg font-medium mb-4">About Agni</h2>
+		<h2 class="text-lg font-medium mb-4 flex items-center gap-2">
+			<span>🔥</span> About Agni
+		</h2>
 		<div class="space-y-2 text-sm text-gray-400">
-			<p>Agni is a command-line tool and GUI for managing Firecracker microVMs.</p>
-			<p>
-				Originally created by Amazon.com, Inc. as firectl CLI. GUI implementation by Anubhav Gain.
+			<p>Agni: The fire god of VMs. Tames Firecracker microVMs so you don't have to.</p>
+			<p class="text-gray-500">
+				Born from firectl by Amazon. Raised by Anubhav Gain. Fueled by caffeine.
 			</p>
 			<div class="flex gap-4 mt-4">
 				<a
 					href="https://github.com/anubhavg-icpl/agni"
 					target="_blank"
 					rel="noopener noreferrer"
-					class="text-blue-400 hover:text-blue-300"
+					class="text-orange-400 hover:text-orange-300 flex items-center gap-1"
 				>
-					GitHub Repository
+					<span>⭐</span> GitHub
 				</a>
 				<a
 					href="https://firecracker-microvm.github.io/"
 					target="_blank"
 					rel="noopener noreferrer"
-					class="text-blue-400 hover:text-blue-300"
+					class="text-orange-400 hover:text-orange-300 flex items-center gap-1"
 				>
-					Documentation
+					<span>📚</span> Docs
 				</a>
 			</div>
 		</div>
 	</div>
 
 	<!-- Danger Zone -->
-	<div class="card border-red-500/30">
-		<h2 class="text-lg font-medium mb-4 text-red-400">Danger Zone</h2>
+	<div class="card border-red-500/30 bg-red-500/5">
+		<h2 class="text-lg font-medium mb-4 text-red-400 flex items-center gap-2">
+			<span>☠️</span> Danger Zone
+		</h2>
 		<div class="space-y-4">
 			<div class="flex items-center justify-between">
 				<div>
-					<div class="font-medium">Sign Out</div>
-					<div class="text-sm text-gray-500">Log out from the current session</div>
+					<div class="font-medium text-gray-200">Rage Quit</div>
+					<div class="text-sm text-gray-500">Storm off dramatically. We won't judge.</div>
 				</div>
-				<Button variant="danger" on:click={handleLogout}>Sign Out</Button>
+				<Button variant="danger" on:click={handleLogout}>🚪 Leave</Button>
 			</div>
 		</div>
 	</div>
