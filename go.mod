@@ -4,9 +4,16 @@ go 1.23.0
 
 require (
 	github.com/firecracker-microvm/firecracker-go-sdk v1.0.0
+	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-openapi/strfmt v0.23.0
+	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/google/uuid v1.6.0
+	github.com/gorilla/websocket v1.5.3
 	github.com/jessevdk/go-flags v1.6.1
+	github.com/rs/zerolog v1.33.0
 	github.com/sirupsen/logrus v1.9.3
+	go.etcd.io/bbolt v1.3.11
+	golang.org/x/crypto v0.36.0
 )
 
 require (
@@ -25,11 +32,12 @@ require (
 	github.com/go-openapi/spec v0.20.4 // indirect
 	github.com/go-openapi/swag v0.21.1 // indirect
 	github.com/go-openapi/validate v0.22.0 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
