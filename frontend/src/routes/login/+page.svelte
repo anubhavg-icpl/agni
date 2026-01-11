@@ -1,41 +1,180 @@
 <script lang="ts">
 	import { auth } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	let username = '';
 	let password = '';
+	let confirmPassword = '';
+	let initialized = false;
 
-	async function handleSubmit() {
+	onMount(async () => {
+		if (!initialized) {
+			initialized = true;
+			await auth.init();
+		}
+	});
+
+	async function handleLogin() {
 		const success = await auth.login(username, password);
 		if (success) {
 			goto('/');
 		}
 	}
+
+	async function handleSetup() {
+		if (password !== confirmPassword) {
+			return;
+		}
+		if (password.length < 8) {
+			return;
+		}
+		const success = await auth.setup(username, password);
+		if (success) {
+			goto('/');
+		}
+	}
+
+	$: passwordMismatch = confirmPassword.length > 0 && password !== confirmPassword;
+	$: passwordTooShort = password.length > 0 && password.length < 8;
 </script>
 
 <svelte:head>
-	<title>Login - Firectl</title>
+	<title>{$auth.setupRequired ? 'Setup' : 'Login'} - Agni</title>
 </svelte:head>
 
-<div class="min-h-screen bg-gray-900 flex items-center justify-center">
-	<div class="card max-w-md w-full p-8">
-		<h1 class="text-2xl font-bold text-center mb-6">Login to Firectl</h1>
+<div class="min-h-screen bg-gray-900 flex items-center justify-center relative overflow-hidden">
+	<!-- Background with original logo art -->
+	<div class="absolute inset-0 opacity-10">
+		<img src="/logo-bg.png" alt="" class="w-full h-full object-cover blur-sm" aria-hidden="true" />
+	</div>
+	
+	<!-- Fire gradient overlay -->
+	<div class="absolute inset-0 bg-fire-pattern"></div>
+	
+	<!-- Login/Setup Card -->
+	<div class="card-fire max-w-md w-full p-8 relative z-10">
+		<!-- Agni Logo -->
+		<div class="flex flex-col items-center mb-8">
+			<img 
+				src="/logo.png" 
+				alt="Agni Logo" 
+				class="w-28 h-28 mb-4 logo-glow" 
+			/>
+			<h1 class="text-4xl font-bold text-fire tracking-tight">
+				Agni
+			</h1>
+			<p class="text-gray-400 text-sm mt-2">Firecracker MicroVM Control</p>
+		</div>
 
-		<form on:submit|preventDefault={handleSubmit} class="space-y-4">
-			<div>
-				<label class="label" for="username">Username</label>
-				<input type="text" id="username" bind:value={username} class="input w-full" required />
+		{#if $auth.loading}
+			<div class="flex justify-center py-8">
+				<div class="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
 			</div>
-			<div>
-				<label class="label" for="password">Password</label>
-				<input type="password" id="password" bind:value={password} class="input w-full" required />
+		{:else if $auth.setupRequired}
+			<!-- Setup Form (First-time user registration) -->
+			<div class="mb-6 p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+				<h2 class="text-orange-400 font-semibold mb-1">👋 Welcome to Agni!</h2>
+				<p class="text-gray-400 text-sm">Create your admin account to get started.</p>
 			</div>
-			{#if $auth.error}
-				<p class="text-red-400 text-sm">{$auth.error}</p>
-			{/if}
-			<button type="submit" class="btn btn-primary w-full" disabled={$auth.loading}>
-				{$auth.loading ? 'Logging in...' : 'Login'}
-			</button>
-		</form>
+
+			<form on:submit|preventDefault={handleSetup} class="space-y-5">
+				<div>
+					<label class="label" for="setup-username">Username</label>
+					<input 
+						type="text" 
+						id="setup-username" 
+						bind:value={username} 
+						class="input w-full" 
+						placeholder="Choose a username"
+						required 
+					/>
+				</div>
+				<div>
+					<label class="label" for="setup-password">Password</label>
+					<input 
+						type="password" 
+						id="setup-password" 
+						bind:value={password} 
+						class="input w-full" 
+						class:border-red-500={passwordTooShort}
+						placeholder="Minimum 8 characters"
+						required 
+					/>
+					{#if passwordTooShort}
+						<p class="text-red-400 text-xs mt-1">Password must be at least 8 characters</p>
+					{/if}
+				</div>
+				<div>
+					<label class="label" for="setup-confirm">Confirm Password</label>
+					<input 
+						type="password" 
+						id="setup-confirm" 
+						bind:value={confirmPassword} 
+						class="input w-full" 
+						class:border-red-500={passwordMismatch}
+						placeholder="Confirm your password"
+						required 
+					/>
+					{#if passwordMismatch}
+						<p class="text-red-400 text-xs mt-1">Passwords do not match</p>
+					{/if}
+				</div>
+				{#if $auth.error}
+					<div class="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+						<p class="text-red-400 text-sm">{$auth.error}</p>
+					</div>
+				{/if}
+				<button 
+					type="submit" 
+					class="btn btn-primary w-full py-3 text-lg font-semibold" 
+					disabled={$auth.loading || passwordMismatch || passwordTooShort || !username || !password}
+				>
+					Create Admin Account
+				</button>
+			</form>
+		{:else}
+			<!-- Login Form -->
+			<form on:submit|preventDefault={handleLogin} class="space-y-5">
+				<div>
+					<label class="label" for="login-username">Username</label>
+					<input 
+						type="text" 
+						id="login-username" 
+						bind:value={username} 
+						class="input w-full" 
+						placeholder="Enter your username"
+						required 
+					/>
+				</div>
+				<div>
+					<label class="label" for="login-password">Password</label>
+					<input 
+						type="password" 
+						id="login-password" 
+						bind:value={password} 
+						class="input w-full" 
+						placeholder="Enter your password"
+						required 
+					/>
+				</div>
+				{#if $auth.error}
+					<div class="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+						<p class="text-red-400 text-sm">{$auth.error}</p>
+					</div>
+				{/if}
+				<button 
+					type="submit" 
+					class="btn btn-primary w-full py-3 text-lg font-semibold" 
+					disabled={$auth.loading || !username || !password}
+				>
+					Sign In
+				</button>
+			</form>
+		{/if}
+
+		<p class="text-center text-gray-500 text-xs mt-6">
+			Powered by Firecracker MicroVMs
+		</p>
 	</div>
 </div>
