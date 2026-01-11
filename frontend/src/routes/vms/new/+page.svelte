@@ -53,11 +53,14 @@
 </script>
 
 <svelte:head>
-	<title>New VM - Firectl</title>
+	<title>Spawn a Minion | Agni</title>
 </svelte:head>
 
 <div class="max-w-2xl mx-auto">
-	<h1 class="text-2xl font-bold mb-6">Summon New Demon</h1>
+	<div class="mb-6">
+		<h1 class="text-2xl font-bold">Summon New Demon</h1>
+		<p class="text-gray-500 text-sm">Configure wisely. Or don't. We're not your mom.</p>
+	</div>
 
 	<form on:submit|preventDefault={handleSubmit} class="space-y-6">
 		<!-- Basic Info -->
