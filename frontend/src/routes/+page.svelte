@@ -31,15 +31,15 @@
 </script>
 
 <svelte:head>
-	<title>Dashboard - Firectl</title>
+	<title>Command Center | Agni</title>
 </svelte:head>
 
 {#if $auth.setupRequired}
 	<!-- Setup screen -->
 	<div class="min-h-screen bg-gray-900 flex items-center justify-center">
 		<div class="card max-w-md w-full p-8">
-			<h1 class="text-2xl font-bold text-center mb-6">Welcome to Firectl</h1>
-			<p class="text-gray-400 text-center mb-8">Create your admin account to get started.</p>
+			<h1 class="text-2xl font-bold text-center mb-6">Fresh Meat Detected</h1>
+			<p class="text-gray-400 text-center mb-8">Someone needs to run this circus. Might as well be you.</p>
 
 			<form on:submit|preventDefault={handleSetup} class="space-y-4">
 				<div>
@@ -50,6 +50,7 @@
 						name="username"
 						bind:value={setupUsername}
 						class="input w-full"
+						placeholder="Pick wisely"
 						required
 					/>
 				</div>
@@ -61,16 +62,17 @@
 						name="password"
 						bind:value={setupPassword}
 						class="input w-full"
+						placeholder="Make it memorable"
 						required
 						minlength="8"
 					/>
-					<p class="text-xs text-gray-500 mt-1">Minimum 8 characters</p>
+					<p class="text-xs text-gray-500 mt-1">8+ characters. Impress us.</p>
 				</div>
 				{#if $auth.error}
 					<p class="text-red-400 text-sm">{$auth.error}</p>
 				{/if}
 				<button type="submit" class="btn btn-primary w-full" disabled={$auth.loading}>
-					{$auth.loading ? 'Creating...' : 'Create Admin Account'}
+					{$auth.loading ? 'Forging credentials...' : 'Claim Your Throne'}
 				</button>
 			</form>
 		</div>
@@ -79,8 +81,11 @@
 	<div class="space-y-8">
 		<!-- Header -->
 		<div class="flex items-center justify-between">
-			<h1 class="text-2xl font-bold">Mission Control</h1>
-			<a href="/vms/new" class="btn btn-primary"> + Birth a VM </a>
+			<div>
+				<h1 class="text-2xl font-bold">Mission Control</h1>
+				<p class="text-gray-500 text-sm">Where chaos is managed (barely)</p>
+			</div>
+			<a href="/vms/new" class="btn btn-primary"> + Spawn Another </a>
 		</div>
 
 		<!-- Quick Stats -->
@@ -88,12 +93,12 @@
 
 		<!-- VM Grid -->
 		{#if $vms.loading && $vms.vms.length === 0}
-			<div class="text-center py-12 text-gray-400">Summoning demons...</div>
+			<div class="text-center py-12 text-gray-400">Waking up the minions...</div>
 		{:else if $vms.vms.length === 0}
 			<div class="card text-center py-12">
-				<h3 class="text-lg font-medium text-gray-300 mb-2">It's quiet... too quiet.</h3>
-				<p class="text-gray-500 mb-4">Start a fire. Create a VM.</p>
-				<a href="/vms/new" class="btn btn-primary">Ignite</a>
+				<h3 class="text-lg font-medium text-gray-300 mb-2">Tumbleweeds...</h3>
+				<p class="text-gray-500 mb-4">No VMs yet. This emptiness is judging you.</p>
+				<a href="/vms/new" class="btn btn-primary">Create Something</a>
 			</div>
 		{:else}
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -105,7 +110,7 @@
 
 		{#if $vms.error}
 			<div class="bg-red-500/20 text-red-400 border border-red-500/50 rounded-lg p-4">
-				{$vms.error}
+				Well, that didn't work: {$vms.error}
 			</div>
 		{/if}
 	</div>
