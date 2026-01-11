@@ -57,21 +57,21 @@
 </svelte:head>
 
 <div class="max-w-2xl mx-auto">
-	<h1 class="text-2xl font-bold mb-6">Create New VM</h1>
+	<h1 class="text-2xl font-bold mb-6">Summon New Demon</h1>
 
 	<form on:submit|preventDefault={handleSubmit} class="space-y-6">
 		<!-- Basic Info -->
 		<div class="card">
-			<h2 class="text-lg font-medium mb-4">Basic Information</h2>
+			<h2 class="text-lg font-medium mb-4">The Basics (Don't mess this up)</h2>
 			<div class="space-y-4">
 				<div>
-					<label class="label" for="name">VM Name</label>
+					<label class="label" for="name">Demon Name</label>
 					<input
 						type="text"
 						id="name"
 						bind:value={name}
 						class="input w-full"
-						placeholder="my-microvm"
+						placeholder="my-little-demon"
 						required
 					/>
 				</div>
@@ -80,7 +80,7 @@
 
 		<!-- Kernel Configuration -->
 		<div class="card">
-			<h2 class="text-lg font-medium mb-4">Kernel</h2>
+			<h2 class="text-lg font-medium mb-4">Brain (Kernel)</h2>
 			<div class="space-y-4">
 				<div>
 					<label class="label" for="kernelPath">Kernel Image Path</label>
@@ -101,7 +101,7 @@
 
 		<!-- Storage -->
 		<div class="card">
-			<h2 class="text-lg font-medium mb-4">Storage</h2>
+			<h2 class="text-lg font-medium mb-4">Soul Container (Storage)</h2>
 			<div class="space-y-4">
 				<div>
 					<label class="label" for="rootDrivePath">Root Drive Path</label>
@@ -121,21 +121,21 @@
 						bind:checked={rootDriveReadOnly}
 						class="rounded bg-gray-700 border-gray-600"
 					/>
-					<label for="rootDriveReadOnly" class="text-sm text-gray-300">Read Only</label>
+					<label for="rootDriveReadOnly" class="text-sm text-gray-300">Look but don't touch (Read Only)</label>
 				</div>
 			</div>
 		</div>
 
 		<!-- Resources -->
 		<div class="card">
-			<h2 class="text-lg font-medium mb-4">Resources</h2>
+			<h2 class="text-lg font-medium mb-4">Sacrifices (Resources)</h2>
 			<div class="grid grid-cols-2 gap-4">
 				<div>
-					<label class="label" for="cpus">CPUs</label>
+					<label class="label" for="cpus">Brain Cells (CPUs)</label>
 					<input type="number" id="cpus" bind:value={cpus} class="input w-full" min="1" max="32" />
 				</div>
 				<div>
-					<label class="label" for="memoryMB">Memory (MB)</label>
+					<label class="label" for="memoryMB">Short-term Memory (MB)</label>
 					<input
 						type="number"
 						id="memoryMB"
@@ -180,9 +180,9 @@
 		<!-- Actions -->
 		<div class="flex gap-4">
 			<button type="submit" class="btn btn-primary flex-1" disabled={loading}>
-				{loading ? 'Creating...' : 'Create VM'}
+				{loading ? 'Summoning...' : 'Summon'}
 			</button>
-			<a href="/" class="btn btn-secondary">Cancel</a>
+			<a href="/" class="btn btn-secondary">Abort Ritual</a>
 		</div>
 	</form>
 </div>

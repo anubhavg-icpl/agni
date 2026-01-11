@@ -70,8 +70,8 @@
 		{#if $auth.setupRequired}
 			<!-- Setup Form -->
 			<div class="mb-6 p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
-				<h2 class="text-orange-400 font-semibold mb-1">👋 Welcome to Agni!</h2>
-				<p class="text-gray-400 text-sm">Create your admin account to get started.</p>
+				<h2 class="text-orange-400 font-semibold mb-1">👋 Oh, look who's here.</h2>
+				<p class="text-gray-400 text-sm">Create an admin account. Try not to forget it.</p>
 			</div>
 
 			<form on:submit|preventDefault={handleSetup} class="space-y-5">
@@ -82,7 +82,7 @@
 						id="setup-username" 
 						bind:value={username} 
 						class="input w-full" 
-						placeholder="Choose a username"
+						placeholder="Pick a name, any name"
 						required 
 					/>
 				</div>
@@ -94,11 +94,11 @@
 						bind:value={password} 
 						class="input w-full" 
 						class:border-red-500={passwordTooShort}
-						placeholder="Minimum 8 characters"
+						placeholder="Make it hard to guess (min 8 chars)"
 						required 
 					/>
 					{#if passwordTooShort}
-						<p class="text-red-400 text-xs mt-1">Password must be at least 8 characters</p>
+						<p class="text-red-400 text-xs mt-1">Too short. Size matters (at least 8 chars).</p>
 					{/if}
 				</div>
 				<div>
@@ -109,11 +109,11 @@
 						bind:value={confirmPassword} 
 						class="input w-full" 
 						class:border-red-500={passwordMismatch}
-						placeholder="Confirm your password"
+						placeholder="Type it again. We don't trust you."
 						required 
 					/>
 					{#if passwordMismatch}
-						<p class="text-red-400 text-xs mt-1">Passwords do not match</p>
+						<p class="text-red-400 text-xs mt-1">Those don't match. Do better.</p>
 					{/if}
 				</div>
 				{#if $auth.error}
@@ -126,7 +126,7 @@
 					class="btn btn-primary w-full py-3 text-lg font-semibold" 
 					disabled={$auth.loading || passwordMismatch || passwordTooShort || !username || !password}
 				>
-					{$auth.loading ? 'Creating...' : 'Create Admin Account'}
+					{$auth.loading ? 'Cooking...' : 'Anoint Me Admin'}
 				</button>
 			</form>
 		{:else}
@@ -139,7 +139,7 @@
 						id="login-username" 
 						bind:value={username} 
 						class="input w-full" 
-						placeholder="Enter your username"
+						placeholder="Who are you again?"
 						required 
 					/>
 				</div>
@@ -150,7 +150,7 @@
 						id="login-password" 
 						bind:value={password} 
 						class="input w-full" 
-						placeholder="Enter your password"
+						placeholder="The magic word?"
 						required 
 					/>
 				</div>
@@ -164,13 +164,13 @@
 					class="btn btn-primary w-full py-3 text-lg font-semibold" 
 					disabled={$auth.loading || !username || !password}
 				>
-					{$auth.loading ? 'Signing in...' : 'Sign In'}
+					{$auth.loading ? 'Knocking...' : 'Let Me In'}
 				</button>
 			</form>
 		{/if}
 
 		<p class="text-center text-gray-500 text-xs mt-6">
-			Powered by Firecracker MicroVMs
+			Powered by Firecracker (and caffeine)
 		</p>
 	</div>
 </div>

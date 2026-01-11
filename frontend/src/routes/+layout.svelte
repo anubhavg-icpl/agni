@@ -57,21 +57,21 @@
 								class="nav-link px-3 py-2 rounded-md text-sm font-medium"
 								class:nav-link-active={$page.url.pathname === '/'}
 							>
-								Dashboard
+								Mission Control
 							</a>
 							<a
 								href="/vms"
 								class="nav-link px-3 py-2 rounded-md text-sm font-medium"
 								class:nav-link-active={$page.url.pathname.startsWith('/vms')}
 							>
-								VMs
+								The Zoo
 							</a>
 							<a
 								href="/configs"
 								class="nav-link px-3 py-2 rounded-md text-sm font-medium"
 								class:nav-link-active={$page.url.pathname.startsWith('/configs')}
 							>
-								Templates
+								Cookie Cutters
 							</a>
 						</div>
 					</div>
@@ -81,7 +81,7 @@
 							on:click={handleLogout}
 							class="text-gray-300 hover:text-orange-400 px-3 py-2 rounded-md text-sm font-medium transition-colors"
 						>
-							Logout
+							Rage Quit
 						</button>
 					</div>
 				</div>

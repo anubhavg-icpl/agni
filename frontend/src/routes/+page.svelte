@@ -79,8 +79,8 @@
 	<div class="space-y-8">
 		<!-- Header -->
 		<div class="flex items-center justify-between">
-			<h1 class="text-2xl font-bold">Dashboard</h1>
-			<a href="/vms/new" class="btn btn-primary"> + New VM </a>
+			<h1 class="text-2xl font-bold">Mission Control</h1>
+			<a href="/vms/new" class="btn btn-primary"> + Birth a VM </a>
 		</div>
 
 		<!-- Quick Stats -->
@@ -88,12 +88,12 @@
 
 		<!-- VM Grid -->
 		{#if $vms.loading && $vms.vms.length === 0}
-			<div class="text-center py-12 text-gray-400">Loading VMs...</div>
+			<div class="text-center py-12 text-gray-400">Summoning demons...</div>
 		{:else if $vms.vms.length === 0}
 			<div class="card text-center py-12">
-				<h3 class="text-lg font-medium text-gray-300 mb-2">No VMs yet</h3>
-				<p class="text-gray-500 mb-4">Create your first Firecracker microVM</p>
-				<a href="/vms/new" class="btn btn-primary">Create VM</a>
+				<h3 class="text-lg font-medium text-gray-300 mb-2">It's quiet... too quiet.</h3>
+				<p class="text-gray-500 mb-4">Start a fire. Create a VM.</p>
+				<a href="/vms/new" class="btn btn-primary">Ignite</a>
 			</div>
 		{:else}
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
