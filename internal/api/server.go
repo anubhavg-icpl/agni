@@ -164,6 +164,11 @@ func (s *Server) serveStaticFiles() {
 		return
 	}
 
+	s.logger.Info().Msg("Static file serving enabled for embedded frontend")
+
+	// Create file server with proper MIME type handling
+	fileServer := http.FileServer(http.FS(distFS))
+
 	// Handle all non-API routes
 	s.router.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
@@ -174,43 +179,24 @@ func (s *Server) serveStaticFiles() {
 			return
 		}
 
-		// Clean the path
-		cleanPath := strings.TrimPrefix(path, "/")
-		if cleanPath == "" {
-			cleanPath = "index.html"
-		}
-
-		// Try to open the file
-		file, err := distFS.Open(cleanPath)
-		if err == nil {
-			defer file.Close()
-			stat, _ := file.Stat()
-
-			// If it's a directory, try to serve index.html from it
-			if stat.IsDir() {
-				cleanPath = cleanPath + "/index.html"
-				file, err = distFS.Open(cleanPath)
-				if err != nil {
-					// Serve SPA index.html for directory routes
-					s.serveSPAIndex(w, r, distFS)
-					return
-				}
-				defer file.Close()
-				stat, _ = file.Stat()
-			}
-
-			// Set Content-Type based on file extension
-			contentType := getContentType(cleanPath)
-			w.Header().Set("Content-Type", contentType)
-
-			// Read and serve the file
-			content, _ := fs.ReadFile(distFS, cleanPath)
-			http.ServeContent(w, r, stat.Name(), stat.ModTime(), strings.NewReader(string(content)))
+		// For root path, serve index.html
+		if path == "/" {
+			r.URL.Path = "/index.html"
+			fileServer.ServeHTTP(w, r)
 			return
 		}
 
-		// File not found - serve SPA index.html for client-side routing
-		s.serveSPAIndex(w, r, distFS)
+		// Check if the file exists in the embedded filesystem
+		cleanPath := strings.TrimPrefix(path, "/")
+		if _, err := fs.Stat(distFS, cleanPath); err == nil {
+			// File exists, serve it with http.FileServer (handles MIME types)
+			fileServer.ServeHTTP(w, r)
+			return
+		}
+
+		// File not found - serve index.html for SPA client-side routing
+		r.URL.Path = "/index.html"
+		fileServer.ServeHTTP(w, r)
 	})
 }
 
