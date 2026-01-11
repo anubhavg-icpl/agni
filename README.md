@@ -1,38 +1,70 @@
-firectl
+Agni
 ===
 
 [![Build status](https://badge.buildkite.com/92fe02b4bd9564be0f7ea21d1ee782f6a6fe55cbd5465e3480.svg?branch=master)](https://buildkite.com/firecracker-microvm/firectl)
 
-Firectl is a basic command-line tool that lets you run arbitrary
-Firecracker MicroVMs via the command line. This lets you run a fully
-functional Firecracker MicroVM, including console access, read/write
-access to filesystems, and network connectivity.
+Agni is a powerful tool for managing Firecracker MicroVMs. It provides both a command-line interface (CLI) and a modern web-based graphical user interface (GUI) for creating, managing, and monitoring virtual machines.
 
-Building
----
+**Agni** (Sanskrit: अग्नि) means "fire" - a fitting name for a Firecracker management tool.
+
+## Features
+
+### CLI Mode
+- Run Firecracker MicroVMs from the command line
+- Full console access to VMs
+- Read/write access to filesystems
+- Network connectivity via TAP devices
+- Vsock support
+
+### GUI Mode (Web Interface)
+- **VM Management**: Create, start, stop, and delete VMs through a web interface
+- **Real-time Monitoring**: View VM status, metrics, and logs in real-time
+- **Configuration Profiles**: Save and reuse VM configurations
+- **User Authentication**: JWT-based authentication with role-based access
+- **REST API**: Full API access for automation and integration
+- **Responsive Design**: Works on desktop and mobile browsers
+
+## Building
 
 The default Makefile rule executes `go build` and relies on the Go toolchain
 installed on your computer.
 _We use [go modules](https://github.com/golang/go/wiki/Modules), and building
 requires Go 1.23 or newer._
 
-If you do not have a new-enough Go toolchain installed, you can use `make
-build-in-docker`.  This rule creates a temporary Docker container which builds
-and copies the binary to your current directory.
+### CLI Binary
 
-Usage
----
+```bash
+make
+```
 
-You'll need to have a
-[firecracker](https://github.com/firecracker-microvm/firecracker) build, as well
-as an uncompressed Linux kernel image (`vmlinux`) and root filesystem image.
+This creates the `agni` binary.
 
-By default, firectl searches `PATH` for the firecracker binary. The location of
-the kernel and filesystem image must be provided explicitly.
+### GUI Binary (with embedded frontend)
+
+```bash
+make gui
+```
+
+This creates the `agni-gui` binary with the embedded web interface.
+
+### Docker Build
+
+If you do not have a new-enough Go toolchain installed:
+
+```bash
+make build-in-docker
+```
+
+## Usage
+
+### CLI Mode
+
+You'll need a [firecracker](https://github.com/firecracker-microvm/firecracker) binary,
+an uncompressed Linux kernel image (`vmlinux`), and a root filesystem image.
 
 ```
 Usage:
-  firectl [OPTIONS]
+  agni [OPTIONS]
 
 Application Options:
       --firecracker-binary=     Path to firecracker binary
@@ -52,18 +84,20 @@ Application Options:
   -m, --memory=                 VM memory, in MiB (default: 512)
       --metadata=               Firecracker Metadata for MMDS (json)
   -l, --firecracker-log=        pipes the fifo contents to the specified file
-  -s, --socket-path=            path to use for firecracker socket, defaults to a unique file in in the first existing directory from {$HOME, $TMPDIR, or /tmp}
+  -s, --socket-path=            path to use for firecracker socket
   -d, --debug                   Enable debug output
+
+GUI Options:
+  -g, --gui                     Start in GUI mode (web interface)
 
 Help Options:
   -h, --help                    Show this help message
 ```
 
-Example
----
+### CLI Example
 
-```
-firectl \
+```bash
+agni \
   --kernel=~/bin/vmlinux \
   --root-drive=/images/image-debootstrap.img -t \
   --cpu-template=T2 \
@@ -73,22 +107,70 @@ firectl \
   --metadata='{"foo":"bar"}'
 ```
 
-Getting Started on AWS
----
+### GUI Mode
+
+Start the web interface:
+
+```bash
+agni --gui
+```
+
+Or use the GUI binary:
+
+```bash
+agni-gui
+```
+
+The web interface will be available at `http://localhost:8080`.
+
+#### First-time Setup
+
+1. Open `http://localhost:8080` in your browser
+2. Create an admin account at the setup page
+3. Log in and start managing VMs!
+
+#### API Endpoints
+
+The GUI mode exposes a REST API:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/health` | GET | Health check |
+| `/api/auth/login` | POST | User login |
+| `/api/auth/setup` | POST | Initial admin setup |
+| `/api/vms` | GET | List all VMs |
+| `/api/vms` | POST | Create a new VM |
+| `/api/vms/:id` | GET | Get VM details |
+| `/api/vms/:id/start` | POST | Start a VM |
+| `/api/vms/:id/stop` | POST | Stop a VM |
+| `/api/vms/:id/logs` | GET | Stream VM logs |
+| `/api/configs` | GET/POST | Manage configurations |
+
+## Development
+
+### Run API server with frontend dev server
+
+```bash
+make dev
+```
+
+This starts the API server and the frontend development server with hot reload.
+
+### Frontend Development
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## Getting Started on AWS
 
 - Create an `m5d.metal` instance using Amazon Linux 2
-- Get firectl binary:
-
-  ```
-  curl -Lo firectl https://firectl-release.s3.amazonaws.com/firectl-v0.1.0
-  curl -Lo firectl.sha256 https://firectl-release.s3.amazonaws.com/firectl-v0.1.0.sha256
-  sha256sum -c firectl.sha256
-  chmod +x firectl
-  ```
-
+- Build or download agni binary
 - Get Firecracker binary:
 
-  ```
+  ```bash
   curl -Lo firecracker https://github.com/firecracker-microvm/firecracker/releases/download/v0.16.0/firecracker-v0.16.0
   chmod +x firecracker
   sudo mv firecracker /usr/local/bin/firecracker
@@ -96,36 +178,40 @@ Getting Started on AWS
 
 - Give read/write access to KVM:
 
-  ```
+  ```bash
   sudo setfacl -m u:${USER}:rw /dev/kvm
   ```
 
 - Download kernel and root filesystem:
 
-  ```
+  ```bash
   curl -fsSL -o hello-vmlinux.bin https://s3.amazonaws.com/spec.ccfc.min/img/hello/kernel/hello-vmlinux.bin
   curl -fsSL -o hello-rootfs.ext4 https://s3.amazonaws.com/spec.ccfc.min/img/hello/fsfiles/hello-rootfs.ext4
   ```
 
 - Create microVM:
 
-  ```
-  ./firectl \
+  ```bash
+  ./agni \
     --kernel=hello-vmlinux.bin \
     --root-drive=hello-rootfs.ext4
   ```
 
-Testing
----
-By default the tests require the firectl binary to be built and a kernel image
+## Testing
+
+By default the tests require the agni binary to be built and a kernel image
 to be present. The integration tests look for the binary and kernel image in
 the root directory. By default it will look for vmlinux kernel image. This can
 be overwritten by setting the environment variable `KERNELIMAGE` to the desired
 path. To disable these tests simply set the environment variable
 `SKIP_INTEG_TEST=1`.
 
-Questions?
----
+```bash
+make test                    # Run all tests
+SKIP_INTEG_TEST=1 make test  # Skip integration tests
+```
+
+## Questions?
 
 Please use
 [GitHub issues](https://github.com/firecracker-microvm/firectl/issues)

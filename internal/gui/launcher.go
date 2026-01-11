@@ -11,7 +11,7 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
-// Package gui provides the GUI launcher functionality for firectl.
+// Package gui provides the GUI launcher functionality for Agni.
 package gui
 
 import (
@@ -71,7 +71,7 @@ func NewLauncher(cfg Config) *Launcher {
 
 // Start initializes and starts the GUI server
 func (l *Launcher) Start() error {
-	l.logger.Info().Msg("Starting Firectl GUI")
+	l.logger.Info().Msg("Starting Agni GUI")
 
 	// Ensure data directory exists
 	if err := os.MkdirAll(l.config.DataDir, 0750); err != nil {
@@ -79,7 +79,7 @@ func (l *Launcher) Start() error {
 	}
 
 	// Initialize storage
-	dbPath := filepath.Join(l.config.DataDir, "firectl.db")
+	dbPath := filepath.Join(l.config.DataDir, "agni.db")
 	store, err := storage.NewStore(dbPath)
 	if err != nil {
 		return fmt.Errorf("failed to initialize storage: %w", err)
@@ -151,7 +151,7 @@ func (l *Launcher) WaitForShutdown() {
 func (l *Launcher) PrintBanner() {
 	fmt.Println()
 	fmt.Println("==============================================")
-	fmt.Println("  Firectl GUI - API Server Mode")
+	fmt.Println("  Agni GUI - API Server Mode")
 	fmt.Println("==============================================")
 	fmt.Printf("  API:    http://localhost:%s/api\n", l.config.Port)
 	fmt.Printf("  Health: http://localhost:%s/api/health\n", l.config.Port)
@@ -183,34 +183,34 @@ func (l *Launcher) getOrCreateJWTSecret() string {
 	return secret
 }
 
-// GetDataDir returns the data directory for firectl
+// GetDataDir returns the data directory for Agni
 func GetDataDir() string {
 	// Try XDG_DATA_HOME first
 	if xdgData := os.Getenv("XDG_DATA_HOME"); xdgData != "" {
-		return filepath.Join(xdgData, "firectl")
+		return filepath.Join(xdgData, "agni")
 	}
 
-	// Fall back to ~/.local/share/firectl
+	// Fall back to ~/.local/share/agni
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return "/tmp/firectl"
+		return "/tmp/agni"
 	}
 
-	return filepath.Join(home, ".local", "share", "firectl")
+	return filepath.Join(home, ".local", "share", "agni")
 }
 
 // PrintHelp prints help for GUI mode
 func PrintHelp() {
 	fmt.Print(`
-Firectl GUI Mode
+Agni GUI Mode
 
 Usage:
-  firectl --gui [options]
-  firectl -g [options]
+  agni --gui [options]
+  agni -g [options]
 
 Options:
   --port PORT      API server port (default: 8080)
-  --data-dir DIR   Data directory (default: ~/.local/share/firectl)
+  --data-dir DIR   Data directory (default: ~/.local/share/agni)
 
 The GUI provides a web-based interface for managing Firecracker VMs.
 Access the interface at http://localhost:8080 after starting.
