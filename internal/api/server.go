@@ -164,8 +164,6 @@ func (s *Server) serveStaticFiles() {
 		return
 	}
 
-	fileServer := http.FileServer(http.FS(distFS))
-
 	// Handle all non-API routes
 	s.router.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
@@ -176,28 +174,93 @@ func (s *Server) serveStaticFiles() {
 			return
 		}
 
-		// Try to serve the file directly
-		if path != "/" {
-			// Check if file exists
-			cleanPath := strings.TrimPrefix(path, "/")
-			if _, err := fs.Stat(distFS, cleanPath); err == nil {
-				fileServer.ServeHTTP(w, r)
-				return
-			}
+		// Clean the path
+		cleanPath := strings.TrimPrefix(path, "/")
+		if cleanPath == "" {
+			cleanPath = "index.html"
 		}
 
-		// For SPA: serve index.html for all other routes
-		indexFile, err := distFS.Open("index.html")
-		if err != nil {
-			http.NotFound(w, r)
+		// Try to open the file
+		file, err := distFS.Open(cleanPath)
+		if err == nil {
+			defer file.Close()
+			stat, _ := file.Stat()
+
+			// If it's a directory, try to serve index.html from it
+			if stat.IsDir() {
+				cleanPath = cleanPath + "/index.html"
+				file, err = distFS.Open(cleanPath)
+				if err != nil {
+					// Serve SPA index.html for directory routes
+					s.serveSPAIndex(w, r, distFS)
+					return
+				}
+				defer file.Close()
+				stat, _ = file.Stat()
+			}
+
+			// Set Content-Type based on file extension
+			contentType := getContentType(cleanPath)
+			w.Header().Set("Content-Type", contentType)
+
+			// Read and serve the file
+			content, _ := fs.ReadFile(distFS, cleanPath)
+			http.ServeContent(w, r, stat.Name(), stat.ModTime(), strings.NewReader(string(content)))
 			return
 		}
-		defer indexFile.Close()
 
-		stat, _ := indexFile.Stat()
-		content, _ := fs.ReadFile(distFS, "index.html")
-		http.ServeContent(w, r, "index.html", stat.ModTime(), strings.NewReader(string(content)))
+		// File not found - serve SPA index.html for client-side routing
+		s.serveSPAIndex(w, r, distFS)
 	})
+}
+
+// serveSPAIndex serves the index.html for SPA routing
+func (s *Server) serveSPAIndex(w http.ResponseWriter, r *http.Request, distFS fs.FS) {
+	content, err := fs.ReadFile(distFS, "index.html")
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write(content)
+}
+
+// getContentType returns the MIME type based on file extension
+func getContentType(path string) string {
+	ext := strings.ToLower(path[strings.LastIndex(path, ".")+1:])
+	switch ext {
+	case "html":
+		return "text/html; charset=utf-8"
+	case "css":
+		return "text/css; charset=utf-8"
+	case "js":
+		return "application/javascript; charset=utf-8"
+	case "json":
+		return "application/json; charset=utf-8"
+	case "png":
+		return "image/png"
+	case "jpg", "jpeg":
+		return "image/jpeg"
+	case "gif":
+		return "image/gif"
+	case "svg":
+		return "image/svg+xml"
+	case "ico":
+		return "image/x-icon"
+	case "woff":
+		return "font/woff"
+	case "woff2":
+		return "font/woff2"
+	case "ttf":
+		return "font/ttf"
+	case "webp":
+		return "image/webp"
+	case "wasm":
+		return "application/wasm"
+	default:
+		return "application/octet-stream"
+	}
 }
 
 // Start starts the HTTP server
