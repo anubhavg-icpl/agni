@@ -105,7 +105,7 @@ func RateLimit(requestsPerMinute int) func(next http.Handler) http.Handler {
 				w.Header().Set("Content-Type", "application/json")
 				w.Header().Set("Retry-After", "60")
 				w.WriteHeader(http.StatusTooManyRequests)
-				_, _ = w.Write([]byte(`{"error":"Rate limit exceeded"}`))
+				_, _ = w.Write([]byte(`{"error":"Whoa there, speed racer. Too many requests. Take a breather"}`))
 				return
 			}
 
