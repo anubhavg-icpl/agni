@@ -62,7 +62,9 @@
 			<h1 class="text-4xl font-bold text-fire tracking-tight">
 				Agni
 			</h1>
-			<p class="text-gray-400 text-sm mt-2">Firecracker MicroVM Control</p>
+			<p class="text-gray-400 text-sm mt-2 italic">
+				"MicroVMs without the meltdown !"
+			</p>
 		</div>
 
 		{#if $auth.setupRequired}
