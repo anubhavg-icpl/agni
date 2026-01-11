@@ -16,6 +16,7 @@ package gui
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"os"
 	"os/signal"
@@ -34,6 +35,7 @@ type Config struct {
 	Port    string
 	DataDir string
 	Logger  *logging.Logger
+	Assets  *embed.FS // Embedded frontend assets (optional)
 }
 
 // DefaultConfig returns a default configuration
@@ -100,6 +102,7 @@ func (l *Launcher) Start() error {
 		Store:      store,
 		EnableCORS: true,
 		RateLimit:  100,
+		Assets:     l.config.Assets,
 	})
 
 	// Start API server in background

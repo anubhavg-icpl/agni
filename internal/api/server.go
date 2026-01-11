@@ -148,6 +148,56 @@ func (s *Server) setupRoutes() {
 	// WebSocket routes (with auth check in handler)
 	wsHandler := handlers.NewWebSocketHandler(s.vmManager, s.authService)
 	s.router.Get("/api/vms/{id}/logs", wsHandler.StreamLogs)
+
+	// Serve embedded frontend assets if available
+	if s.config.Assets != nil {
+		s.serveStaticFiles()
+	}
+}
+
+// serveStaticFiles serves the embedded frontend assets
+func (s *Server) serveStaticFiles() {
+	// Get the sub-filesystem for the dist directory
+	distFS, err := fs.Sub(*s.config.Assets, "frontend/dist")
+	if err != nil {
+		s.logger.Error().Err(err).Msg("Failed to access embedded frontend assets")
+		return
+	}
+
+	fileServer := http.FileServer(http.FS(distFS))
+
+	// Handle all non-API routes
+	s.router.Get("/*", func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+
+		// Skip API routes
+		if strings.HasPrefix(path, "/api/") {
+			http.NotFound(w, r)
+			return
+		}
+
+		// Try to serve the file directly
+		if path != "/" {
+			// Check if file exists
+			cleanPath := strings.TrimPrefix(path, "/")
+			if _, err := fs.Stat(distFS, cleanPath); err == nil {
+				fileServer.ServeHTTP(w, r)
+				return
+			}
+		}
+
+		// For SPA: serve index.html for all other routes
+		indexFile, err := distFS.Open("index.html")
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		defer indexFile.Close()
+
+		stat, _ := indexFile.Stat()
+		content, _ := fs.ReadFile(distFS, "index.html")
+		http.ServeContent(w, r, "index.html", stat.ModTime(), strings.NewReader(string(content)))
+	})
 }
 
 // Start starts the HTTP server

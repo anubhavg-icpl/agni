@@ -27,6 +27,8 @@ var assets embed.FS
 // runGUI starts the GUI mode with embedded frontend
 func runGUI() {
 	cfg := gui.DefaultConfig()
+	cfg.Assets = &assets // Pass embedded assets
+
 	launcher := gui.NewLauncher(cfg)
 
 	if err := launcher.Start(); err != nil {
@@ -35,10 +37,6 @@ func runGUI() {
 	defer launcher.Stop()
 
 	launcher.PrintBanner()
-
-	// In full GUI mode, we would launch Wails with embedded assets here
-	// For now, just run the API server
-	// TODO: Integrate Wails for native desktop window
 
 	launcher.WaitForShutdown()
 }
