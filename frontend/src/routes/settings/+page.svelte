@@ -66,7 +66,7 @@
 </script>
 
 <svelte:head>
-	<title>Settings - Firectl</title>
+	<title>Settings - Agni</title>
 </svelte:head>
 
 <div class="max-w-2xl mx-auto space-y-6">
@@ -181,11 +181,11 @@
 
 	<!-- About -->
 	<div class="card">
-		<h2 class="text-lg font-medium mb-4">About Firectl</h2>
+		<h2 class="text-lg font-medium mb-4">About Agni</h2>
 		<div class="space-y-2 text-sm text-gray-400">
-			<p>Firectl is a command-line tool and GUI for managing Firecracker microVMs.</p>
+			<p>Agni is a command-line tool and GUI for managing Firecracker microVMs.</p>
 			<p>
-				Originally created by Amazon.com, Inc. as a CLI tool. GUI implementation by Anubhav Gain.
+				Originally created by Amazon.com, Inc. as firectl CLI. GUI implementation by Anubhav Gain.
 			</p>
 			<div class="flex gap-4 mt-4">
 				<a
