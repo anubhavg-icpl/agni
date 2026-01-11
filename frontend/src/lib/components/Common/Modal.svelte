@@ -66,7 +66,9 @@
 
 		<!-- Modal content -->
 		<div
-			class="relative bg-gray-800 rounded-lg shadow-xl w-full {sizeClasses[size]} max-h-[90vh] overflow-hidden flex flex-col"
+			class="relative bg-gray-800 rounded-lg shadow-xl w-full {sizeClasses[
+				size
+			]} max-h-[90vh] overflow-hidden flex flex-col"
 			transition:scale={{ duration: 150, start: 0.95 }}
 		>
 			<!-- Header -->
@@ -83,7 +85,12 @@
 						aria-label="Close modal"
 					>
 						<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M6 18L18 6M6 6l12 12"
+							/>
 						</svg>
 					</button>
 				</div>

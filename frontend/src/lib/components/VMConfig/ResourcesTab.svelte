@@ -85,8 +85,13 @@
 			{#each memoryPresets as preset}
 				<button
 					type="button"
-					on:click={() => { memoryMB = preset; emitChange(); }}
-					class="px-2 py-1 text-xs rounded {memoryMB === preset ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}"
+					on:click={() => {
+						memoryMB = preset;
+						emitChange();
+					}}
+					class="px-2 py-1 text-xs rounded {memoryMB === preset
+						? 'bg-blue-600 text-white'
+						: 'bg-gray-700 text-gray-300 hover:bg-gray-600'}"
 				>
 					{preset >= 1024 ? `${preset / 1024}GB` : `${preset}MB`}
 				</button>
@@ -98,12 +103,7 @@
 	<!-- CPU Template -->
 	<div>
 		<label for="cpuTemplate" class="label">CPU Template</label>
-		<select
-			id="cpuTemplate"
-			bind:value={cpuTemplate}
-			on:change={emitChange}
-			class="input w-full"
-		>
+		<select id="cpuTemplate" bind:value={cpuTemplate} on:change={emitChange} class="input w-full">
 			{#each cpuTemplates as template}
 				<option value={template.value}>{template.label}</option>
 			{/each}
@@ -124,9 +124,7 @@
 		/>
 		<div>
 			<label for="disableSMT" class="font-medium">Disable SMT (Hyper-Threading)</label>
-			<p class="text-sm text-gray-500">
-				Disable simultaneous multithreading for enhanced security
-			</p>
+			<p class="text-sm text-gray-500">Disable simultaneous multithreading for enhanced security</p>
 		</div>
 	</div>
 
@@ -140,7 +138,9 @@
 			</div>
 			<div>
 				<span class="text-gray-500">Memory:</span>
-				<span class="ml-2">{memoryMB >= 1024 ? `${(memoryMB / 1024).toFixed(1)} GB` : `${memoryMB} MB`}</span>
+				<span class="ml-2"
+					>{memoryMB >= 1024 ? `${(memoryMB / 1024).toFixed(1)} GB` : `${memoryMB} MB`}</span
+				>
 			</div>
 			<div>
 				<span class="text-gray-500">Template:</span>

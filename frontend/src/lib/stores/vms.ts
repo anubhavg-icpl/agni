@@ -17,22 +17,22 @@ function createVMStore() {
 	return {
 		subscribe,
 		async fetch() {
-			update(s => ({ ...s, loading: true, error: null }));
+			update((s) => ({ ...s, loading: true, error: null }));
 			try {
 				const vms = await api.listVMs();
 				set({ vms: vms || [], loading: false, error: null });
 			} catch (e) {
-				update(s => ({ ...s, loading: false, error: (e as Error).message }));
+				update((s) => ({ ...s, loading: false, error: (e as Error).message }));
 			}
 		},
 		async create(name: string, config: VM['config']) {
-			update(s => ({ ...s, loading: true, error: null }));
+			update((s) => ({ ...s, loading: true, error: null }));
 			try {
 				const vm = await api.createVM({ name, config });
-				update(s => ({ ...s, vms: [...s.vms, vm], loading: false }));
+				update((s) => ({ ...s, vms: [...s.vms, vm], loading: false }));
 				return vm;
 			} catch (e) {
-				update(s => ({ ...s, loading: false, error: (e as Error).message }));
+				update((s) => ({ ...s, loading: false, error: (e as Error).message }));
 				return null;
 			}
 		},
@@ -42,7 +42,7 @@ function createVMStore() {
 				await this.fetch();
 				return true;
 			} catch (e) {
-				update(s => ({ ...s, error: (e as Error).message }));
+				update((s) => ({ ...s, error: (e as Error).message }));
 				return false;
 			}
 		},
@@ -52,7 +52,7 @@ function createVMStore() {
 				await this.fetch();
 				return true;
 			} catch (e) {
-				update(s => ({ ...s, error: (e as Error).message }));
+				update((s) => ({ ...s, error: (e as Error).message }));
 				return false;
 			}
 		},
@@ -62,22 +62,22 @@ function createVMStore() {
 				await this.fetch();
 				return true;
 			} catch (e) {
-				update(s => ({ ...s, error: (e as Error).message }));
+				update((s) => ({ ...s, error: (e as Error).message }));
 				return false;
 			}
 		},
 		async delete(id: string) {
 			try {
 				await api.deleteVM(id);
-				update(s => ({ ...s, vms: s.vms.filter(vm => vm.id !== id) }));
+				update((s) => ({ ...s, vms: s.vms.filter((vm) => vm.id !== id) }));
 				return true;
 			} catch (e) {
-				update(s => ({ ...s, error: (e as Error).message }));
+				update((s) => ({ ...s, error: (e as Error).message }));
 				return false;
 			}
 		},
 		clearError() {
-			update(s => ({ ...s, error: null }));
+			update((s) => ({ ...s, error: null }));
 		}
 	};
 }

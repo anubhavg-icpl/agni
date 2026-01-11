@@ -31,6 +31,37 @@
 		jailerConfig = { ...jailerConfig, [field]: value };
 		emitChange();
 	}
+
+	function handleChrootBaseInput(event: Event) {
+		const target = event.target as HTMLInputElement;
+		updateJailerField('chroot_base', target.value);
+	}
+
+	function handleUIDInput(event: Event) {
+		const target = event.target as HTMLInputElement;
+		updateJailerField('uid', parseInt(target.value) || 1000);
+	}
+
+	function handleGIDInput(event: Event) {
+		const target = event.target as HTMLInputElement;
+		updateJailerField('gid', parseInt(target.value) || 1000);
+	}
+
+	function handleExecFileInput(event: Event) {
+		const target = event.target as HTMLInputElement;
+		updateJailerField('exec_file', target.value);
+	}
+
+	function handleDaemonizeChange(event: Event) {
+		const target = event.target as HTMLInputElement;
+		updateJailerField('daemonize', target.checked);
+	}
+
+	function handleNumaNodeInput(event: Event) {
+		const target = event.target as HTMLInputElement;
+		const val = target.value;
+		updateJailerField('numa_node', val ? parseInt(val) : (undefined as unknown as number));
+	}
 </script>
 
 <div class="space-y-6">
@@ -62,13 +93,11 @@
 					type="text"
 					id="chrootBase"
 					value={jailerConfig.chroot_base}
-					on:input={(e) => updateJailerField('chroot_base', (e.target as HTMLInputElement).value)}
+					on:input={handleChrootBaseInput}
 					class="input w-full font-mono"
 					placeholder="/srv/jailer"
 				/>
-				<p class="text-sm text-gray-500 mt-1">
-					Base directory for jailer chroot environments
-				</p>
+				<p class="text-sm text-gray-500 mt-1">Base directory for jailer chroot environments</p>
 			</div>
 
 			<!-- UID/GID -->
@@ -79,7 +108,7 @@
 						type="number"
 						id="jailerUid"
 						value={jailerConfig.uid}
-						on:input={(e) => updateJailerField('uid', parseInt((e.target as HTMLInputElement).value) || 1000)}
+						on:input={handleUIDInput}
 						class="input w-full"
 						min="0"
 					/>
@@ -90,7 +119,7 @@
 						type="number"
 						id="jailerGid"
 						value={jailerConfig.gid}
-						on:input={(e) => updateJailerField('gid', parseInt((e.target as HTMLInputElement).value) || 1000)}
+						on:input={handleGIDInput}
 						class="input w-full"
 						min="0"
 					/>
@@ -107,7 +136,7 @@
 					type="text"
 					id="execFile"
 					value={jailerConfig.exec_file}
-					on:input={(e) => updateJailerField('exec_file', (e.target as HTMLInputElement).value)}
+					on:input={handleExecFileInput}
 					class="input w-full font-mono"
 					placeholder="/usr/bin/firecracker"
 				/>
@@ -119,7 +148,7 @@
 					type="checkbox"
 					id="jailerDaemonize"
 					checked={jailerConfig.daemonize}
-					on:change={(e) => updateJailerField('daemonize', (e.target as HTMLInputElement).checked)}
+					on:change={handleDaemonizeChange}
 					class="rounded bg-gray-700 border-gray-600"
 				/>
 				<label for="jailerDaemonize" class="text-sm text-gray-300">Daemonize Process</label>
@@ -132,10 +161,7 @@
 					type="number"
 					id="numaNode"
 					value={jailerConfig.numa_node ?? ''}
-					on:input={(e) => {
-						const val = (e.target as HTMLInputElement).value;
-						updateJailerField('numa_node', val ? parseInt(val) : undefined as unknown as number);
-					}}
+					on:input={handleNumaNodeInput}
 					class="input w-full"
 					min="0"
 					placeholder="Auto"
@@ -165,7 +191,7 @@
 		<div class="space-y-1 text-sm">
 			<div class="flex items-center gap-2">
 				<span class="text-gray-500">Jailer:</span>
-				<span class="{jailerEnabled ? 'text-green-400' : 'text-yellow-400'}">
+				<span class={jailerEnabled ? 'text-green-400' : 'text-yellow-400'}>
 					{jailerEnabled ? 'Enabled' : 'Disabled'}
 				</span>
 			</div>

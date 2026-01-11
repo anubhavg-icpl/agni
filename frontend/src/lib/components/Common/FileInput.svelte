@@ -44,17 +44,27 @@
 				{required}
 				on:input={handleInput}
 				on:blur
-				class="input w-full pr-10 font-mono text-sm {error ? 'border-red-500 focus:border-red-500' : ''}"
+				class="input w-full pr-10 font-mono text-sm {error
+					? 'border-red-500 focus:border-red-500'
+					: ''}"
 			/>
 			{#if value}
 				<button
 					type="button"
-					on:click={() => { value = ''; dispatch('change', ''); }}
+					on:click={() => {
+						value = '';
+						dispatch('change', '');
+					}}
 					class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
 					aria-label="Clear"
 				>
 					<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M6 18L18 6M6 6l12 12"
+						/>
 					</svg>
 				</button>
 			{/if}

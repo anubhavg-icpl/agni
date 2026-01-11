@@ -8,7 +8,8 @@
 	const dispatch = createEventDispatcher();
 
 	let kernelPath = config.kernel_path || './vmlinux';
-	let kernelOpts = config.kernel_opts || 'ro console=ttyS0 noapic reboot=k panic=1 pci=off nomodules';
+	let kernelOpts =
+		config.kernel_opts || 'ro console=ttyS0 noapic reboot=k panic=1 pci=off nomodules';
 	let initrdPath = config.initrd_path || '';
 	let metadata = config.metadata || '';
 	let logLevel = config.log_level || 'Debug';
@@ -23,11 +24,19 @@
 		});
 	}
 
+	function applyPreset(value: string) {
+		kernelOpts = value;
+		emitChange();
+	}
+
 	const logLevels = ['Error', 'Warning', 'Info', 'Debug'];
 
 	const defaultKernelOpts = [
 		{ label: 'Minimal', value: 'ro console=ttyS0 noapic reboot=k panic=1 pci=off nomodules' },
-		{ label: 'Standard', value: 'ro console=ttyS0 noapic reboot=k panic=1 pci=off nomodules init=/sbin/init' },
+		{
+			label: 'Standard',
+			value: 'ro console=ttyS0 noapic reboot=k panic=1 pci=off nomodules init=/sbin/init'
+		},
 		{ label: 'Debug', value: 'ro console=ttyS0 noapic reboot=k panic=1 pci=off nomodules debug' }
 	];
 </script>
@@ -58,7 +67,7 @@
 			{#each defaultKernelOpts as preset}
 				<button
 					type="button"
-					on:click={() => { kernelOpts = preset.value; emitChange(); }}
+					on:click={() => applyPreset(preset.value)}
 					class="px-2 py-1 text-xs rounded bg-gray-700 text-gray-300 hover:bg-gray-600"
 				>
 					{preset.label}
@@ -79,12 +88,7 @@
 	<!-- Log Level -->
 	<div>
 		<label for="logLevel" class="label">Firecracker Log Level</label>
-		<select
-			id="logLevel"
-			bind:value={logLevel}
-			on:change={emitChange}
-			class="input w-full"
-		>
+		<select id="logLevel" bind:value={logLevel} on:change={emitChange} class="input w-full">
 			{#each logLevels as level}
 				<option value={level}>{level}</option>
 			{/each}
@@ -99,7 +103,7 @@
 			bind:value={metadata}
 			on:input={emitChange}
 			class="input w-full h-24 font-mono text-sm"
-			placeholder='{"key": "value"}'
+			placeholder={'{"key": "value"}'}
 		/>
 		<p class="text-sm text-gray-500 mt-1">
 			Optional JSON metadata accessible via MMDS (Microvm Metadata Service)

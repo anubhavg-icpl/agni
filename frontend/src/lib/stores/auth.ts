@@ -19,7 +19,7 @@ function createAuthStore() {
 	return {
 		subscribe,
 		async init() {
-			update(s => ({ ...s, loading: true, error: null }));
+			update((s) => ({ ...s, loading: true, error: null }));
 			try {
 				const status = await api.getAuthStatus();
 				if (status.setup_required) {
@@ -34,23 +34,23 @@ function createAuthStore() {
 				} else {
 					set({ user: null, loading: false, error: null, setupRequired: false });
 				}
-			} catch (e) {
+			} catch {
 				set({ user: null, loading: false, error: null, setupRequired: false });
 			}
 		},
 		async login(username: string, password: string) {
-			update(s => ({ ...s, loading: true, error: null }));
+			update((s) => ({ ...s, loading: true, error: null }));
 			try {
 				const response = await api.login(username, password);
 				set({ user: response.user, loading: false, error: null, setupRequired: false });
 				return true;
 			} catch (e) {
-				update(s => ({ ...s, loading: false, error: (e as Error).message }));
+				update((s) => ({ ...s, loading: false, error: (e as Error).message }));
 				return false;
 			}
 		},
 		async setup(username: string, password: string) {
-			update(s => ({ ...s, loading: true, error: null }));
+			update((s) => ({ ...s, loading: true, error: null }));
 			try {
 				await api.setup(username, password);
 				// After setup, login
@@ -58,7 +58,7 @@ function createAuthStore() {
 				set({ user: response.user, loading: false, error: null, setupRequired: false });
 				return true;
 			} catch (e) {
-				update(s => ({ ...s, loading: false, error: (e as Error).message }));
+				update((s) => ({ ...s, loading: false, error: (e as Error).message }));
 				return false;
 			}
 		},
@@ -72,10 +72,10 @@ function createAuthStore() {
 			set({ user: null, loading: false, error: null, setupRequired: false });
 		},
 		clearError() {
-			update(s => ({ ...s, error: null }));
+			update((s) => ({ ...s, error: null }));
 		}
 	};
 }
 
 export const auth = createAuthStore();
-export const isAuthenticated = derived(auth, $auth => $auth.user !== null);
+export const isAuthenticated = derived(auth, ($auth) => $auth.user !== null);

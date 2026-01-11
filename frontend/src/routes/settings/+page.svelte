@@ -166,21 +166,15 @@
 		<div class="space-y-4">
 			<div>
 				<label for="apiPort" class="label text-sm">API Port</label>
-				<input
-					type="text"
-					id="apiPort"
-					bind:value={apiPort}
-					class="input w-32"
-					disabled
-				/>
-				<p class="text-sm text-gray-500 mt-1">
-					API server port (requires restart to change)
-				</p>
+				<input type="text" id="apiPort" bind:value={apiPort} class="input w-32" disabled />
+				<p class="text-sm text-gray-500 mt-1">API server port (requires restart to change)</p>
 			</div>
 
 			<div class="bg-gray-900 rounded-lg p-3 font-mono text-sm">
 				<div class="text-gray-400 mb-1">API Base URL:</div>
-				<div class="text-blue-400">{typeof window !== 'undefined' ? window.location.origin : ''}/api</div>
+				<div class="text-blue-400">
+					{typeof window !== 'undefined' ? window.location.origin : ''}/api
+				</div>
 			</div>
 		</div>
 	</div>
@@ -189,12 +183,9 @@
 	<div class="card">
 		<h2 class="text-lg font-medium mb-4">About Firectl</h2>
 		<div class="space-y-2 text-sm text-gray-400">
+			<p>Firectl is a command-line tool and GUI for managing Firecracker microVMs.</p>
 			<p>
-				Firectl is a command-line tool and GUI for managing Firecracker microVMs.
-			</p>
-			<p>
-				Originally created by Amazon.com, Inc. as a CLI tool.
-				GUI implementation by Anubhav Gain.
+				Originally created by Amazon.com, Inc. as a CLI tool. GUI implementation by Anubhav Gain.
 			</p>
 			<div class="flex gap-4 mt-4">
 				<a

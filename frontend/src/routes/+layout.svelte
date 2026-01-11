@@ -9,7 +9,12 @@
 		await auth.init();
 	});
 
-	$: if (!$auth.loading && !$isAuthenticated && !$auth.setupRequired && !$page.url.pathname.includes('/login')) {
+	$: if (
+		!$auth.loading &&
+		!$isAuthenticated &&
+		!$auth.setupRequired &&
+		!$page.url.pathname.includes('/login')
+	) {
 		goto('/login');
 	}
 
@@ -34,13 +39,22 @@
 					<div class="flex items-center gap-8">
 						<a href="/" class="text-xl font-bold text-primary-400">Firectl</a>
 						<div class="flex gap-4">
-							<a href="/" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+							<a
+								href="/"
+								class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+							>
 								Dashboard
 							</a>
-							<a href="/vms/new" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+							<a
+								href="/vms/new"
+								class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+							>
 								New VM
 							</a>
-							<a href="/configs" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+							<a
+								href="/configs"
+								class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+							>
 								Templates
 							</a>
 						</div>

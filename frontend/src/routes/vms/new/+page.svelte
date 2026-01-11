@@ -94,12 +94,7 @@
 				</div>
 				<div>
 					<label class="label" for="kernelOpts">Kernel Options</label>
-					<input
-						type="text"
-						id="kernelOpts"
-						bind:value={kernelOpts}
-						class="input w-full"
-					/>
+					<input type="text" id="kernelOpts" bind:value={kernelOpts} class="input w-full" />
 				</div>
 			</div>
 		</div>
@@ -137,14 +132,7 @@
 			<div class="grid grid-cols-2 gap-4">
 				<div>
 					<label class="label" for="cpus">CPUs</label>
-					<input
-						type="number"
-						id="cpus"
-						bind:value={cpus}
-						class="input w-full"
-						min="1"
-						max="32"
-					/>
+					<input type="number" id="cpus" bind:value={cpus} class="input w-full" min="1" max="32" />
 				</div>
 				<div>
 					<label class="label" for="memoryMB">Memory (MB)</label>

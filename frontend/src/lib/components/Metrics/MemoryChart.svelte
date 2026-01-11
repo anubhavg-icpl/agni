@@ -13,6 +13,7 @@
 
 	function draw() {
 		if (!ctx || !canvas) return;
+		const context = ctx; // TypeScript narrowing for callbacks
 
 		const width = canvas.width;
 		const height = CHART_HEIGHT;
@@ -68,7 +69,7 @@
 			const x = PADDING + i * pointSpacing;
 			const memPercent = point.memory_total > 0 ? point.memory_used / point.memory_total : 0;
 			const y = PADDING + chartHeight * (1 - memPercent);
-			ctx.lineTo(x, y);
+			context.lineTo(x, y);
 		});
 
 		ctx.lineTo(PADDING + (data.length - 1) * pointSpacing, height - PADDING);
@@ -87,9 +88,9 @@
 			const y = PADDING + chartHeight * (1 - memPercent);
 
 			if (i === 0) {
-				ctx.moveTo(x, y);
+				context.moveTo(x, y);
 			} else {
-				ctx.lineTo(x, y);
+				context.lineTo(x, y);
 			}
 		});
 
@@ -98,9 +99,10 @@
 		// Draw current value
 		if (data.length > 0) {
 			const latest = data[data.length - 1];
-			const memPercent = latest.memory_total > 0
-				? ((latest.memory_used / latest.memory_total) * 100).toFixed(1)
-				: '0.0';
+			const memPercent =
+				latest.memory_total > 0
+					? ((latest.memory_used / latest.memory_total) * 100).toFixed(1)
+					: '0.0';
 
 			ctx.fillStyle = '#22c55e';
 			ctx.font = 'bold 14px sans-serif';

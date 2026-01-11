@@ -44,11 +44,26 @@
 			<form on:submit|preventDefault={handleSetup} class="space-y-4">
 				<div>
 					<label class="label" for="username">Username</label>
-					<input type="text" id="username" name="username" bind:value={setupUsername} class="input w-full" required />
+					<input
+						type="text"
+						id="username"
+						name="username"
+						bind:value={setupUsername}
+						class="input w-full"
+						required
+					/>
 				</div>
 				<div>
 					<label class="label" for="password">Password</label>
-					<input type="password" id="password" name="password" bind:value={setupPassword} class="input w-full" required minlength="8" />
+					<input
+						type="password"
+						id="password"
+						name="password"
+						bind:value={setupPassword}
+						class="input w-full"
+						required
+						minlength="8"
+					/>
 					<p class="text-xs text-gray-500 mt-1">Minimum 8 characters</p>
 				</div>
 				{#if $auth.error}
@@ -65,9 +80,7 @@
 		<!-- Header -->
 		<div class="flex items-center justify-between">
 			<h1 class="text-2xl font-bold">Dashboard</h1>
-			<a href="/vms/new" class="btn btn-primary">
-				+ New VM
-			</a>
+			<a href="/vms/new" class="btn btn-primary"> + New VM </a>
 		</div>
 
 		<!-- Quick Stats -->

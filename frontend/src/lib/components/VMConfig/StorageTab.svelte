@@ -36,6 +36,16 @@
 		additionalDrives = additionalDrives;
 		emitChange();
 	}
+
+	function handleDrivePathInput(index: number, event: Event) {
+		const target = event.target as HTMLInputElement;
+		updateDrive(index, 'path', target.value);
+	}
+
+	function handleDriveReadOnlyChange(index: number, event: Event) {
+		const target = event.target as HTMLInputElement;
+		updateDrive(index, 'read_only', target.checked);
+	}
 </script>
 
 <div class="space-y-6">
@@ -71,13 +81,14 @@
 	<div class="space-y-4">
 		<div class="flex items-center justify-between">
 			<h4 class="font-medium text-gray-300">Additional Drives</h4>
-			<button
-				type="button"
-				on:click={addDrive}
-				class="btn btn-secondary text-sm px-3 py-1"
-			>
+			<button type="button" on:click={addDrive} class="btn btn-secondary text-sm px-3 py-1">
 				<svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M12 4v16m8-8H4"
+					/>
 				</svg>
 				Add Drive
 			</button>
@@ -105,7 +116,7 @@
 							type="text"
 							id="drive-{index}-path"
 							value={drive.path}
-							on:input={(e) => updateDrive(index, 'path', (e.target as HTMLInputElement).value)}
+							on:input={(e) => handleDrivePathInput(index, e)}
 							class="input w-full text-sm"
 							placeholder="/path/to/drive.img"
 						/>
@@ -116,7 +127,7 @@
 							type="checkbox"
 							id="drive-{index}-readonly"
 							checked={drive.read_only}
-							on:change={(e) => updateDrive(index, 'read_only', (e.target as HTMLInputElement).checked)}
+							on:change={(e) => handleDriveReadOnlyChange(index, e)}
 							class="rounded bg-gray-700 border-gray-600"
 						/>
 						<label for="drive-{index}-readonly" class="text-sm text-gray-300">Read-only</label>

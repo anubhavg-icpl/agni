@@ -67,19 +67,11 @@
 
 	<div class="flex gap-2">
 		{#if vm.status === 'stopped' || vm.status === 'error'}
-			<button on:click={handleStart} class="btn btn-success flex-1 text-sm">
-				Start
-			</button>
-			<button on:click={handleDelete} class="btn btn-danger text-sm">
-				Delete
-			</button>
+			<button on:click={handleStart} class="btn btn-success flex-1 text-sm"> Start </button>
+			<button on:click={handleDelete} class="btn btn-danger text-sm"> Delete </button>
 		{:else if vm.status === 'running'}
-			<button on:click={handleShutdown} class="btn btn-secondary flex-1 text-sm">
-				Shutdown
-			</button>
-			<button on:click={handleStop} class="btn btn-danger text-sm">
-				Force Stop
-			</button>
+			<button on:click={handleShutdown} class="btn btn-secondary flex-1 text-sm"> Shutdown </button>
+			<button on:click={handleStop} class="btn btn-danger text-sm"> Force Stop </button>
 		{:else}
 			<button disabled class="btn btn-secondary flex-1 text-sm opacity-50">
 				{vm.status}...

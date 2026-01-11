@@ -24,23 +24,11 @@
 		<form on:submit|preventDefault={handleSubmit} class="space-y-4">
 			<div>
 				<label class="label" for="username">Username</label>
-				<input
-					type="text"
-					id="username"
-					bind:value={username}
-					class="input w-full"
-					required
-				/>
+				<input type="text" id="username" bind:value={username} class="input w-full" required />
 			</div>
 			<div>
 				<label class="label" for="password">Password</label>
-				<input
-					type="password"
-					id="password"
-					bind:value={password}
-					class="input w-full"
-					required
-				/>
+				<input type="password" id="password" bind:value={password} class="input w-full" required />
 			</div>
 			{#if $auth.error}
 				<p class="text-red-400 text-sm">{$auth.error}</p>

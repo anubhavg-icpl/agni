@@ -84,7 +84,8 @@
 			animate:flip={{ duration: 200 }}
 			in:fly={{ x: 100, duration: 200 }}
 			out:fade={{ duration: 150 }}
-			class="pointer-events-auto {typeStyles[toast.type].bg} border {typeStyles[toast.type].border} rounded-lg p-4 shadow-lg"
+			class="pointer-events-auto {typeStyles[toast.type].bg} border {typeStyles[toast.type]
+				.border} rounded-lg p-4 shadow-lg"
 		>
 			<div class="flex items-start gap-3">
 				<svg
@@ -107,7 +108,12 @@
 					aria-label="Dismiss"
 				>
 					<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M6 18L18 6M6 6l12 12"
+						/>
 					</svg>
 				</button>
 			</div>

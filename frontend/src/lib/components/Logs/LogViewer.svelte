@@ -59,11 +59,14 @@
 				}
 			} catch {
 				// Handle plain text messages
-				logs = [...logs, {
-					timestamp: new Date().toISOString(),
-					level: 'info',
-					message: event.data
-				}].slice(-1000);
+				logs = [
+					...logs,
+					{
+						timestamp: new Date().toISOString(),
+						level: 'info',
+						message: event.data
+					}
+				].slice(-1000);
 				applyFilters();
 
 				if (autoScroll) {
@@ -185,12 +188,8 @@
 					</svg>
 				{/if}
 			</button>
-			<button on:click={handleClear} class="btn btn-secondary text-sm px-3 py-1">
-				Clear
-			</button>
-			<button on:click={handleExport} class="btn btn-secondary text-sm px-3 py-1">
-				Export
-			</button>
+			<button on:click={handleClear} class="btn btn-secondary text-sm px-3 py-1"> Clear </button>
+			<button on:click={handleExport} class="btn btn-secondary text-sm px-3 py-1"> Export </button>
 		</div>
 	</div>
 
@@ -212,7 +211,9 @@
 			{#each filteredLogs as log}
 				<div class="flex gap-2 py-0.5 hover:bg-gray-800/50">
 					<span class="text-gray-500 flex-shrink-0">{formatTime(log.timestamp)}</span>
-					<span class="flex-shrink-0 w-14 {levelColors[log.level.toLowerCase()] || 'text-gray-400'}">
+					<span
+						class="flex-shrink-0 w-14 {levelColors[log.level.toLowerCase()] || 'text-gray-400'}"
+					>
 						[{log.level.toUpperCase()}]
 					</span>
 					<span class="text-gray-200 break-all">{log.message}</span>

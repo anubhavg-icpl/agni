@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { fade, scale } from 'svelte/transition';
-	import { auth } from '$lib/stores/auth';
+	import { scale } from 'svelte/transition';
 
 	export let username = '';
 
@@ -41,7 +40,9 @@
 		on:click={toggle}
 		class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-700 transition-colors"
 	>
-		<div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-medium text-white">
+		<div
+			class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-medium text-white"
+		>
 			{username.charAt(0).toUpperCase()}
 		</div>
 		<span class="text-sm text-gray-300 hidden sm:block">{username}</span>

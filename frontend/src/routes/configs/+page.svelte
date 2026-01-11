@@ -19,7 +19,7 @@
 		if (!confirm(`Delete template "${name}"?`)) return;
 		try {
 			await api.deleteConfig(id);
-			configs = configs.filter(c => c.id !== id);
+			configs = configs.filter((c) => c.id !== id);
 		} catch (e) {
 			error = (e as Error).message;
 		}

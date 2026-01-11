@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import Button from '../Common/Button.svelte';
-	import { validate, username, password, minLength } from '$lib/utils/validation';
+	import { validate, username, minLength } from '$lib/utils/validation';
 
 	export let loading = false;
 	export let error = '';

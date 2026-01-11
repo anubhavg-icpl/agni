@@ -18,10 +18,13 @@
 
 	// Network Interfaces
 	function addNIC() {
-		networkInterfaces = [...networkInterfaces, {
-			device: '',
-			mac_address: generateMAC()
-		}];
+		networkInterfaces = [
+			...networkInterfaces,
+			{
+				device: '',
+				mac_address: generateMAC()
+			}
+		];
 	}
 
 	function removeNIC(index: number) {
@@ -35,12 +38,20 @@
 		emitChange();
 	}
 
+	function handleNICInput(index: number, field: keyof NIC, event: Event) {
+		const target = event.target as HTMLInputElement;
+		updateNIC(index, field, target.value);
+	}
+
 	// Vsock Devices
 	function addVsock() {
-		vsockDevices = [...vsockDevices, {
-			cid: 3,
-			path: ''
-		}];
+		vsockDevices = [
+			...vsockDevices,
+			{
+				cid: 3,
+				path: ''
+			}
+		];
 	}
 
 	function removeVsock(index: number) {
@@ -54,9 +65,22 @@
 		emitChange();
 	}
 
+	function handleVsockCIDInput(index: number, event: Event) {
+		const target = event.target as HTMLInputElement;
+		updateVsock(index, 'cid', parseInt(target.value) || 3);
+	}
+
+	function handleVsockPathInput(index: number, event: Event) {
+		const target = event.target as HTMLInputElement;
+		updateVsock(index, 'path', target.value);
+	}
+
 	// Generate random MAC address
 	function generateMAC(): string {
-		const hex = () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
+		const hex = () =>
+			Math.floor(Math.random() * 256)
+				.toString(16)
+				.padStart(2, '0');
 		// Use locally administered, unicast MAC address
 		return `02:${hex()}:${hex()}:${hex()}:${hex()}:${hex()}`;
 	}
@@ -69,13 +93,14 @@
 	<div class="space-y-4">
 		<div class="flex items-center justify-between">
 			<h4 class="font-medium text-gray-300">Network Interfaces (TAP)</h4>
-			<button
-				type="button"
-				on:click={addNIC}
-				class="btn btn-secondary text-sm px-3 py-1"
-			>
+			<button type="button" on:click={addNIC} class="btn btn-secondary text-sm px-3 py-1">
 				<svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M12 4v16m8-8H4"
+					/>
 				</svg>
 				Add NIC
 			</button>
@@ -104,7 +129,7 @@
 								type="text"
 								id="nic-{index}-device"
 								value={nic.device}
-								on:input={(e) => updateNIC(index, 'device', (e.target as HTMLInputElement).value)}
+								on:input={(e) => handleNICInput(index, 'device', e)}
 								class="input w-full text-sm"
 								placeholder="tap0"
 							/>
@@ -116,7 +141,7 @@
 									type="text"
 									id="nic-{index}-mac"
 									value={nic.mac_address}
-									on:input={(e) => updateNIC(index, 'mac_address', (e.target as HTMLInputElement).value)}
+									on:input={(e) => handleNICInput(index, 'mac_address', e)}
 									class="input flex-1 text-sm font-mono"
 									placeholder="02:XX:XX:XX:XX:XX"
 								/>
@@ -127,7 +152,12 @@
 									title="Generate random MAC"
 								>
 									<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+										/>
 									</svg>
 								</button>
 							</div>
@@ -142,13 +172,14 @@
 	<div class="space-y-4">
 		<div class="flex items-center justify-between">
 			<h4 class="font-medium text-gray-300">Vsock Devices</h4>
-			<button
-				type="button"
-				on:click={addVsock}
-				class="btn btn-secondary text-sm px-3 py-1"
-			>
+			<button type="button" on:click={addVsock} class="btn btn-secondary text-sm px-3 py-1">
 				<svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M12 4v16m8-8H4"
+					/>
 				</svg>
 				Add Vsock
 			</button>
@@ -177,7 +208,7 @@
 								type="number"
 								id="vsock-{index}-cid"
 								value={vsock.cid}
-								on:input={(e) => updateVsock(index, 'cid', parseInt((e.target as HTMLInputElement).value) || 3)}
+								on:input={(e) => handleVsockCIDInput(index, e)}
 								class="input w-full text-sm"
 								min="3"
 							/>
@@ -189,7 +220,7 @@
 								type="text"
 								id="vsock-{index}-path"
 								value={vsock.path}
-								on:input={(e) => updateVsock(index, 'path', (e.target as HTMLInputElement).value)}
+								on:input={(e) => handleVsockPathInput(index, e)}
 								class="input w-full text-sm font-mono"
 								placeholder="/tmp/vsock.sock"
 							/>

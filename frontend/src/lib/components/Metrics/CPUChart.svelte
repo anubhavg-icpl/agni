@@ -12,6 +12,7 @@
 
 	function draw() {
 		if (!ctx || !canvas) return;
+		const context = ctx; // TypeScript narrowing for callbacks
 
 		const width = canvas.width;
 		const height = CHART_HEIGHT;
@@ -67,7 +68,7 @@
 		data.forEach((point, i) => {
 			const x = PADDING + i * pointSpacing;
 			const y = PADDING + chartHeight * (1 - point.cpu_usage / 100);
-			ctx.lineTo(x, y);
+			context.lineTo(x, y);
 		});
 
 		ctx.lineTo(PADDING + (data.length - 1) * pointSpacing, height - PADDING);
@@ -85,9 +86,9 @@
 			const y = PADDING + chartHeight * (1 - point.cpu_usage / 100);
 
 			if (i === 0) {
-				ctx.moveTo(x, y);
+				context.moveTo(x, y);
 			} else {
-				ctx.lineTo(x, y);
+				context.lineTo(x, y);
 			}
 		});
 

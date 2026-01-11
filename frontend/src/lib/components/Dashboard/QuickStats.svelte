@@ -4,9 +4,9 @@
 	export let vms: VM[] = [];
 
 	$: totalVMs = vms.length;
-	$: runningVMs = vms.filter(vm => vm.status === 'running').length;
-	$: stoppedVMs = vms.filter(vm => vm.status === 'stopped').length;
-	$: errorVMs = vms.filter(vm => vm.status === 'error').length;
+	$: runningVMs = vms.filter((vm) => vm.status === 'running').length;
+	$: stoppedVMs = vms.filter((vm) => vm.status === 'stopped').length;
+	$: errorVMs = vms.filter((vm) => vm.status === 'error').length;
 </script>
 
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">

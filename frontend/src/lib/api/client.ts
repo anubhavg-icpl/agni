@@ -23,11 +23,7 @@ class ApiClient {
 		return this.token;
 	}
 
-	private async request<T>(
-		method: string,
-		path: string,
-		body?: unknown
-	): Promise<T> {
+	private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
 		const headers: HeadersInit = {
 			'Content-Type': 'application/json'
 		};

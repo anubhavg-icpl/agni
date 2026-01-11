@@ -111,7 +111,8 @@ export function vmName(): ValidationRule {
 			if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(value)) {
 				return {
 					valid: false,
-					error: 'VM name must start with alphanumeric and contain only letters, numbers, underscores, and hyphens'
+					error:
+						'VM name must start with alphanumeric and contain only letters, numbers, underscores, and hyphens'
 				};
 			}
 			return { valid: true };
@@ -129,7 +130,10 @@ export function filePath(): ValidationRule {
 				return { valid: false, error: 'Path is required' };
 			}
 			if (!value.startsWith('/') && !value.startsWith('./') && !value.startsWith('../')) {
-				return { valid: false, error: 'Path must be absolute or relative (start with /, ./, or ../)' };
+				return {
+					valid: false,
+					error: 'Path must be absolute or relative (start with /, ./, or ../)'
+				};
 			}
 			return { valid: true };
 		}
@@ -187,7 +191,8 @@ export function username(): ValidationRule {
 			if (!/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(value)) {
 				return {
 					valid: false,
-					error: 'Username must start with a letter and contain only letters, numbers, underscores, and hyphens'
+					error:
+						'Username must start with a letter and contain only letters, numbers, underscores, and hyphens'
 				};
 			}
 			return { valid: true };

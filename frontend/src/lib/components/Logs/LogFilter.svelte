@@ -67,7 +67,12 @@
 				class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
 			>
 				<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M6 18L18 6M6 6l12 12"
+					/>
 				</svg>
 			</button>
 		{/if}
@@ -76,14 +81,24 @@
 	<!-- Quick filters -->
 	<div class="flex items-center gap-1">
 		<button
-			on:click={() => { level = 'error'; emitChange(); }}
-			class="px-2 py-1 text-xs rounded {level === 'error' ? 'bg-red-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}"
+			on:click={() => {
+				level = 'error';
+				emitChange();
+			}}
+			class="px-2 py-1 text-xs rounded {level === 'error'
+				? 'bg-red-600 text-white'
+				: 'bg-gray-700 text-gray-300 hover:bg-gray-600'}"
 		>
 			Errors Only
 		</button>
 		<button
-			on:click={() => { level = 'warn'; emitChange(); }}
-			class="px-2 py-1 text-xs rounded {level === 'warn' ? 'bg-yellow-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}"
+			on:click={() => {
+				level = 'warn';
+				emitChange();
+			}}
+			class="px-2 py-1 text-xs rounded {level === 'warn'
+				? 'bg-yellow-600 text-white'
+				: 'bg-gray-700 text-gray-300 hover:bg-gray-600'}"
 		>
 			Warnings
 		</button>
