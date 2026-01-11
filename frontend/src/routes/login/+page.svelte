@@ -63,7 +63,7 @@
 				Agni
 			</h1>
 			<p class="text-gray-400 text-sm mt-2 italic">
-				"MicroVMs without the meltdown !"
+				"MicroVMs without the meltdown!"
 			</p>
 		</div>
 
