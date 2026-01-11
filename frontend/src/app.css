@@ -67,13 +67,17 @@
 	}
 
 	.card-fire {
-		@apply bg-gray-800/90 rounded-xl border border-orange-500/20 p-4 backdrop-blur-sm;
-		box-shadow: 0 0 20px rgba(251, 146, 60, 0.3);
+		@apply rounded-2xl border border-white/10 p-8 backdrop-blur-xl;
+		background: radial-gradient(circle at center top, #000000 0%, #111111 100%);
+		box-shadow:
+			0 0 50px -10px rgba(251, 146, 60, 0.15),
+			0 25px 50px -12px rgba(0, 0, 0, 0.5),
+			inset 0 1px 0 rgba(255, 255, 255, 0.1);
 	}
 
 	/* Input with fire focus state */
 	.input {
-		@apply bg-gray-700/80 border border-gray-600 rounded-lg px-4 py-2.5 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all duration-200;
+		@apply bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all duration-200;
 	}
 
 	.input:focus {

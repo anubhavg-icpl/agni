@@ -1,7 +1,18 @@
-Agni
-===
+<p align="center">
+  <img src="docs/images/logo.png" alt="Agni Logo" width="120" height="120">
+</p>
 
-[![Build status](https://badge.buildkite.com/92fe02b4bd9564be0f7ea21d1ee782f6a6fe55cbd5465e3480.svg?branch=master)](https://buildkite.com/anubhavg-icpl/agni)
+<h1 align="center">Agni</h1>
+
+<p align="center">
+  <strong>🔥 Firecracker MicroVM Management Tool</strong>
+</p>
+
+<p align="center">
+  <a href="https://buildkite.com/anubhavg-icpl/agni"><img src="https://badge.buildkite.com/92fe02b4bd9564be0f7ea21d1ee782f6a6fe55cbd5465e3480.svg?branch=master" alt="Build status"></a>
+</p>
+
+---
 
 Agni is a powerful tool for managing Firecracker MicroVMs. It provides both a command-line interface (CLI) and a modern web-based graphical user interface (GUI) for creating, managing, and monitoring virtual machines.
 
@@ -23,6 +34,10 @@ Agni is a powerful tool for managing Firecracker MicroVMs. It provides both a co
 - **User Authentication**: JWT-based authentication with role-based access
 - **REST API**: Full API access for automation and integration
 - **Responsive Design**: Works on desktop and mobile browsers
+
+<p align="center">
+  <img src="docs/images/logo-bg.png" alt="Agni Screenshot" width="600">
+</p>
 
 ## Building
 

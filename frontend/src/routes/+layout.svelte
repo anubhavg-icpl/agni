@@ -5,11 +5,18 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 
+	let initialized = false;
+
 	onMount(async () => {
-		await auth.init();
+		if (!initialized) {
+			initialized = true;
+			await auth.init();
+		}
 	});
 
+	// Only redirect to login if not authenticated and not on login page
 	$: if (
+		initialized &&
 		!$auth.loading &&
 		!$isAuthenticated &&
 		!$auth.setupRequired &&
@@ -24,36 +31,45 @@
 	}
 </script>
 
-{#if $auth.loading}
+{#if !initialized || $auth.loading}
 	<div class="min-h-screen bg-gray-900 flex items-center justify-center">
-		<div class="text-gray-400">Loading...</div>
+		<div class="flex flex-col items-center gap-4">
+			<img src="/logo.png" alt="Agni" class="w-16 h-16 logo-glow" />
+			<div class="text-gray-400">Loading...</div>
+		</div>
 	</div>
-{:else if $auth.setupRequired}
+{:else if $auth.setupRequired || $page.url.pathname.includes('/login')}
 	<slot />
 {:else if $isAuthenticated}
 	<div class="min-h-screen bg-gray-900">
 		<!-- Navigation -->
-		<nav class="bg-gray-800 border-b border-gray-700">
+		<nav class="bg-gray-800/80 border-b border-gray-700/50 backdrop-blur-sm sticky top-0 z-50">
 			<div class="max-w-7xl mx-auto px-4">
 				<div class="flex items-center justify-between h-16">
 					<div class="flex items-center gap-8">
-						<a href="/" class="text-xl font-bold text-primary-400">Firectl</a>
-						<div class="flex gap-4">
+						<a href="/" class="flex items-center gap-2">
+							<img src="/logo.png" alt="Agni" class="w-8 h-8" />
+							<span class="text-xl font-bold text-fire">Agni</span>
+						</a>
+						<div class="flex gap-1">
 							<a
 								href="/"
-								class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+								class="nav-link px-3 py-2 rounded-md text-sm font-medium"
+								class:nav-link-active={$page.url.pathname === '/'}
 							>
 								Dashboard
 							</a>
 							<a
-								href="/vms/new"
-								class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+								href="/vms"
+								class="nav-link px-3 py-2 rounded-md text-sm font-medium"
+								class:nav-link-active={$page.url.pathname.startsWith('/vms')}
 							>
-								New VM
+								VMs
 							</a>
 							<a
 								href="/configs"
-								class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+								class="nav-link px-3 py-2 rounded-md text-sm font-medium"
+								class:nav-link-active={$page.url.pathname.startsWith('/configs')}
 							>
 								Templates
 							</a>
@@ -63,7 +79,7 @@
 						<span class="text-gray-400 text-sm">{$auth.user?.username}</span>
 						<button
 							on:click={handleLogout}
-							class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+							class="text-gray-300 hover:text-orange-400 px-3 py-2 rounded-md text-sm font-medium transition-colors"
 						>
 							Logout
 						</button>

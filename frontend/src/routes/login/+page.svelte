@@ -1,19 +1,11 @@
 <script lang="ts">
 	import { auth } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
+	import RiveAnimation from '$lib/components/RiveAnimation.svelte';
 
 	let username = '';
 	let password = '';
 	let confirmPassword = '';
-	let initialized = false;
-
-	onMount(async () => {
-		if (!initialized) {
-			initialized = true;
-			await auth.init();
-		}
-	});
 
 	async function handleLogin() {
 		const success = await auth.login(username, password);
@@ -54,25 +46,26 @@
 	
 	<!-- Login/Setup Card -->
 	<div class="card-fire max-w-md w-full p-8 relative z-10">
-		<!-- Agni Logo -->
-		<div class="flex flex-col items-center mb-8">
-			<img 
-				src="/logo.png" 
-				alt="Agni Logo" 
-				class="w-28 h-28 mb-4 logo-glow" 
-			/>
+		<!-- Agni Animated Logo -->
+		<div class="flex flex-col items-center mb-6 relative">
+			<!-- Glow effect behind logo -->
+			<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-orange-500/20 rounded-full blur-2xl pointer-events-none"></div>
+			
+			<div class="mb-2 relative z-10" style="mask-image: radial-gradient(circle, black 60%, transparent 100%); -webkit-mask-image: radial-gradient(circle, black 60%, transparent 100%);">
+				<RiveAnimation 
+					src="/skull-fire-logo.riv" 
+					width={160} 
+					height={160}
+				/>
+			</div>
 			<h1 class="text-4xl font-bold text-fire tracking-tight">
 				Agni
 			</h1>
 			<p class="text-gray-400 text-sm mt-2">Firecracker MicroVM Control</p>
 		</div>
 
-		{#if $auth.loading}
-			<div class="flex justify-center py-8">
-				<div class="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-			</div>
-		{:else if $auth.setupRequired}
-			<!-- Setup Form (First-time user registration) -->
+		{#if $auth.setupRequired}
+			<!-- Setup Form -->
 			<div class="mb-6 p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
 				<h2 class="text-orange-400 font-semibold mb-1">👋 Welcome to Agni!</h2>
 				<p class="text-gray-400 text-sm">Create your admin account to get started.</p>
@@ -130,7 +123,7 @@
 					class="btn btn-primary w-full py-3 text-lg font-semibold" 
 					disabled={$auth.loading || passwordMismatch || passwordTooShort || !username || !password}
 				>
-					Create Admin Account
+					{$auth.loading ? 'Creating...' : 'Create Admin Account'}
 				</button>
 			</form>
 		{:else}
@@ -168,7 +161,7 @@
 					class="btn btn-primary w-full py-3 text-lg font-semibold" 
 					disabled={$auth.loading || !username || !password}
 				>
-					Sign In
+					{$auth.loading ? 'Signing in...' : 'Sign In'}
 				</button>
 			</form>
 		{/if}
