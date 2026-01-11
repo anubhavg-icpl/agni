@@ -15,13 +15,13 @@ SRCFILES := *.go go.sum go.mod
 INSTALLPATH ?= /usr/local/bin
 BINPATH:=$(abspath ./bin)
 
-all: firectl
+all: agni
 
 # GUI mode targets
-gui: firectl-gui
+gui: agni-gui
 
-firectl-gui: $(SRCFILES) frontend-build
-	go build -tags gui -o firectl-gui
+agni-gui: $(SRCFILES) frontend-build
+	go build -tags gui -o agni-gui
 
 frontend-build:
 	cd frontend && npm install && npm run build
@@ -30,29 +30,29 @@ frontend-dev:
 	cd frontend && npm run dev
 
 # Run in GUI mode (API server)
-run-gui: firectl
-	./firectl --gui
+run-gui: agni
+	./agni --gui
 
 # Development: run API server with frontend dev server
-dev: firectl
-	./firectl --gui &
+dev: agni
+	./agni --gui &
 	cd frontend && npm run dev
 
-release: firectl firectl.sha256
+release: agni agni.sha256
 	test $(shell git status --short | wc -l) -eq 0
 
-firectl.sha256:
-	sha256sum firectl > firectl.sha256
+agni.sha256:
+	sha256sum agni > agni.sha256
 
-firectl: $(SRCFILES)
+agni: $(SRCFILES)
 ifneq ($(STATIC_BINARY),)
-	CGO_ENABLED=0 go build -installsuffix cgo -a
+	CGO_ENABLED=0 go build -installsuffix cgo -a -o agni
 else
-	go build
+	go build -o agni
 endif
 
 build-in-docker:
-	docker run --rm -v $(CURDIR):/firectl --workdir /firectl golang:1.23 make
+	docker run --rm -v $(CURDIR):/agni --workdir /agni golang:1.23 make
 
 test:
 	go test -v ./...
@@ -82,14 +82,14 @@ clean:
 	rm -rf $(BINPATH)
 
 install:
-	install -o root -g root -m755 -t $(INSTALLPATH) firectl
+	install -o root -g root -m755 -t $(INSTALLPATH) agni
 
 .PHONY: all clean install build-in-docker test lint release gui frontend-build frontend-dev run-gui dev
 
 help:
-	@echo "Firectl Build Targets:"
-	@echo "  make          - Build CLI binary (firectl)"
-	@echo "  make gui      - Build GUI binary with frontend (firectl-gui)"
+	@echo "Agni Build Targets:"
+	@echo "  make          - Build CLI binary (agni)"
+	@echo "  make gui      - Build GUI binary with frontend (agni-gui)"
 	@echo "  make run-gui  - Run in GUI mode (API server on :8080)"
 	@echo "  make dev      - Development mode (API + frontend dev server)"
 	@echo "  make test     - Run tests"

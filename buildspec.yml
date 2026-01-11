@@ -15,7 +15,7 @@ phases:
       - make release
 artifacts:
   files:
-    - firectl
-    - firectl.sha256
-  name: firectl
+    - agni
+    - agni.sha256
+  name: agni
   discard-paths: yes
