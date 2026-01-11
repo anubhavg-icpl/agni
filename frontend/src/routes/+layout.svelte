@@ -35,7 +35,7 @@
 	<div class="min-h-screen bg-gray-900 flex items-center justify-center">
 		<div class="flex flex-col items-center gap-4">
 			<img src="/logo.png" alt="Agni" class="w-16 h-16 logo-glow" />
-			<div class="text-gray-400">Loading...</div>
+			<div class="text-gray-400">Warming up the hamster wheel...</div>
 		</div>
 	</div>
 {:else if $auth.setupRequired || $page.url.pathname.includes('/login')}
