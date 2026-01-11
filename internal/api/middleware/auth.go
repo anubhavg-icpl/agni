@@ -37,14 +37,14 @@ func JWTAuth(authService *auth.Service) func(next http.Handler) http.Handler {
 			// Get token from Authorization header
 			authHeader := r.Header.Get("Authorization")
 			if authHeader == "" {
-				respondError(w, http.StatusUnauthorized, "Missing authorization header")
+				respondError(w, http.StatusUnauthorized, "No authorization header. Were you raised in a barn?")
 				return
 			}
 
 			// Parse Bearer token
 			parts := strings.Split(authHeader, " ")
 			if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-				respondError(w, http.StatusUnauthorized, "Invalid authorization header format")
+				respondError(w, http.StatusUnauthorized, "It's 'Bearer <token>'. Not that hard")
 				return
 			}
 
@@ -53,14 +53,14 @@ func JWTAuth(authService *auth.Service) func(next http.Handler) http.Handler {
 			// Validate token
 			claims, err := authService.ValidateToken(token)
 			if err != nil {
-				respondError(w, http.StatusUnauthorized, "Invalid or expired token")
+				respondError(w, http.StatusUnauthorized, "Your token is as valid as a three-dollar bill")
 				return
 			}
 
 			// Get user
 			user, err := authService.GetUser(claims.UserID)
 			if err != nil {
-				respondError(w, http.StatusUnauthorized, "User not found")
+				respondError(w, http.StatusUnauthorized, "Token is valid but you don't exist. Spooky")
 				return
 			}
 
@@ -94,7 +94,7 @@ func RequireAdmin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := GetUser(r.Context())
 		if user == nil || user.Role != models.UserRoleAdmin {
-			respondError(w, http.StatusForbidden, "Admin access required")
+			respondError(w, http.StatusForbidden, "Nice try, peasant. Admins only")
 			return
 		}
 		next.ServeHTTP(w, r)
