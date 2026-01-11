@@ -21,7 +21,7 @@ import (
 	"github.com/anubhavg-icpl/agni/internal/gui"
 )
 
-//go:embed frontend/build
+//go:embed frontend/dist
 var assets embed.FS
 
 // runGUI starts the GUI mode with embedded frontend
