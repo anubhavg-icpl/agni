@@ -17,6 +17,27 @@ BINPATH:=$(abspath ./bin)
 
 all: firectl
 
+# GUI mode targets
+gui: firectl-gui
+
+firectl-gui: $(SRCFILES) frontend-build
+	go build -tags gui -o firectl-gui
+
+frontend-build:
+	cd frontend && npm install && npm run build
+
+frontend-dev:
+	cd frontend && npm run dev
+
+# Run in GUI mode (API server)
+run-gui: firectl
+	./firectl --gui
+
+# Development: run API server with frontend dev server
+dev: firectl
+	./firectl --gui &
+	cd frontend && npm run dev
+
 release: firectl firectl.sha256
 	test $(shell git status --short | wc -l) -eq 0
 
@@ -63,4 +84,13 @@ clean:
 install:
 	install -o root -g root -m755 -t $(INSTALLPATH) firectl
 
-.PHONY: all clean install build-in-docker test lint release
+.PHONY: all clean install build-in-docker test lint release gui frontend-build frontend-dev run-gui dev
+
+help:
+	@echo "Firectl Build Targets:"
+	@echo "  make          - Build CLI binary (firectl)"
+	@echo "  make gui      - Build GUI binary with frontend (firectl-gui)"
+	@echo "  make run-gui  - Run in GUI mode (API server on :8080)"
+	@echo "  make dev      - Development mode (API + frontend dev server)"
+	@echo "  make test     - Run tests"
+	@echo "  make clean    - Clean build artifacts"
