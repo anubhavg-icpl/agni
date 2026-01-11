@@ -77,10 +77,9 @@
 
 			{#if mounted}
 				<div
-					class="relative w-80 h-80 flex items-center justify-center"
+					class="relative w-80 h-80 flex items-center justify-center rive-container"
 					in:scale={{ duration: 800, delay: 200, easing: elasticOut }}
 				>
-					<div class="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-black/80 rounded-full z-10 pointer-events-none"></div>
 					<RiveAnimation
 						src="/skull-fire-logo.riv"
 						width={320}
@@ -378,5 +377,9 @@
 
 	.bg-gradient-radial {
 		background: radial-gradient(circle, var(--tw-gradient-stops));
+	}
+
+	.rive-container :global(canvas) {
+		mix-blend-mode: lighten;
 	}
 </style>
