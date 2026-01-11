@@ -47,7 +47,7 @@
 		if (vm) {
 			goto('/');
 		} else {
-			error = $vms.error || 'Failed to create VM';
+			error = $vms.error || 'Failed to summon demon. You lack mana.';
 		}
 	}
 </script>

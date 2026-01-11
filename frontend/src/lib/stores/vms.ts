@@ -22,7 +22,9 @@ function createVMStore() {
 				const vms = await api.listVMs();
 				set({ vms: vms || [], loading: false, error: null });
 			} catch (e) {
-				update((s) => ({ ...s, loading: false, error: (e as Error).message }));
+				let msg = (e as Error).message;
+				if (msg.includes('Failed to fetch')) msg = "The zoo is closed. (Network error)";
+				update((s) => ({ ...s, loading: false, error: msg }));
 			}
 		},
 		async create(name: string, config: VM['config']) {
@@ -32,7 +34,9 @@ function createVMStore() {
 				update((s) => ({ ...s, vms: [...s.vms, vm], loading: false }));
 				return vm;
 			} catch (e) {
-				update((s) => ({ ...s, loading: false, error: (e as Error).message }));
+				let msg = (e as Error).message;
+				if (msg.includes('already exists')) msg = "We already have a demon with that name.";
+				update((s) => ({ ...s, loading: false, error: msg }));
 				return null;
 			}
 		},
@@ -42,7 +46,7 @@ function createVMStore() {
 				await this.fetch();
 				return true;
 			} catch (e) {
-				update((s) => ({ ...s, error: (e as Error).message }));
+				update((s) => ({ ...s, error: "It refuses to wake up. (" + (e as Error).message + ")" }));
 				return false;
 			}
 		},
@@ -52,7 +56,7 @@ function createVMStore() {
 				await this.fetch();
 				return true;
 			} catch (e) {
-				update((s) => ({ ...s, error: (e as Error).message }));
+				update((s) => ({ ...s, error: "It won't die. (" + (e as Error).message + ")" }));
 				return false;
 			}
 		},
@@ -62,7 +66,7 @@ function createVMStore() {
 				await this.fetch();
 				return true;
 			} catch (e) {
-				update((s) => ({ ...s, error: (e as Error).message }));
+				update((s) => ({ ...s, error: "Clean kill failed. (" + (e as Error).message + ")" }));
 				return false;
 			}
 		},
@@ -72,7 +76,7 @@ function createVMStore() {
 				update((s) => ({ ...s, vms: s.vms.filter((vm) => vm.id !== id) }));
 				return true;
 			} catch (e) {
-				update((s) => ({ ...s, error: (e as Error).message }));
+				update((s) => ({ ...s, error: "Exorcism failed. (" + (e as Error).message + ")" }));
 				return false;
 			}
 		},

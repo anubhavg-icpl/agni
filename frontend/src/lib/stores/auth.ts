@@ -45,7 +45,13 @@ function createAuthStore() {
 				set({ user: response.user, loading: false, error: null, setupRequired: false });
 				return true;
 			} catch (e) {
-				update((s) => ({ ...s, loading: false, error: (e as Error).message }));
+				let msg = (e as Error).message;
+				if (msg.includes('Invalid username or password') || msg.includes('401')) {
+					msg = "Nice try. Do you even work here?";
+				} else if (msg.includes('Failed to fetch')) {
+					msg = "The server is ghosting us. Check your connection.";
+				}
+				update((s) => ({ ...s, loading: false, error: msg }));
 				return false;
 			}
 		},
@@ -58,7 +64,11 @@ function createAuthStore() {
 				set({ user: response.user, loading: false, error: null, setupRequired: false });
 				return true;
 			} catch (e) {
-				update((s) => ({ ...s, loading: false, error: (e as Error).message }));
+				let msg = (e as Error).message;
+				if (msg.includes('already exists')) {
+					msg = "Someone beat you to it. Too slow.";
+				}
+				update((s) => ({ ...s, loading: false, error: msg }));
 				return false;
 			}
 		},
