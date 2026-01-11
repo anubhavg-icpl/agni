@@ -15,7 +15,10 @@ package api
 
 import (
 	"context"
+	"embed"
+	"io/fs"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/anubhavg-icpl/agni/internal/api/handlers"
@@ -36,6 +39,7 @@ type ServerConfig struct {
 	Store      *storage.Store
 	EnableCORS bool
 	RateLimit  int
+	Assets     *embed.FS // Embedded frontend assets (optional)
 }
 
 // Server represents the HTTP API server
