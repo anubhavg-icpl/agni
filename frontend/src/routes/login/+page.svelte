@@ -37,6 +37,18 @@
 
 	$: passwordMismatch = confirmPassword.length > 0 && password !== confirmPassword;
 	$: passwordTooShort = password.length > 0 && password.length < 8;
+
+	$: passwordInputClass = `w-full pl-12 pr-4 py-3 bg-gray-900/50 border rounded-xl text-white placeholder-gray-500 focus:ring-2 transition-all duration-200 ${
+		passwordTooShort
+			? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+			: 'border-gray-700/50 focus:border-orange-500/50 focus:ring-orange-500/20'
+	}`;
+
+	$: confirmInputClass = `w-full pl-12 pr-4 py-3 bg-gray-900/50 border rounded-xl text-white placeholder-gray-500 focus:ring-2 transition-all duration-200 ${
+		passwordMismatch
+			? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+			: 'border-gray-700/50 focus:border-orange-500/50 focus:ring-orange-500/20'
+	}`;
 </script>
 
 <svelte:head>
@@ -164,9 +176,7 @@
 										type="password"
 										id="setup-password"
 										bind:value={password}
-										class="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200"
-										class:border-red-500/50={passwordTooShort}
-										class:focus:border-red-500/50={passwordTooShort}
+										class={passwordInputClass}
 										placeholder="Minimum 8 characters"
 										required
 									/>
@@ -193,9 +203,7 @@
 										type="password"
 										id="setup-confirm"
 										bind:value={confirmPassword}
-										class="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200"
-										class:border-red-500/50={passwordMismatch}
-										class:focus:border-red-500/50={passwordMismatch}
+										class={confirmInputClass}
 										placeholder="Type it again"
 										required
 									/>
