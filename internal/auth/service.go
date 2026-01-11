@@ -72,7 +72,7 @@ func (s *Service) Setup(username, password string) (*models.User, error) {
 	}
 
 	if !ValidatePasswordStrength(password) {
-		return nil, models.NewAPIError(400, "Password must be at least 8 characters", "")
+		return nil, models.NewAPIError(400, "Password too weak. 8 characters minimum. 'password123' doesn't count", "")
 	}
 
 	passwordHash, err := HashPassword(password)
@@ -119,7 +119,7 @@ func (s *Service) GetUser(id string) (*models.User, error) {
 // CreateUser creates a new user (admin only)
 func (s *Service) CreateUser(username, password string, role models.UserRole) (*models.User, error) {
 	if !ValidatePasswordStrength(password) {
-		return nil, models.NewAPIError(400, "Password must be at least 8 characters", "")
+		return nil, models.NewAPIError(400, "Password too weak. 8 characters minimum. 'password123' doesn't count", "")
 	}
 
 	passwordHash, err := HashPassword(password)
@@ -155,7 +155,7 @@ func (s *Service) ChangePassword(userID, currentPassword, newPassword string) er
 	}
 
 	if !ValidatePasswordStrength(newPassword) {
-		return models.NewAPIError(400, "Password must be at least 8 characters", "")
+		return models.NewAPIError(400, "New password is weak sauce. 8 characters minimum", "")
 	}
 
 	passwordHash, err := HashPassword(newPassword)
