@@ -22,6 +22,8 @@ import (
 // runGUI starts the GUI mode (API server only without embedded frontend)
 func runGUI() {
 	cfg := gui.DefaultConfig()
+	parseGUIFlags(&cfg)
+
 	launcher := gui.NewLauncher(cfg)
 
 	if err := launcher.Start(); err != nil {

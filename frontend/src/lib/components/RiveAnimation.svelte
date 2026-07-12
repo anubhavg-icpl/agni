@@ -11,67 +11,71 @@
 
 	let canvas: HTMLCanvasElement;
 	let riveInstance: any = null;
+	let handleResize: (() => void) | null = null;
 
-	onMount(async () => {
+	onMount(() => {
 		if (!browser) return;
 
-		// Dynamic import to avoid SSR issues
-		const rive = await import('@rive-app/canvas');
-		const Rive = rive.Rive || rive.default?.Rive;
-		const Layout = rive.Layout || rive.default?.Layout;
-		const Fit = rive.Fit || rive.default?.Fit;
-		const Alignment = rive.Alignment || rive.default?.Alignment;
+		// Async load without returning a cleanup from the promise (Svelte onMount
+		// cannot return a destructor from an async callback).
+		void (async () => {
+			const rive = await import('@rive-app/canvas');
+			const Rive = rive.Rive || rive.default?.Rive;
+			const Layout = rive.Layout || rive.default?.Layout;
+			const Fit = rive.Fit || rive.default?.Fit;
+			const Alignment = rive.Alignment || rive.default?.Alignment;
 
-		if (!Rive) {
-			console.error('Rive not found');
-			return;
-		}
-
-		const config: any = {
-			src,
-			canvas,
-			autoplay: true,
-			useDevicePixelRatio: true,
-			onLoad: () => {
-				riveInstance?.resizeDrawingSurfaceToCanvas();
-			},
-			onLoop: () => {
-				// Animation will loop automatically
-			},
-			onStop: () => {
-				// Restart animation if loop is enabled
-				if (loop && riveInstance) {
-					riveInstance.play();
-				}
+			if (!Rive) {
+				console.error('Rive not found');
+				return;
 			}
-		};
 
-		if (Layout && Fit && Alignment) {
-			config.layout = new Layout({
-				fit: Fit.Contain,
-				alignment: Alignment.Center
-			});
-		}
+			const config: any = {
+				src,
+				canvas,
+				autoplay: true,
+				useDevicePixelRatio: true,
+				onLoad: () => {
+					riveInstance?.resizeDrawingSurfaceToCanvas();
+				},
+				onLoop: () => {
+					// Animation will loop automatically
+				},
+				onStop: () => {
+					// Restart animation if loop is enabled
+					if (loop && riveInstance) {
+						riveInstance.play();
+					}
+				}
+			};
 
-		if (stateMachines) config.stateMachines = stateMachines;
-		if (animations) config.animations = animations;
+			if (Layout && Fit && Alignment) {
+				config.layout = new Layout({
+					fit: Fit.Contain,
+					alignment: Alignment.Center
+				});
+			}
 
-		riveInstance = new Rive(config);
+			if (stateMachines) config.stateMachines = stateMachines;
+			if (animations) config.animations = animations;
 
-		const handleResize = () => {
-			riveInstance?.resizeDrawingSurfaceToCanvas();
-		};
+			riveInstance = new Rive(config);
 
-		window.addEventListener('resize', handleResize);
-
-		return () => {
-			window.removeEventListener('resize', handleResize);
-		};
+			handleResize = () => {
+				riveInstance?.resizeDrawingSurfaceToCanvas();
+			};
+			window.addEventListener('resize', handleResize);
+		})();
 	});
 
 	onDestroy(() => {
+		if (handleResize) {
+			window.removeEventListener('resize', handleResize);
+			handleResize = null;
+		}
 		if (riveInstance) {
 			riveInstance.cleanup();
+			riveInstance = null;
 		}
 	});
 </script>

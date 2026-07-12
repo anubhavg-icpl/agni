@@ -14,7 +14,9 @@
 package vm
 
 import (
+	"fmt"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/anubhavg-icpl/agni/pkg/models"
@@ -42,6 +44,7 @@ type LogStreamer struct {
 	mu          sync.RWMutex
 	buffers     map[string][]*models.LogEntry // Recent logs per VM
 	bufferSize  int
+	subSeq      atomic.Uint64
 }
 
 // NewLogStreamer creates a new LogStreamer
@@ -59,7 +62,7 @@ func (ls *LogStreamer) Subscribe(vmID string, filter LogFilter) *LogSubscriber {
 	defer ls.mu.Unlock()
 
 	sub := &LogSubscriber{
-		ID:      generateSubscriberID(),
+		ID:      ls.nextSubscriberID(),
 		VMID:    vmID,
 		Channel: make(chan *models.LogEntry, 100),
 		Filter:  filter,
@@ -68,10 +71,12 @@ func (ls *LogStreamer) Subscribe(vmID string, filter LogFilter) *LogSubscriber {
 
 	ls.subscribers[sub.ID] = sub
 
-	// Send recent logs from buffer
-	if logs, ok := ls.buffers[vmID]; ok {
+	// Replay recent logs from a snapshot so buffer mutation cannot race the goroutine.
+	if logs, ok := ls.buffers[vmID]; ok && len(logs) > 0 {
+		snapshot := make([]*models.LogEntry, len(logs))
+		copy(snapshot, logs)
 		go func() {
-			for _, log := range logs {
+			for _, log := range snapshot {
 				if ls.matchesFilter(log, filter) {
 					select {
 					case sub.Channel <- log:
@@ -94,16 +99,23 @@ func (ls *LogStreamer) Unsubscribe(subID string) {
 	defer ls.mu.Unlock()
 
 	if sub, ok := ls.subscribers[subID]; ok {
-		close(sub.done)
-		close(sub.Channel)
+		// Signal producers (Publish + buffer replay) to stop. Do not close Channel
+		// here — an in-flight send to a closed channel would panic.
+		select {
+		case <-sub.done:
+			// already closed
+		default:
+			close(sub.done)
+		}
 		delete(ls.subscribers, subID)
 	}
 }
 
 // Publish sends a log entry to all relevant subscribers
 func (ls *LogStreamer) Publish(vmID string, entry *models.LogEntry) {
-	ls.mu.RLock()
-	defer ls.mu.RUnlock()
+	// Buffer mutation requires an exclusive lock (was incorrectly RLock'd before).
+	ls.mu.Lock()
+	defer ls.mu.Unlock()
 
 	// Add to buffer
 	ls.addToBuffer(vmID, entry)
@@ -220,7 +232,7 @@ func findSubstring(s, substr string) bool {
 	return false
 }
 
-// generateSubscriberID generates a unique subscriber ID
-func generateSubscriberID() string {
-	return time.Now().Format("20060102150405.000000")
+// nextSubscriberID generates a unique subscriber ID
+func (ls *LogStreamer) nextSubscriberID() string {
+	return fmt.Sprintf("%s-%d", time.Now().Format("20060102150405.000000"), ls.subSeq.Add(1))
 }

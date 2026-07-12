@@ -89,6 +89,10 @@ class ApiClient {
 		return this.request('POST', '/vms', data);
 	}
 
+	async updateVM(id: string, data: UpdateVMRequest): Promise<VM> {
+		return this.request('PUT', `/vms/${id}`, data);
+	}
+
 	async deleteVM(id: string): Promise<void> {
 		await this.request('DELETE', `/vms/${id}`);
 	}
@@ -120,6 +124,10 @@ class ApiClient {
 
 	async createConfig(data: CreateConfigRequest): Promise<ConfigTemplate> {
 		return this.request('POST', '/configs', data);
+	}
+
+	async updateConfig(id: string, data: CreateConfigRequest): Promise<ConfigTemplate> {
+		return this.request('PUT', `/configs/${id}`, data);
 	}
 
 	async deleteConfig(id: string): Promise<void> {
@@ -184,12 +192,15 @@ export interface VMConfig {
 }
 
 export interface JailerConfig {
-	chroot_base: string;
+	binary?: string;
+	exec_file: string;
+	id?: string;
 	uid: number;
 	gid: number;
-	daemonize: boolean;
-	exec_file: string;
 	numa_node?: number;
+	// Aligns with Go models.JailerConfig `json:"chroot_base_dir"`
+	chroot_base_dir: string;
+	daemonize: boolean;
 }
 
 export interface Drive {
@@ -228,6 +239,11 @@ export interface VMActionResponse {
 export interface CreateVMRequest {
 	name: string;
 	config: VMConfig;
+}
+
+export interface UpdateVMRequest {
+	name?: string;
+	config?: VMConfig;
 }
 
 export interface ConfigTemplate {

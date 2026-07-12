@@ -27,6 +27,7 @@ var assets embed.FS
 // runGUI starts the GUI mode with embedded frontend
 func runGUI() {
 	cfg := gui.DefaultConfig()
+	parseGUIFlags(&cfg)
 	cfg.Assets = &assets // Pass embedded assets
 
 	launcher := gui.NewLauncher(cfg)

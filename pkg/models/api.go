@@ -58,8 +58,8 @@ type CreateVMRequest struct {
 
 // UpdateVMRequest represents a request to update a VM
 type UpdateVMRequest struct {
-	Name   string   `json:"name,omitempty"`
-	Config VMConfig `json:"config,omitempty"`
+	Name   string    `json:"name,omitempty"`
+	Config *VMConfig `json:"config,omitempty"`
 }
 
 // VMActionResponse represents a response to a VM action

@@ -20,6 +20,8 @@
 	let connected = false;
 	let error = '';
 	let logContainer: HTMLElement;
+	let destroyed = false;
+	let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
 	let levelFilter = 'all';
 	let searchQuery = '';
@@ -34,7 +36,42 @@
 		fatal: 'text-red-500'
 	};
 
+	function appendLog(entry: LogEntry) {
+		logs = [...logs, entry].slice(-1000); // Keep last 1000 logs
+		applyFilters();
+		if (autoScroll) {
+			tick().then(scrollToBottom);
+		}
+	}
+
+	function parseLogMessage(raw: string): LogEntry | null {
+		try {
+			const data = JSON.parse(raw);
+			// Backend sends models.WebSocketMessage { type, payload }
+			if (data && typeof data === 'object' && data.type === 'log' && data.payload) {
+				return data.payload as LogEntry;
+			}
+			// Fallback: bare LogEntry
+			if (data && typeof data === 'object' && (data.message != null || data.level != null)) {
+				return data as LogEntry;
+			}
+			return {
+				timestamp: new Date().toISOString(),
+				level: 'info',
+				message: typeof data === 'string' ? data : raw
+			};
+		} catch {
+			return {
+				timestamp: new Date().toISOString(),
+				level: 'info',
+				message: raw
+			};
+		}
+	}
+
 	function connect() {
+		if (destroyed) return;
+
 		const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 		const host = window.location.host;
 		const token = api.getToken();
@@ -47,32 +84,9 @@
 		};
 
 		ws.onmessage = (event) => {
-			if (paused) return;
-
-			try {
-				const entry: LogEntry = JSON.parse(event.data);
-				logs = [...logs, entry].slice(-1000); // Keep last 1000 logs
-				applyFilters();
-
-				if (autoScroll) {
-					tick().then(scrollToBottom);
-				}
-			} catch {
-				// Handle plain text messages
-				logs = [
-					...logs,
-					{
-						timestamp: new Date().toISOString(),
-						level: 'info',
-						message: event.data
-					}
-				].slice(-1000);
-				applyFilters();
-
-				if (autoScroll) {
-					tick().then(scrollToBottom);
-				}
-			}
+			if (paused || destroyed) return;
+			const entry = parseLogMessage(event.data);
+			if (entry) appendLog(entry);
 		};
 
 		ws.onerror = () => {
@@ -82,9 +96,10 @@
 
 		ws.onclose = () => {
 			connected = false;
+			if (destroyed) return;
 			// Attempt to reconnect after 3 seconds
-			setTimeout(() => {
-				if (!ws || ws.readyState === WebSocket.CLOSED) {
+			reconnectTimer = setTimeout(() => {
+				if (!destroyed && (!ws || ws.readyState === WebSocket.CLOSED)) {
 					connect();
 				}
 			}, 3000);
@@ -92,7 +107,13 @@
 	}
 
 	function disconnect() {
+		destroyed = true;
+		if (reconnectTimer) {
+			clearTimeout(reconnectTimer);
+			reconnectTimer = null;
+		}
 		if (ws) {
+			ws.onclose = null;
 			ws.close();
 			ws = null;
 		}

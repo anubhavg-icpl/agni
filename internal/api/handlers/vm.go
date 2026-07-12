@@ -121,8 +121,19 @@ func (h *VMHandler) Update(w http.ResponseWriter, r *http.Request) {
 		vm.Name = req.Name
 		vm.Config.Name = req.Name
 	}
+	if req.Config != nil {
+		cfg := *req.Config
+		// Keep VM name authoritative when only config is patched without a name
+		if req.Name != "" {
+			cfg.Name = req.Name
+		} else if cfg.Name == "" {
+			cfg.Name = vm.Name
+		} else {
+			vm.Name = cfg.Name
+		}
+		vm.Config = cfg
+	}
 
-	// Actually persist the changes (unlike before...)
 	if err := h.manager.Update(vm); err != nil {
 		respondError(w, http.StatusInternalServerError, "Failed to save. The database rejected your changes")
 		return

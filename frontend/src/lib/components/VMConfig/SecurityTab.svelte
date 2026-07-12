@@ -8,7 +8,7 @@
 
 	let jailerEnabled = !!config.jailer;
 	let jailerConfig: JailerConfig = config.jailer || {
-		chroot_base: '/srv/jailer',
+		chroot_base_dir: '/srv/jailer',
 		uid: 1000,
 		gid: 1000,
 		daemonize: true,
@@ -34,7 +34,7 @@
 
 	function handleChrootBaseInput(event: Event) {
 		const target = event.target as HTMLInputElement;
-		updateJailerField('chroot_base', target.value);
+		updateJailerField('chroot_base_dir', target.value);
 	}
 
 	function handleUIDInput(event: Event) {
@@ -92,7 +92,7 @@
 				<input
 					type="text"
 					id="chrootBase"
-					value={jailerConfig.chroot_base}
+					value={jailerConfig.chroot_base_dir}
 					on:input={handleChrootBaseInput}
 					class="input w-full font-mono"
 					placeholder="/srv/jailer"
@@ -198,7 +198,7 @@
 			{#if jailerEnabled}
 				<div>
 					<span class="text-gray-500">Chroot:</span>
-					<span class="ml-2 font-mono text-xs">{jailerConfig.chroot_base}</span>
+					<span class="ml-2 font-mono text-xs">{jailerConfig.chroot_base_dir}</span>
 				</div>
 				<div>
 					<span class="text-gray-500">User/Group:</span>

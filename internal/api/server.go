@@ -98,8 +98,18 @@ func (s *Server) setupMiddleware() {
 		s.router.Use(middleware.RateLimit(s.config.RateLimit))
 	}
 
-	// Timeout
-	s.router.Use(chimiddleware.Timeout(60 * time.Second))
+	// Request timeout for normal HTTP handlers. Skip long-lived WebSocket streams
+	// (chi Timeout cancels the request context and tears down the handler).
+	s.router.Use(func(next http.Handler) http.Handler {
+		timeout := chimiddleware.Timeout(60 * time.Second)(next)
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if strings.HasSuffix(r.URL.Path, "/logs") {
+				next.ServeHTTP(w, r)
+				return
+			}
+			timeout.ServeHTTP(w, r)
+		})
+	})
 }
 
 // setupRoutes configures API routes
@@ -282,11 +292,15 @@ func (s *Server) Start(addr string) error {
 	}
 
 	s.httpServer = &http.Server{
-		Addr:         addr,
-		Handler:      s.router,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		Addr: addr,
+		Handler: s.router,
+		// ReadHeaderTimeout bounds slowloris; body reads are still limited by
+		// per-route middleware. WriteTimeout must be 0 so long-lived WebSocket
+		// log streams are not killed mid-session by the HTTP server.
+		ReadHeaderTimeout: 15 * time.Second,
+		ReadTimeout:       0,
+		WriteTimeout:      0,
+		IdleTimeout:       60 * time.Second,
 	}
 
 	s.logger.Info().Str("address", addr).Msg("Starting API server")

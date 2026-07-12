@@ -16,6 +16,7 @@ package handlers
 import (
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/anubhavg-icpl/agni/internal/auth"
 	"github.com/anubhavg-icpl/agni/internal/vm"
@@ -90,6 +91,9 @@ func (h *WebSocketHandler) StreamLogs(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
+	// gorilla/websocket connections are not safe for concurrent writers
+	var writeMu sync.Mutex
+
 	// Subscribe to logs
 	logStreamer := h.vmManager.GetLogStreamer()
 	filter := vm.LogFilter{}
@@ -118,7 +122,9 @@ func (h *WebSocketHandler) StreamLogs(w http.ResponseWriter, r *http.Request) {
 			}
 			// Handle ping/pong or filter updates
 			if string(msg) == "ping" {
+				writeMu.Lock()
 				_ = conn.WriteMessage(websocket.TextMessage, []byte("pong"))
+				writeMu.Unlock()
 			}
 		}
 	}()
@@ -134,7 +140,10 @@ func (h *WebSocketHandler) StreamLogs(w http.ResponseWriter, r *http.Request) {
 				Type:    "log",
 				Payload: log,
 			}
-			if err := conn.WriteJSON(msg); err != nil {
+			writeMu.Lock()
+			err := conn.WriteJSON(msg)
+			writeMu.Unlock()
+			if err != nil {
 				return
 			}
 		case <-done:
