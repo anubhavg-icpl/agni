@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Terminal } from '@xterm/xterm';
-	import { FitAddon } from '@xterm/addon-fit';
+	import type { Terminal } from '@xterm/xterm';
+	import type { FitAddon } from '@xterm/addon-fit';
 	import '@xterm/xterm/css/xterm.css';
 	import { api, type VM } from '$lib/api/client';
 	import { vms as vmStore } from '$lib/stores/vms';
@@ -107,49 +107,58 @@
 	onMount(() => {
 		void refresh();
 
-		const t = new Terminal({
-			fontFamily: "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
-			fontSize: 12.5,
-			lineHeight: 1.2,
-			cursorBlink: true,
-			convertEol: true,
-			scrollback: 5000,
-			theme: {
-				background: '#0a0a0a',
-				foreground: '#ededed',
-				cursor: '#ededed',
-				selectionBackground: '#525252'
-			}
-		});
-		const f = new FitAddon();
-		t.loadAddon(f);
-		if (!terminalEl) return;
-		t.open(terminalEl);
-		f.fit();
-		t.onData((d) => {
-			if (ws && ws.readyState === WebSocket.OPEN) ws.send(d);
-		});
-		term = t;
-		fit = f;
+		// xterm ships as CommonJS: load it at mount time so Vite's SSR import
+		// analysis never sees a named CJS export.
+		void (async () => {
+			const [{ Terminal: TerminalCtor }, { FitAddon: FitAddonCtor }] = await Promise.all([
+				import('@xterm/xterm'),
+				import('@xterm/addon-fit')
+			]);
+			if (!terminalEl) return;
 
-		resizeHandler = () => fit?.fit();
-		window.addEventListener('resize', resizeHandler);
+			const t = new TerminalCtor({
+				fontFamily: "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+				fontSize: 12.5,
+				lineHeight: 1.2,
+				cursorBlink: true,
+				convertEol: true,
+				scrollback: 5000,
+				theme: {
+					background: '#0a0a0a',
+					foreground: '#ededed',
+					cursor: '#ededed',
+					selectionBackground: '#525252'
+				}
+			});
+			const f = new FitAddonCtor();
+			t.loadAddon(f);
+			t.open(terminalEl);
+			f.fit();
+			t.onData((d) => {
+				if (ws && ws.readyState === WebSocket.OPEN) ws.send(d);
+			});
+			term = t;
+			fit = f;
 
-		statusTimer = setInterval(() => {
-			void (async () => {
-				const was = vm?.status;
-				await refresh();
-				if (was && was !== 'running' && vm?.status === 'running') connectConsole();
-			})();
-		}, 2000);
+			resizeHandler = () => fit?.fit();
+			window.addEventListener('resize', resizeHandler);
 
-		if (vm?.status === 'running') connectConsole();
+			statusTimer = setInterval(() => {
+				void (async () => {
+					const was = vm?.status;
+					await refresh();
+					if (was && was !== 'running' && vm?.status === 'running') connectConsole();
+				})();
+			}, 2000);
+
+			if (vm?.status === 'running') connectConsole();
+		})();
 
 		return () => {
 			clearInterval(statusTimer);
 			if (resizeHandler) window.removeEventListener('resize', resizeHandler);
 			disconnectConsole();
-			t.dispose();
+			term?.dispose();
 		};
 	});
 </script>

@@ -469,6 +469,64 @@ func Catalog() []Template {
 				},
 			},
 		})
+		// --- OCI registry builds: RHEL family, Fedora, Amazon Linux, Arch,
+		// Debian and Nix, pulled from the vendors' official container images
+		// and flattened into an ext4 root filesystem at download time.
+		ociGuests := []struct {
+			id, name, os, version, logo, url string
+			memMB, sizeMB                    int64
+			shellInit                        bool
+		}{
+			{"rocky-9", "Rocky Linux 9", "Rocky Linux", "9", "rockylinux", "oci://registry-1.docker.io/library/rockylinux:9", 512, 80, false},
+			{"rocky-8", "Rocky Linux 8", "Rocky Linux", "8", "rockylinux", "oci://registry-1.docker.io/library/rockylinux:8", 512, 75, false},
+			{"alma-9", "AlmaLinux 9", "AlmaLinux", "9", "almalinux", "oci://registry-1.docker.io/library/almalinux:9", 512, 70, false},
+			{"alma-8", "AlmaLinux 8", "AlmaLinux", "8", "almalinux", "oci://registry-1.docker.io/library/almalinux:8", 512, 65, false},
+			{"centos-stream9", "CentOS Stream 9", "CentOS", "Stream 9", "centos", "oci://quay.io/centos/centos:stream9", 512, 75, false},
+			{"centos-stream10", "CentOS Stream 10", "CentOS", "Stream 10", "centos", "oci://quay.io/centos/centos:stream10", 512, 80, false},
+			{"oracle-9", "Oracle Linux 9", "Oracle Linux", "9", "linux", "oci://registry-1.docker.io/library/oraclelinux:9", 512, 80, false},
+			{"amazonlinux-2023", "Amazon Linux 2023", "Amazon Linux", "2023", "linux", "oci://registry-1.docker.io/library/amazonlinux:2023", 512, 60, false},
+			{"arch", "Arch Linux", "Arch Linux", "rolling", "archlinux", "oci://registry-1.docker.io/library/archlinux:base", 512, 170, false},
+			{"debian-12", "Debian 12 (bookworm)", "Debian", "12", "debian", "oci://registry-1.docker.io/library/debian:12", 512, 85, false},
+			{"debian-13", "Debian 13 (trixie)", "Debian", "13", "debian", "oci://registry-1.docker.io/library/debian:13", 512, 85, false},
+			{"fedora-42", "Fedora 42", "Fedora", "42", "fedora", "oci://registry-1.docker.io/library/fedora:42", 512, 95, false},
+			{"nix", "Nix package manager", "Nix", "latest", "nixos", "oci://registry-1.docker.io/nixos/nix:latest", 512, 250, true},
+		}
+		for _, g := range ociGuests {
+			opts := rootOpts
+			prep := []string{"systemd-autologin"}
+			desc := "Official " + g.name + " container image flattened into an ext4 root filesystem. The serial console auto-logs in as root."
+			if g.shellInit {
+				opts = rootOpts + " init=/init"
+				prep = []string{"shell-init"}
+				desc = "Official nixos/nix container image flattened into ext4, with a minimal serial shell init (Nix package manager, not full NixOS)."
+			}
+			catalog = append(catalog, Template{
+				ID:           g.id,
+				Name:         g.name,
+				OS:           g.os,
+				Version:      g.version,
+				Logo:         g.logo,
+				Description:  desc,
+				Category:     "os",
+				Arch:         arch,
+				KernelOpts:   opts,
+				DefaultCPUs:  1,
+				DefaultMemMB: g.memMB,
+				Artifacts: []Artifact{
+					ciKernel,
+					{
+						Name:            "Root filesystem",
+						Kind:            KindRootfs,
+						Filename:        "rootfs.ext4",
+						URL:             g.url,
+						PostProcess:     "oci-to-ext4",
+						PostProcessArgs: prep,
+						ToolDeps:        []string{"mkfs.ext4"},
+						SizeHintMB:      int(g.sizeMB),
+					},
+				},
+			})
+		}
 	}
 
 	return catalog

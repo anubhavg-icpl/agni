@@ -4,15 +4,21 @@
 package images
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
+	"runtime"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -351,10 +357,14 @@ func (m *Manager) run(job *Job, t templates.Template) {
 			target = final + ".squashfs"
 		case "tar-to-ext4":
 			target = final + ".tar"
+		case "oci-to-ext4":
+			target = "" // pulled and extracted by ociToExt4 itself
 		}
-		if err := m.download(job, i, a, target); err != nil {
-			job.fail(fmt.Errorf("downloading %s: %w", a.Name, err))
-			return
+		if target != "" {
+			if err := m.download(job, i, a, target); err != nil {
+				job.fail(fmt.Errorf("downloading %s: %w", a.Name, err))
+				return
+			}
 		}
 		switch a.PostProcess {
 		case "squashfs-to-ext4":
@@ -373,6 +383,13 @@ func (m *Manager) run(job *Job, t templates.Template) {
 				return
 			}
 			_ = os.Remove(target)
+		case "oci-to-ext4":
+			job.setArtifact(i, StateDownloading, "Pulling container image")
+			job.setPhase(phaseDownload)
+			if err := m.ociToExt4(job, i, a, final); err != nil {
+				job.fail(fmt.Errorf("building %s: %w", a.Name, err))
+				return
+			}
 		}
 		job.setArtifact(i, StateDone, "Ready")
 	}
@@ -474,6 +491,375 @@ func (m *Manager) squashfsToExt4(squashPath, ext4Path string) error {
 	return mkfsExt4FromDir(rootDir, ext4Path)
 }
 
+// ociReference identifies an image on an OCI registry.
+type ociReference struct {
+	registry string // e.g. registry-1.docker.io, quay.io
+	name     string // e.g. library/rockylinux
+	tag      string
+}
+
+// ociToExt4 builds a rootfs from an OCI container image: select the host-arch
+// manifest, stream every layer (applying whiteouts), run the prep steps, and
+// pack the flattened tree into an ext4 image.
+func (m *Manager) ociToExt4(job *Job, i int, a templates.Artifact, ext4Path string) error {
+	ref, err := parseOCIRef(a.URL)
+	if err != nil {
+		return err
+	}
+
+	client := &http.Client{Timeout: 0}
+	authHeader, err := ociToken(client, ref)
+	if err != nil {
+		return fmt.Errorf("authenticating to %s: %w", ref.registry, err)
+	}
+
+	manifest, err := ociFetchManifest(client, ref, authHeader)
+	if err != nil {
+		return fmt.Errorf("fetching manifest for %s:%s: %w", ref.name, ref.tag, err)
+	}
+
+	var total int64
+	for _, l := range manifest.Layers {
+		total += l.Size
+	}
+	job.setArtifactProgress(i, 0, total)
+
+	workDir := ext4Path + ".work"
+	defer os.RemoveAll(workDir)
+	rootDir := filepath.Join(workDir, "root")
+	if err := os.MkdirAll(rootDir, 0755); err != nil {
+		return err
+	}
+
+	dirModes := map[string]os.FileMode{}
+	var done int64
+	for _, l := range manifest.Layers {
+		if err := m.ociApplyLayer(client, ref, authHeader, l.Digest, rootDir, dirModes, func(n int64) {
+			job.setArtifactProgress(i, done+n, total)
+		}); err != nil {
+			return fmt.Errorf("applying layer %s: %w", l.Digest[:19], err)
+		}
+		done += l.Size
+		job.setArtifactProgress(i, done, total)
+	}
+	if err := applyDirModes(rootDir, dirModes); err != nil {
+		return fmt.Errorf("applying directory modes: %w", err)
+	}
+
+	job.setArtifact(i, StateProcessing, "Configuring guest")
+	job.setPhase(phaseConvert)
+	// Container images ship secret files with mode 0000 (e.g. /etc/gshadow on
+	// RHEL); mkfs.ext4 -d runs unprivileged and must be able to read them.
+	if err := ensureOwnerReadable(rootDir); err != nil {
+		return fmt.Errorf("relaxing file modes: %w", err)
+	}
+	for _, arg := range a.PostProcessArgs {
+		switch arg {
+		case "systemd-autologin":
+			if err := prepareUbuntuAutologin(rootDir); err != nil {
+				return err
+			}
+		case "shell-init":
+			if err := prepareShellInit(rootDir); err != nil {
+				return err
+			}
+		}
+	}
+	return mkfsExt4FromDir(rootDir, ext4Path)
+}
+
+func parseOCIRef(url string) (ociReference, error) {
+	s := strings.TrimPrefix(url, "oci://")
+	if s == url || s == "" {
+		return ociReference{}, fmt.Errorf("not an oci:// reference: %s", url)
+	}
+	registry, rest, ok := strings.Cut(s, "/")
+	if !ok {
+		return ociReference{}, fmt.Errorf("missing repository in %s", url)
+	}
+	name, tag, _ := strings.Cut(rest, ":")
+	if name == "" || tag == "" {
+		return ociReference{}, fmt.Errorf("missing name or tag in %s", url)
+	}
+	if strings.HasPrefix(registry, "docker.io") {
+		registry = "registry-1.docker.io"
+	}
+	return ociReference{registry: registry, name: name, tag: tag}, nil
+}
+
+// ociToken returns an Authorization header value; public registries that need
+// no token (quay.io) yield an empty string.
+func ociToken(client *http.Client, ref ociReference) (string, error) {
+	if ref.registry != "registry-1.docker.io" {
+		return "", nil
+	}
+	u := fmt.Sprintf("https://auth.docker.io/token?service=registry.docker.io&scope=repository:%s:pull", ref.name)
+	resp, err := client.Get(u)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	var body struct {
+		Token string `json:"token"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		return "", err
+	}
+	if body.Token == "" {
+		return "", fmt.Errorf("empty token from auth.docker.io")
+	}
+	return "Bearer " + body.Token, nil
+}
+
+type ociLayerInfo struct {
+	Digest string `json:"digest"`
+	Size   int64  `json:"size"`
+}
+
+type ociManifest struct {
+	MediaType string `json:"mediaType"`
+	Manifests []struct {
+		Digest   string `json:"digest"`
+		Platform struct {
+			Architecture string `json:"architecture"`
+			OS           string `json:"os"`
+		} `json:"platform"`
+	} `json:"manifests"`
+	Layers []ociLayerInfo `json:"layers"`
+}
+
+func ociFetchManifest(client *http.Client, ref ociReference, auth string) (*ociManifest, error) {
+	index, err := ociGetManifestJSON(client, ref, ref.tag, auth)
+	if err != nil {
+		return nil, err
+	}
+	if len(index.Layers) > 0 {
+		return index, nil
+	}
+	// Multi-arch index: resolve the matching platform child manifest.
+	want := "amd64"
+	if runtime.GOARCH == "arm64" {
+		want = "arm64"
+	}
+	for _, child := range index.Manifests {
+		if child.Platform.OS == "linux" && child.Platform.Architecture == want {
+			return ociGetManifestJSON(client, ref, child.Digest, auth)
+		}
+	}
+	return nil, fmt.Errorf("no linux/%s manifest in %s:%s", want, ref.name, ref.tag)
+}
+
+func ociGetManifestJSON(client *http.Client, ref ociReference, reference, auth string) (*ociManifest, error) {
+	u := fmt.Sprintf("https://%s/v2/%s/manifests/%s", ref.registry, ref.name, reference)
+	req, err := http.NewRequest(http.MethodGet, u, nil)
+	if err != nil {
+		return nil, err
+	}
+	if auth != "" {
+		req.Header.Set("Authorization", auth)
+	}
+	req.Header.Set("Accept", strings.Join([]string{
+		"application/vnd.oci.image.index.v1+json",
+		"application/vnd.docker.distribution.manifest.list.v2+json",
+		"application/vnd.oci.image.manifest.v1+json",
+		"application/vnd.docker.distribution.manifest.v2+json",
+	}, ", "))
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("registry returned %s for %s", resp.Status, reference)
+	}
+	var m ociManifest
+	if err := json.NewDecoder(resp.Body).Decode(&m); err != nil {
+		return nil, err
+	}
+	return &m, nil
+}
+
+// ociApplyLayer downloads one layer and extracts it over the root directory,
+// honoring OCI whiteouts (.wh.<name> deletes, .wh..wh..opq empties a directory).
+func (m *Manager) ociApplyLayer(client *http.Client, ref ociReference, auth, digest, rootDir string, dirModes map[string]os.FileMode, progress func(int64)) error {
+	u := fmt.Sprintf("https://%s/v2/%s/blobs/%s", ref.registry, ref.name, digest)
+	req, err := http.NewRequest(http.MethodGet, u, nil)
+	if err != nil {
+		return err
+	}
+	if auth != "" {
+		req.Header.Set("Authorization", auth)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("blob fetch returned %s", resp.Status)
+	}
+
+	counting := &countingReader{r: resp.Body, fn: progress}
+	gz, err := gzip.NewReader(counting)
+	if err != nil {
+		return fmt.Errorf("layer is not gzip: %w", err)
+	}
+	defer gz.Close()
+
+	tr := tar.NewReader(gz)
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		if err := applyTarEntry(hdr, tr, rootDir, dirModes); err != nil {
+			return fmt.Errorf("%s: %w", hdr.Name, err)
+		}
+	}
+}
+
+type countingReader struct {
+	r  io.Reader
+	n  int64
+	fn func(int64)
+}
+
+func (c *countingReader) Read(p []byte) (int, error) {
+	n, err := c.r.Read(p)
+	c.n += int64(n)
+	if c.fn != nil {
+		c.fn(c.n)
+	}
+	return n, err
+}
+
+// applyTarEntry writes a single tar entry into the target root, skipping
+// device nodes (devtmpfs provides them at boot). Directories are created
+// owner-writable and their final mode is recorded in dirModes, because later
+// layers routinely write into directories whose shipped mode is read-only.
+func applyTarEntry(hdr *tar.Header, r io.Reader, rootDir string, dirModes map[string]os.FileMode) error {
+	clean := path.Clean("/" + hdr.Name)
+	target := filepath.Join(rootDir, clean)
+	base := path.Base(clean)
+	dir := filepath.Dir(target)
+
+	switch {
+	case base == ".wh..wh..opq":
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			return err
+		}
+		for _, e := range entries {
+			if err := os.RemoveAll(filepath.Join(dir, e.Name())); err != nil {
+				return err
+			}
+		}
+		return nil
+	case strings.HasPrefix(base, ".wh."):
+		return os.RemoveAll(filepath.Join(dir, strings.TrimPrefix(base, ".wh.")))
+	}
+
+	switch hdr.Typeflag {
+	case tar.TypeDir:
+		if err := os.MkdirAll(target, 0700); err != nil {
+			return err
+		}
+		dirModes[clean] = hdr.FileInfo().Mode()
+		return nil
+	case tar.TypeReg:
+		if err := os.MkdirAll(dir, 0700); err != nil {
+			return err
+		}
+		_ = os.Remove(target)
+		f, err := os.OpenFile(target, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, hdr.FileInfo().Mode().Perm())
+		if err != nil {
+			return err
+		}
+		if _, err := io.Copy(f, r); err != nil {
+			f.Close()
+			return err
+		}
+		if err := f.Chmod(hdr.FileInfo().Mode()); err != nil {
+			f.Close()
+			return err
+		}
+		return f.Close()
+	case tar.TypeSymlink:
+		_ = os.Remove(target)
+		return os.Symlink(hdr.Linkname, target)
+	case tar.TypeLink:
+		_ = os.Remove(target)
+		source := filepath.Join(rootDir, path.Clean("/"+hdr.Linkname))
+		return os.Link(source, target)
+	case tar.TypeBlock, tar.TypeChar, tar.TypeFifo:
+		return nil // handled by devtmpfs / not needed in a VM root
+	default:
+		return nil
+	}
+}
+
+// ensureOwnerReadable adds owner read (and, for directories, traverse) to
+// every entry under root so mkfs.ext4 can populate the image without root.
+func ensureOwnerReadable(rootDir string) error {
+	return filepath.Walk(rootDir, func(p string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		mode := info.Mode().Perm()
+		var want os.FileMode
+		if info.IsDir() {
+			want = mode | 0500
+		} else if mode&0400 == 0 {
+			want = mode | 0400
+		} else {
+			return nil
+		}
+		if want != mode {
+			return os.Chmod(p, want)
+		}
+		return nil
+	})
+}
+
+// applyDirModes restores the directory modes recorded during layer
+// extraction, children before parents so restricted parents (e.g. /root 0700
+// or /usr 0555) can still be walked while their children are chmod'ed.
+func applyDirModes(rootDir string, modes map[string]os.FileMode) error {
+	entries, err := os.ReadDir(rootDir)
+	if err != nil {
+		return err
+	}
+	for _, e := range entries {
+		if e.IsDir() {
+			if err := applyDirModes(filepath.Join(rootDir, e.Name()), modes); err != nil {
+				return err
+			}
+		}
+	}
+	if mode, ok := modes["/"]; ok && rootDir != "" {
+		if err := os.Chmod(rootDir, mode.Perm()); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// prepareShellInit gives image-only roots (no init system, e.g. the Nix image)
+// a minimal /init that mounts the essentials and opens a root shell on ttyS0.
+func prepareShellInit(rootDir string) error {
+	script := `#!/bin/sh
+mount -t proc proc /proc 2>/dev/null
+mount -t sysfs sys /sys 2>/dev/null
+export PATH=/usr/bin:/usr/sbin:/bin:/sbin
+setsid sh -c 'exec sh -i </dev/ttyS0 >/dev/ttyS0 2>&1'
+poweroff -f
+`
+	return os.WriteFile(filepath.Join(rootDir, "init"), []byte(script), 0755)
+}
+
 // tarToExt4 unpacks a distribution rootfs tarball (Alpine minirootfs, Ubuntu
 // Base) into a fresh ext4 image, applying the requested build tweaks first.
 func (m *Manager) tarToExt4(tarPath, ext4Path string, args []string) error {
@@ -545,10 +931,11 @@ func prepareUbuntuAutologin(rootDir string) error {
 // filesystem size is derived from the directory (plus headroom) because
 // mkfs.ext4 cannot infer a size for a not-yet-existing image file.
 func mkfsExt4FromDir(rootDir, ext4Path string) error {
-	var contentBytes int64
+	var contentBytes, files int64
 	err := filepath.Walk(rootDir, func(_ string, info os.FileInfo, err error) error {
 		if err == nil && info.Mode().IsRegular() {
 			contentBytes += info.Size()
+			files++
 		}
 		return nil
 	})
@@ -562,8 +949,14 @@ func mkfsExt4FromDir(rootDir, ext4Path string) error {
 	}
 	sizeMB := (size + (1 << 20) - 1) >> 20
 
+	// Container images such as the Nix store are huge trees of small files;
+	// size the inode table from the real file count instead of mkfs' default
+	// bytes-per-inode ratio, which exhausts inodes long before data blocks.
+	inodes := int64(float64(files)*1.3) + 4096
+
 	tmp := ext4Path + ".new"
-	if out, err := runCmd("mkfs.ext4", "-q", "-F", "-d", rootDir, "-L", "root", tmp,
+	if out, err := runCmd("mkfs.ext4", "-q", "-F", "-d", rootDir, "-L", "root", "-N",
+		strconv.FormatInt(inodes, 10), tmp,
 		strconv.FormatInt(sizeMB, 10)+"M"); err != nil {
 		_ = os.Remove(tmp)
 		return fmt.Errorf("mkfs.ext4 failed: %s: %w", out, err)
