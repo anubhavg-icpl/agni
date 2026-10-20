@@ -1,6 +1,6 @@
 # Unreleased
 
-* Login redesigned as a cinematic ember scene: a GPU fragment-shader fire (rising fbm flame tongues, drifting embers, smoke wisps, breathing ground glow) paints the whole brand panel and blends into the UI, with a glowing AGNI wordmark, tagline and feature list; the animation loop now actually starts (the scene never received its initial visibility kick)
+* Login redesigned as a cinematic ember scene: a GPU fragment-shader fire (rising fbm flame tongues, drifting embers, smoke wisps, breathing ground glow) paints the whole brand panel and blends into the UI, with a glowing AGNI wordmark, tagline and feature list, on a saturated hand-tuned fire palette (no filmic haze - only highlights above white get a soft knee); the animation loop now actually starts (the scene never received its initial visibility kick)
 
 # 0.3.0
 

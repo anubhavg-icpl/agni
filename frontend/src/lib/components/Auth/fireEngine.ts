@@ -1,9 +1,10 @@
 // Fire engine for the Agni login panel: one full-panel fragment shader in
 // the spirit of skeeto's webgl-fire and the cinematic ember references -
-// the canvas paints the entire panel (deep night gradient, warm dome,
-// rising fbm flame tongues, drifting embers, faint smoke wisps) so the
-// flame blends into the UI instead of floating over it. One draw call per
-// frame; reduced motion renders one settled frame.
+// the canvas paints the entire panel (near-black night, saturated
+// hand-tuned fire palette, rising fbm flame tongues, drifting embers,
+// breathing ground glow) so the flame blends into the UI. No filmic
+// haze: colors stay punchy, only highlights above white get a soft knee.
+// One draw call per frame; reduced motion renders one settled frame.
 
 export type FireTheme = 'dark' | 'light';
 
@@ -53,13 +54,15 @@ float fbm(vec2 p){
 	return s;
 }
 
-// Blackbody-ish fire ramp: deep red -> orange -> yellow -> white-hot core.
-vec3 ramp(float t){
+// Hand-tuned saturated fire palette: ember red -> hot orange -> amber ->
+// near-white core. Hard stops keep the color punchy instead of pastel.
+vec3 firePal(float t){
 	t = clamp(t, 0.0, 1.0);
-	float r = smoothstep(0.0, 0.35, t)*0.55 + pow(t, 1.3)*0.65;
-	float g = pow(t, 2.1)*1.15;
-	float b = pow(t, 7.0)*1.05 + smoothstep(0.86, 1.0, t)*0.35;
-	return vec3(r, g, b);
+	vec3 c = mix(vec3(0.45, 0.015, 0.0), vec3(0.98, 0.25, 0.008), smoothstep(0.0, 0.30, t));
+	c = mix(c, vec3(1.0, 0.54, 0.03), smoothstep(0.30, 0.60, t));
+	c = mix(c, vec3(1.0, 0.82, 0.28), smoothstep(0.60, 0.82, t));
+	c = mix(c, vec3(1.0, 0.97, 0.85), smoothstep(0.82, 0.97, t));
+	return c;
 }
 
 void main(){
@@ -69,7 +72,7 @@ void main(){
 	float t = uTime;
 
 	// --- Flame field -------------------------------------------------------
-	vec2 q = vec2(p.x * 2.6, p.y * 2.2 - t * 1.35);
+	vec2 q = vec2(p.x * 2.6, p.y * 2.2 - t * 1.15);
 	float w = fbm(q * 1.4 + vec2(0.0, -t * 0.22));
 	float n1 = fbm(q * 2.1 + w * 1.35);
 	float n2 = fbm(q * 5.6 - w * 0.8 + 7.3);
@@ -79,18 +82,18 @@ void main(){
 	float bedWarp = sin(uv.x * 9.0 + t * 0.7) * 0.035 + (n2 - 0.5) * 0.16;
 	float tongue = (0.38 + 0.52 * n1) * center + 0.09;
 	float h = uv.y - bedWarp;
-	float body = smoothstep(tongue, 0.02, h);
-	float core = smoothstep(tongue * 0.4, 0.0, h) * (0.7 + 0.3 * n2);
-	float heat = clamp(body * (0.55 + 0.45 * n2) + core * 0.6, 0.0, 1.0);
-	heat *= 0.92 + 0.08 * sin(t * 11.0 + n1 * 6.2831);
-	float flameA = clamp(heat * 1.25 + core * 0.4, 0.0, 1.0);
-	flameA *= smoothstep(1.05, 0.5, uv.y + tongue * 0.3); // dissolve into the dark
+	float body = smoothstep(tongue, 0.04, h);
+	float core = smoothstep(tongue * 0.38, 0.0, h) * (0.72 + 0.28 * n2);
+	float heat = clamp(body * (0.45 + 0.55 * n2) + core * 0.65, 0.0, 1.0);
+	heat *= 0.95 + 0.05 * sin(t * 10.0 + n1 * 6.2831);
+	float flameA = clamp(heat * 1.35 + core * 0.35, 0.0, 1.0);
+	flameA *= smoothstep(1.05, 0.55, uv.y + tongue * 0.3);
 
-	// Breathing ground glow.
+	// Breathing ground glow, saturated orange.
 	float breathe = 0.9 + 0.1 * sin(t * 0.9);
-	float glow = exp(-h * 5.0) * (0.4 + 0.6 * n1) * (0.55 + 0.45 * center) * breathe;
+	float glow = exp(-h * 5.5) * (0.4 + 0.6 * n1) * (0.55 + 0.45 * center) * breathe;
 
-	// Embers: soft rising cells, brighter and larger than plain specks.
+	// Embers: rising cells with a hot flicker toward amber-white.
 	vec2 esc = vec2(p.x * 24.0, uv.y * 9.0 - t * 1.4);
 	float sn = noise(esc);
 	float sn2 = noise(esc * 1.7 + 4.7);
@@ -98,36 +101,29 @@ void main(){
 		* smoothstep(0.95, 0.3, uv.y + 0.08 * sin(t * 0.7 + sn2 * 6.2831))
 		* (0.55 + 0.45 * sin(t * 9.0 + sn2 * 40.0));
 
-	// Smoke wisps drifting above the flames.
-	float smoke = fbm(vec2(p.x * 2.4 + n1, uv.y * 2.2 - t * 0.55))
-		* smoothstep(0.16, 0.72, uv.y);
-
 	// --- Compose -----------------------------------------------------------
 	vec3 col;
 	if (uDark > 0.5) {
-		// Night: near-black top dissolving into a warm dome above the fire.
-		vec3 bg = mix(vec3(0.012, 0.006, 0.004), vec3(0.055, 0.013, 0.005), pow(1.0 - uv.y, 1.6));
-		bg += vec3(0.10, 0.030, 0.008) * glow;
-		vec3 fire = ramp(heat) * (0.9 + 0.6 * core);
-		col = bg + fire * flameA * 1.2;
-		col += vec3(1.0, 0.55, 0.20) * ember * 1.5;
-		col = mix(col, vec3(0.016, 0.011, 0.008), smoke * 0.35); // wisps shade the glow
-		col = 1.0 - exp(-col * 1.35);                            // filmic rolloff
+		// Night: clean near-black, saturated flame, tight glow. No haze.
+		vec3 bg = mix(vec3(0.010, 0.005, 0.004), vec3(0.030, 0.008, 0.003), pow(1.0 - uv.y, 1.8));
+		vec3 fire = firePal(heat);
+		col = bg + fire * flameA;
+		col += vec3(1.0, 0.34, 0.08) * glow * 0.55;
+		vec3 emberCol = mix(vec3(1.0, 0.42, 0.06), vec3(1.0, 0.85, 0.45), sn2);
+		col += emberCol * ember * 1.6;
+		// Soft knee only above white; saturated colors pass through untouched.
+		col = col / (1.0 + max(col - 1.0, vec3(0.0)) * 0.5);
 	} else {
-		// Day: warm cream paper with an ochre flame sitting on soft amber.
+		// Day: warm cream paper with a saturated ochre flame.
 		vec3 bg = mix(vec3(0.99, 0.965, 0.93), vec3(0.955, 0.86, 0.74), pow(1.0 - uv.y, 1.5));
-		vec3 flame = ramp(heat) * vec3(0.86, 0.55, 0.30) + bg * 0.08;
-		col = mix(bg, flame, clamp(flameA * 0.9, 0.0, 1.0));
-		col += vec3(1.0, 0.7, 0.35) * ember * 0.55;
-		col = mix(col, vec3(0.90, 0.82, 0.72), smoke * 0.18);
+		vec3 flame = firePal(heat) * vec3(0.92, 0.62, 0.38) + bg * 0.05;
+		col = mix(bg, flame, clamp(flameA * 0.92, 0.0, 1.0));
+		col += vec3(1.0, 0.62, 0.25) * ember * 0.6;
 	}
 
-	// Gentle side vignette keeps the panel framed.
-	float vign = smoothstep(0.0, 0.18, uv.x) * smoothstep(1.0, 0.82, uv.x);
-	col = mix(col * 0.985, col, vign);
-
-	gl_FragColor = vec4(col, 1.0);
-}`;
+	gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+}
+`;
 
 function compile(gl: WebGLRenderingContext, vs: string, fs: string): WebGLProgram {
 	const p = gl.createProgram();
