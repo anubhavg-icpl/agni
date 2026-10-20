@@ -25,6 +25,7 @@ import (
 	"github.com/anubhavg-icpl/agni/internal/api/handlers"
 	"github.com/anubhavg-icpl/agni/internal/api/middleware"
 	"github.com/anubhavg-icpl/agni/internal/auth"
+	"github.com/anubhavg-icpl/agni/internal/images"
 	"github.com/anubhavg-icpl/agni/internal/logging"
 	"github.com/anubhavg-icpl/agni/internal/storage"
 	"github.com/anubhavg-icpl/agni/internal/vm"
@@ -40,7 +41,8 @@ type ServerConfig struct {
 	Store      *storage.Store
 	EnableCORS bool
 	RateLimit  int
-	Assets     *embed.FS // Embedded frontend assets (optional)
+	Assets     *embed.FS       // Embedded frontend assets (optional)
+	Images     *images.Manager // Guest image + runtime cache (optional)
 }
 
 // Server represents the HTTP API server
@@ -145,6 +147,16 @@ func (s *Server) setupRoutes() {
 		r.Post("/api/vms/{id}/stop", vmHandler.Stop)
 		r.Post("/api/vms/{id}/shutdown", vmHandler.Shutdown)
 		r.Get("/api/vms/{id}/metrics", vmHandler.Metrics)
+
+		// Templates & images
+		if s.config.Images != nil {
+			templateHandler := handlers.NewTemplateHandler(s.config.Images, s.vmManager)
+			r.Get("/api/templates", templateHandler.List)
+			r.Post("/api/templates/{id}/prepare", templateHandler.Prepare)
+			r.Get("/api/images/jobs", templateHandler.Jobs)
+			r.Get("/api/images/jobs/{id}", templateHandler.Job)
+			r.Post("/api/vms/from-template", templateHandler.Deploy)
+		}
 
 		// Configs
 		configStore := storage.NewConfigStore(s.config.Store)
@@ -292,7 +304,7 @@ func (s *Server) Start(addr string) error {
 	}
 
 	s.httpServer = &http.Server{
-		Addr: addr,
+		Addr:    addr,
 		Handler: s.router,
 		// ReadHeaderTimeout bounds slowloris; body reads are still limited by
 		// per-route middleware. WriteTimeout must be 0 so long-lived WebSocket

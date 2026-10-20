@@ -25,6 +25,7 @@ import (
 
 	"github.com/anubhavg-icpl/agni/internal/api"
 	"github.com/anubhavg-icpl/agni/internal/auth"
+	"github.com/anubhavg-icpl/agni/internal/images"
 	"github.com/anubhavg-icpl/agni/internal/logging"
 	"github.com/anubhavg-icpl/agni/internal/storage"
 	"github.com/anubhavg-icpl/agni/internal/vm"
@@ -94,6 +95,14 @@ func (l *Launcher) Start() error {
 	// Initialize VM manager
 	l.vmManager = vm.NewManager(store)
 
+	// Guest image cache + firecracker runtime management
+	imagesMgr := images.NewManager(l.config.DataDir, nil, func(path string) {
+		l.vmManager.SetFirecrackerBinary(path)
+	})
+	if path, ok := imagesMgr.RuntimePath(); ok {
+		l.vmManager.SetFirecrackerBinary(path)
+	}
+
 	// Initialize API server
 	l.apiServer = api.NewServer(api.ServerConfig{
 		Address:    ":" + l.config.Port,
@@ -103,6 +112,7 @@ func (l *Launcher) Start() error {
 		EnableCORS: true,
 		RateLimit:  100,
 		Assets:     l.config.Assets,
+		Images:     imagesMgr,
 	})
 
 	// Start API server in background
