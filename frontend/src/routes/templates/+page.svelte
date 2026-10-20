@@ -55,6 +55,12 @@
 		return Math.min(99, Math.round((done / total) * 100));
 	}
 
+	function jobPhaseLabel(job: ImageJob): string {
+		if (job.artifacts.some((a) => a.state === 'processing')) return 'Building image';
+		if (job.artifacts.some((a) => a.state === 'downloading')) return 'Downloading';
+		return 'Preparing';
+	}
+
 	function openDeploy(t: DeployTemplate) {
 		deploying = t;
 		vmName = `${t.id}-${Date.now().toString(36).slice(-4)}`;
@@ -144,7 +150,9 @@
 							></div>
 						</div>
 						<p class="mt-1.5 font-mono text-xs text-muted-foreground">
-							{runtimeJob.phase} · {jobPercent(runtimeJob)}%
+							{jobPercent(runtimeJob)}% · {formatBytes(
+								runtimeJob.artifacts.reduce((n, a) => n + a.bytes_done, 0)
+							)}
 						</p>
 					</div>
 				{/if}
@@ -187,7 +195,11 @@
 								aria-hidden="true"
 							>
 								<img
-									src={t.logo === 'firecracker' ? '/logo.png' : `/brand/${t.logo}.svg`}
+									src={t.logo
+										? t.logo === 'firecracker'
+											? '/logo.png'
+											: `/brand/${t.logo}.svg`
+										: '/brand/linux.svg'}
 									alt=""
 									class="h-5 w-5"
 									loading="lazy"
@@ -208,7 +220,9 @@
 								Ready
 							</span>
 						{:else if job}
-							<span class="text-xs font-medium text-status-warn-text shrink-0">Downloading</span>
+							<span class="text-xs font-medium text-status-warn-text shrink-0"
+								>{jobPhaseLabel(job)}</span
+							>
 						{:else if failed}
 							<span
 								class="inline-flex items-center gap-1.5 text-xs font-medium text-status-error-text shrink-0"
@@ -229,11 +243,44 @@
 					<p class="text-[13px] leading-relaxed text-muted-foreground">{t.description}</p>
 
 					<div class="space-y-1.5 text-xs">
-						{#each t.artifacts as a (a.filename)}
+						{#each t.artifacts as a, i (a.filename)}
+							{@const live = job?.state === 'running' ? job.artifacts[i] : undefined}
 							<div class="flex items-center justify-between gap-2">
-								<span class="text-muted-foreground truncate">{a.name}</span>
+								<span class="text-muted-foreground truncate inline-flex items-center gap-1.5">
+									{#if live?.state === 'done'}
+										<span class="text-status-ok-text">&#10003;</span>
+									{:else if live?.state === 'downloading' || live?.state === 'processing'}
+										<svg class="animate-spin h-3 w-3" viewBox="0 0 24 24" aria-hidden="true">
+											<circle
+												class="opacity-25"
+												cx="12"
+												cy="12"
+												r="10"
+												stroke="currentColor"
+												stroke-width="4"
+												fill="none"
+											/>
+											<path
+												class="opacity-75"
+												fill="currentColor"
+												d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+											/>
+										</svg>
+									{/if}
+									{a.name}
+								</span>
 								<span class="font-mono text-muted-foreground shrink-0">
-									{a.ready && a.size_bytes ? formatBytes(a.size_bytes) : `~${a.size_hint_mb} MB`}
+									{#if live?.state === 'downloading' && live.bytes_total > 0}
+										{formatBytes(live.bytes_done)} / {formatBytes(live.bytes_total)}
+									{:else if live?.state === 'downloading'}
+										{formatBytes(live.bytes_done)}
+									{:else if live?.state === 'processing'}
+										{live.description || 'Building…'}
+									{:else if live?.state === 'done'}
+										Done
+									{:else}
+										{a.ready && a.size_bytes ? formatBytes(a.size_bytes) : `~${a.size_hint_mb} MB`}
+									{/if}
 								</span>
 							</div>
 						{/each}
@@ -244,20 +291,35 @@
 					</div>
 
 					{#if job && job.state === 'running'}
+						{@const building = job.artifacts.some((a) => a.state === 'processing')}
 						<div>
 							<div class="h-1.5 rounded-full bg-muted overflow-hidden">
-								<div
-									class="h-full bg-foreground/70 transition-all duration-300"
-									style="width: {jobPercent(job)}%"
-								></div>
+								{#if building}
+									<div class="h-full w-full progress-indeterminate"></div>
+								{:else}
+									<div
+										class="h-full bg-foreground/70 transition-all duration-300"
+										style="width: {jobPercent(job)}%"
+									></div>
+								{/if}
 							</div>
 							<p class="mt-1.5 font-mono text-xs text-muted-foreground">
-								{job.phase} · {jobPercent(job)}%
+								{#if building}
+									Preparing image on disk…
+								{:else}
+									{jobPercent(job)}% ·
+									{formatBytes(job.artifacts.reduce((n, a) => n + a.bytes_done, 0))} downloaded
+								{/if}
 							</p>
 						</div>
 					{/if}
 					{#if failed}
-						<p class="text-xs text-status-error-text">{t.latest_job?.error}</p>
+						<div class="space-y-2">
+							<p class="text-xs text-status-error-text break-words">{t.latest_job?.error}</p>
+							<Button size="sm" variant="secondary" on:click={() => templates.prepare(t.id)}>
+								Retry download
+							</Button>
+						</div>
 					{/if}
 
 					<div class="mt-auto pt-2 flex items-center justify-between gap-2">
@@ -386,7 +448,9 @@
 							></div>
 						</div>
 						<p class="mt-1.5 font-mono text-xs text-muted-foreground">
-							{modalJob.phase} · {jobPercent(modalJob)}%
+							{jobPercent(modalJob)}% · {formatBytes(
+								modalJob.artifacts.reduce((n, a) => n + a.bytes_done, 0)
+							)}
 						</p>
 					</div>
 				{/if}
@@ -401,3 +465,25 @@
 		</svelte:fragment>
 	</Modal>
 </div>
+
+<style>
+	.progress-indeterminate {
+		background-image: linear-gradient(
+			90deg,
+			transparent 0%,
+			oklch(var(--foreground) / 0.55) 50%,
+			transparent 100%
+		);
+		background-size: 40% 100%;
+		background-repeat: no-repeat;
+		animation: indeterminate 1.2s ease-in-out infinite;
+	}
+	@keyframes indeterminate {
+		0% {
+			background-position: -40% 0;
+		}
+		100% {
+			background-position: 140% 0;
+		}
+	}
+</style>
