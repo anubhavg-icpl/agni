@@ -1,40 +1,33 @@
 <script lang="ts">
-	import RiveAnimation from '$lib/components/RiveAnimation.svelte';
+	import { page } from '$app/stores';
+	import Button from '$lib/components/Common/Button.svelte';
+
+	// SvelteKit passes params to all route components
+	export let params: Record<string, string> = {};
+
+	$: status = $page.error?.status ?? 404;
+	$: heading = status === 404 ? 'Page not found' : 'Something went wrong';
+	$: body =
+		status === 404
+			? 'The page you are looking for does not exist or has moved.'
+			: 'An unexpected error occurred. Return to the dashboard and try again.';
 </script>
 
 <svelte:head>
-	<title>404 - Page Not Found | Agni</title>
+	<title>{heading} · Agni</title>
 </svelte:head>
 
-<div class="min-h-screen bg-gray-900 flex items-center justify-center relative overflow-hidden">
-	<!-- Fire gradient overlay -->
-	<div class="absolute inset-0 bg-fire-pattern"></div>
-	
-	<div class="text-center relative z-10">
-		<!-- Fire Skull Animation -->
-		<div class="flex justify-center mb-6">
-			<RiveAnimation 
-				src="/fire-skull.riv" 
-				width={200} 
-				height={200}
-			/>
+<div class="min-h-dvh bg-background flex items-center justify-center p-6">
+	<div class="text-center max-w-sm">
+		<div class="flex items-center justify-center gap-2.5 mb-6">
+			<img src="/logo.png" alt="Agni" class="w-[30px] h-[30px]" />
+			<span class="text-base font-semibold text-foreground">Agni</span>
 		</div>
-
-		<h1 class="text-8xl font-bold text-fire mb-4">404</h1>
-		<h2 class="text-2xl font-semibold text-gray-300 mb-2">Congratulations, Explorer!</h2>
-		<p class="text-gray-500 mb-8 max-w-md mx-auto">
-			You've discovered the void. There's nothing here.
-			Either the page ran away, or your typing skills need work. No judgment.
-		</p>
-
-		<a
-			href="/"
-			class="btn btn-primary px-8 py-3 text-lg inline-flex items-center gap-2"
-		>
-			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-				<path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
-			</svg>
-			Retreat to Safety
-		</a>
+		<p class="font-mono text-sm text-muted-foreground mb-2">{status}</p>
+		<h1 class="text-xl font-semibold leading-7 text-foreground text-balance">{heading}</h1>
+		<p class="text-sm text-muted-foreground mt-2 text-pretty">{body}</p>
+		<div class="mt-6 flex justify-center">
+			<Button variant="primary" href="/">Go to dashboard</Button>
+		</div>
 	</div>
 </div>
