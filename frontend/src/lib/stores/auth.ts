@@ -45,15 +45,14 @@ function createAuthStore() {
 				set({ user: response.user, loading: false, error: null, setupRequired: false });
 				return true;
 			} catch (e) {
-				let msg = (e as Error).message;
-				if (msg.includes('Wrong credentials') || msg.includes('401') || msg.includes('Invalid')) {
-					msg = "Wrong credentials. Did your brain take a vacation?";
-				} else if (msg.includes('Failed to fetch')) {
-					msg = "Server's ignoring you. Just like everyone else.";
-				} else if (msg.includes('three-dollar bill')) {
-					msg = "Your session expired. Time flies when you're unproductive.";
+				const msg = (e as Error).message;
+				let friendly = `Sign in failed: ${msg}`;
+				if (msg.includes('Failed to fetch')) {
+					friendly = 'Cannot reach the Agni server. Check that it is running, then try again.';
+				} else if (msg.includes('Wrong credentials') || msg.includes('401') || msg.includes('Invalid')) {
+					friendly = 'Invalid username or password.';
 				}
-				update((s) => ({ ...s, loading: false, error: msg }));
+				update((s) => ({ ...s, loading: false, error: friendly }));
 				return false;
 			}
 		},
@@ -61,20 +60,21 @@ function createAuthStore() {
 			update((s) => ({ ...s, loading: true, error: null }));
 			try {
 				await api.setup(username, password);
-				// After setup, login
+				// After setup, sign in with the new account
 				const response = await api.login(username, password);
 				set({ user: response.user, loading: false, error: null, setupRequired: false });
 				return true;
 			} catch (e) {
-				let msg = (e as Error).message;
-				if (msg.includes('throne') || msg.includes('already')) {
-					msg = "Someone claimed admin before you. Slowpoke.";
+				const msg = (e as Error).message;
+				let friendly = `Setup failed: ${msg}`;
+				if (msg.includes('already')) {
+					friendly = 'An administrator account already exists. Sign in instead.';
 				} else if (msg.includes('weak') || msg.includes('8 characters')) {
-					msg = "That password is embarrassingly weak. Try harder.";
+					friendly = 'Password must be at least 8 characters.';
 				} else if (msg.includes('Failed to fetch')) {
-					msg = "Can't reach the server. It's avoiding you.";
+					friendly = 'Cannot reach the Agni server. Check that it is running, then try again.';
 				}
-				update((s) => ({ ...s, loading: false, error: msg }));
+				update((s) => ({ ...s, loading: false, error: friendly }));
 				return false;
 			}
 		},
@@ -82,7 +82,7 @@ function createAuthStore() {
 			try {
 				await api.logout();
 			} catch {
-				// Ignore
+				// Signing out proceeds even if the server call fails
 			}
 			api.setToken(null);
 			set({ user: null, loading: false, error: null, setupRequired: false });
