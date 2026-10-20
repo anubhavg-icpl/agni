@@ -39,7 +39,10 @@
 			});
 			const duration = DURATIONS[type];
 			if (duration > 0) {
-				timers.set(id, setTimeout(() => remove(id), duration));
+				timers.set(
+					id,
+					setTimeout(() => remove(id), duration)
+				);
 			}
 			return id;
 		}
@@ -82,7 +85,9 @@
 			role="status"
 		>
 			<div class="flex items-start gap-3">
-				<span class="mt-0.5 {typeMeta[toast.type].text}"><Icon name={typeMeta[toast.type].icon} size={20} /></span>
+				<span class="mt-0.5 {typeMeta[toast.type].text}"
+					><Icon name={typeMeta[toast.type].icon} size={20} /></span
+				>
 				<p class="text-sm text-foreground flex-1 break-words">{toast.message}</p>
 				<button
 					on:click={() => toasts.remove(toast.id)}

@@ -55,7 +55,9 @@
 		{#each groups as group}
 			<div class={collapsed ? 'px-2' : 'px-3'}>
 				{#if !collapsed}
-					<p class="text-xs font-medium text-muted-foreground pt-4 pb-1.5 px-2.5">{group.section}</p>
+					<p class="text-xs font-medium text-muted-foreground pt-4 pb-1.5 px-2.5">
+						{group.section}
+					</p>
 				{:else}
 					<div class="border-t my-3 mx-1"></div>
 				{/if}
@@ -67,7 +69,9 @@
 								href={item.href}
 								class="h-9 flex items-center gap-2.5 rounded-md text-[13px] font-medium transition-colors duration-150
 								{collapsed ? 'justify-center w-full' : 'px-2.5'}
-								{active ? 'bg-sidebar-accent text-primary-accent font-semibold' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}"
+								{active
+									? 'bg-sidebar-accent text-primary-accent font-semibold'
+									: 'text-muted-foreground hover:bg-accent hover:text-foreground'}"
 								aria-current={active ? 'page' : undefined}
 								aria-label={collapsed ? item.label : undefined}
 								title={collapsed ? item.label : undefined}

@@ -14,11 +14,15 @@
 				<ol class="flex items-center gap-1 text-xs text-muted-foreground">
 					{#each crumbs as crumb, i}
 						{#if i > 0}
-							<li class="text-muted-foreground/60" aria-hidden="true"><Icon name="ph-caret-right" size={12} /></li>
+							<li class="text-muted-foreground/60" aria-hidden="true">
+								<Icon name="ph-caret-right" size={12} />
+							</li>
 						{/if}
 						<li>
 							{#if crumb.href && i < crumbs.length - 1}
-								<a href={crumb.href} class="hover:text-foreground transition-colors">{crumb.label}</a>
+								<a href={crumb.href} class="hover:text-foreground transition-colors"
+									>{crumb.label}</a
+								>
 							{:else}
 								<span aria-current="page" class="text-foreground">{crumb.label}</span>
 							{/if}

@@ -49,7 +49,11 @@ function createAuthStore() {
 				let friendly = `Sign in failed: ${msg}`;
 				if (msg.includes('Failed to fetch')) {
 					friendly = 'Cannot reach the Agni server. Check that it is running, then try again.';
-				} else if (msg.includes('Wrong credentials') || msg.includes('401') || msg.includes('Invalid')) {
+				} else if (
+					msg.includes('Wrong credentials') ||
+					msg.includes('401') ||
+					msg.includes('Invalid')
+				) {
 					friendly = 'Invalid username or password.';
 				}
 				update((s) => ({ ...s, loading: false, error: friendly }));

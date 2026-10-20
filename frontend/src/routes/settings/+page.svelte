@@ -71,20 +71,27 @@
 		{#if loading}
 			<div class="space-y-3" aria-hidden="true">
 				{#each Array(3) as _}
-					<Skeleton class="h-4 w-2/3" />
+					<Skeleton className="h-4 w-2/3" />
 				{/each}
 			</div>
 		{:else if systemInfo}
 			<dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
 				{#each spec as row}
 					<div>
-						<dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{row.label}</dt>
-						<dd class="font-mono text-[13px] leading-5 text-foreground mt-1">{row.value(systemInfo)}</dd>
+						<dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+							{row.label}
+						</dt>
+						<dd class="font-mono text-[13px] leading-5 text-foreground mt-1">
+							{row.value(systemInfo)}
+						</dd>
 					</div>
 				{/each}
 			</dl>
 		{:else}
-			<StatusBanner variant="warning" message="System information is unavailable. Check that the Agni server is reachable." />
+			<StatusBanner
+				variant="warning"
+				message="System information is unavailable. Check that the Agni server is reachable."
+			/>
 		{/if}
 	</section>
 
@@ -92,19 +99,24 @@
 		<h2 class="text-lg font-semibold text-foreground mb-4">API</h2>
 		<dl class="space-y-3">
 			<div>
-				<dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Base URL</dt>
+				<dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+					Base URL
+				</dt>
 				<dd class="font-mono text-[13px] leading-5 text-foreground mt-1 break-all">
 					{typeof window !== 'undefined' ? window.location.origin : ''}/api
 				</dd>
 			</div>
 		</dl>
-		<p class="text-xs text-muted-foreground mt-4">The Agni API is served by the same process as this interface.</p>
+		<p class="text-xs text-muted-foreground mt-4">
+			The Agni API is served by the same process as this interface.
+		</p>
 	</section>
 
 	<section class="card p-6">
 		<h2 class="text-lg font-semibold text-foreground mb-4">About</h2>
 		<p class="text-sm text-muted-foreground max-w-prose">
-			Agni manages Firecracker microVMs: create, run, and monitor lightweight virtual machines with fast startup times.
+			Agni manages Firecracker microVMs: create, run, and monitor lightweight virtual machines with
+			fast startup times.
 		</p>
 		<div class="flex gap-4 mt-4">
 			<a

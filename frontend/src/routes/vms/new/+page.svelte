@@ -129,7 +129,9 @@
 							{errors.name}
 						</p>
 					{:else}
-						<p class="text-xs text-muted-foreground mt-1.5">Letters, numbers, underscores, and hyphens.</p>
+						<p class="text-xs text-muted-foreground mt-1.5">
+							Letters, numbers, underscores, and hyphens.
+						</p>
 					{/if}
 				</div>
 			</div>
@@ -145,7 +147,9 @@
 						type="text"
 						bind:value={kernelPath}
 						on:blur={() => markTouched('kernelPath')}
-						class="input font-mono text-[13px] {errors.kernelPath ? 'border-destructive focus:ring-destructive/30' : ''}"
+						class="input font-mono text-[13px] {errors.kernelPath
+							? 'border-destructive focus:ring-destructive/30'
+							: ''}"
 						placeholder="/path/to/vmlinux"
 					/>
 					{#if errors.kernelPath}
@@ -154,12 +158,19 @@
 							{errors.kernelPath}
 						</p>
 					{:else}
-						<p class="text-xs text-muted-foreground mt-1.5">Path to an uncompressed kernel image on this machine.</p>
+						<p class="text-xs text-muted-foreground mt-1.5">
+							Path to an uncompressed kernel image on this machine.
+						</p>
 					{/if}
 				</div>
 				<div>
 					<label class="label" for="kernelOpts">Boot arguments</label>
-					<input id="kernelOpts" type="text" bind:value={kernelOpts} class="input font-mono text-[13px]" />
+					<input
+						id="kernelOpts"
+						type="text"
+						bind:value={kernelOpts}
+						class="input font-mono text-[13px]"
+					/>
 				</div>
 			</div>
 		</section>
@@ -174,7 +185,9 @@
 						type="text"
 						bind:value={rootDrivePath}
 						on:blur={() => markTouched('rootDrivePath')}
-						class="input font-mono text-[13px] {errors.rootDrivePath ? 'border-destructive focus:ring-destructive/30' : ''}"
+						class="input font-mono text-[13px] {errors.rootDrivePath
+							? 'border-destructive focus:ring-destructive/30'
+							: ''}"
 						placeholder="/path/to/rootfs.ext4"
 					/>
 					{#if errors.rootDrivePath}
@@ -187,8 +200,15 @@
 					{/if}
 				</div>
 				<div class="flex items-center gap-2">
-					<input id="rootDriveReadOnly" type="checkbox" bind:checked={rootDriveReadOnly} class="h-4 w-4 rounded-sm accent-primary" />
-					<label for="rootDriveReadOnly" class="text-sm text-foreground">Mount root drive read-only</label>
+					<input
+						id="rootDriveReadOnly"
+						type="checkbox"
+						bind:checked={rootDriveReadOnly}
+						class="h-4 w-4 rounded-sm accent-primary"
+					/>
+					<label for="rootDriveReadOnly" class="text-sm text-foreground"
+						>Mount root drive read-only</label
+					>
 				</div>
 			</div>
 		</section>
@@ -205,7 +225,9 @@
 						max="32"
 						bind:value={cpus}
 						on:blur={() => markTouched('cpus')}
-						class="input tabular-nums {errors.cpus ? 'border-destructive focus:ring-destructive/30' : ''}"
+						class="input tabular-nums {errors.cpus
+							? 'border-destructive focus:ring-destructive/30'
+							: ''}"
 					/>
 					{#if errors.cpus}
 						<p class="text-[13px] text-destructive mt-1.5 flex items-center gap-1.5">
@@ -224,7 +246,9 @@
 						step="128"
 						bind:value={memory}
 						on:blur={() => markTouched('memory')}
-						class="input tabular-nums {errors.memory ? 'border-destructive focus:ring-destructive/30' : ''}"
+						class="input tabular-nums {errors.memory
+							? 'border-destructive focus:ring-destructive/30'
+							: ''}"
 					/>
 					{#if errors.memory}
 						<p class="text-[13px] text-destructive mt-1.5 flex items-center gap-1.5">
@@ -251,8 +275,15 @@
 					</select>
 				</div>
 				<div class="flex items-center gap-2 sm:col-span-2">
-					<input id="disableSMT" type="checkbox" bind:checked={disableSMT} class="h-4 w-4 rounded-sm accent-primary" />
-					<label for="disableSMT" class="text-sm text-foreground">Disable CPU simultaneous multithreading</label>
+					<input
+						id="disableSMT"
+						type="checkbox"
+						bind:checked={disableSMT}
+						class="h-4 w-4 rounded-sm accent-primary"
+					/>
+					<label for="disableSMT" class="text-sm text-foreground"
+						>Disable CPU simultaneous multithreading</label
+					>
 				</div>
 			</div>
 		</section>
@@ -263,7 +294,7 @@
 
 		<div class="flex justify-end gap-2">
 			<Button variant="ghost" href="/vms">Cancel</Button>
-			<Button variant="primary" type="submit" loading={loading}>Create VM</Button>
+			<Button variant="primary" type="submit" {loading}>Create VM</Button>
 		</div>
 	</form>
 </div>

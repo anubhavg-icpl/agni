@@ -56,12 +56,15 @@
 {#if open}
 	<div
 		class="fixed inset-0 z-[200] bg-foreground/40"
+		role="presentation"
 		transition:fade={{ duration: 150 }}
 		on:click={handleBackdropClick}
 	></div>
 	<div class="fixed inset-0 z-[300] flex items-center justify-center p-4 pointer-events-none">
 		<div
-			class="relative bg-popover border rounded-xl shadow-lg w-full {sizeClasses[size]} max-h-[90vh] overflow-hidden flex flex-col pointer-events-auto"
+			class="relative bg-popover border rounded-xl shadow-lg w-full {sizeClasses[
+				size
+			]} max-h-[90vh] overflow-hidden flex flex-col pointer-events-auto"
 			transition:scale={{ duration: 200, start: 0.95 }}
 			role="dialog"
 			aria-modal="true"

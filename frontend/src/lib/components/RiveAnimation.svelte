@@ -9,8 +9,14 @@
 	export let animations: string | string[] | undefined = undefined;
 	export let loop: boolean = true;
 
+	interface RiveInstance {
+		play(): void;
+		resizeDrawingSurfaceToCanvas(): void;
+		cleanup(): void;
+	}
+
 	let canvas: HTMLCanvasElement;
-	let riveInstance: any = null;
+	let riveInstance: RiveInstance | null = null;
 	let handleResize: (() => void) | null = null;
 
 	onMount(() => {
@@ -30,6 +36,8 @@
 				return;
 			}
 
+			// The Rive parameter bag is heterogeneous by design
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const config: any = {
 				src,
 				canvas,

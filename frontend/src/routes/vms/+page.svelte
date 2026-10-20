@@ -21,7 +21,10 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<PageHeader title="Virtual Machines" description="Create, start, stop, and remove Firecracker microVMs.">
+	<PageHeader
+		title="Virtual Machines"
+		description="Create, start, stop, and remove Firecracker microVMs."
+	>
 		<div slot="actions">
 			<Button variant="primary" size="sm" href="/vms/new">
 				<Icon name="ph-plus" size={16} />

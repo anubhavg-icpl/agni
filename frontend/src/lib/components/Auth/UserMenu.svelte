@@ -49,7 +49,10 @@
 			{username.charAt(0).toUpperCase()}
 		</span>
 		<span class="text-[13px] font-medium text-foreground hidden sm:block">{username}</span>
-		<span class="text-muted-foreground transition-transform duration-150 {open ? 'rotate-180' : ''}" aria-hidden="true">
+		<span
+			class="text-muted-foreground transition-transform duration-150 {open ? 'rotate-180' : ''}"
+			aria-hidden="true"
+		>
 			<Icon name="ph-caret-down" size={14} />
 		</span>
 	</button>

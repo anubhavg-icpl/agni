@@ -81,7 +81,9 @@
 
 		const latest = data[data.length - 1];
 		const memPercent =
-			latest.memory_total > 0 ? ((latest.memory_used / latest.memory_total) * 100).toFixed(1) : '0.0';
+			latest.memory_total > 0
+				? ((latest.memory_used / latest.memory_total) * 100).toFixed(1)
+				: '0.0';
 		context.fillStyle = theme.accent;
 		context.font = '600 13px "Geist Mono", ui-monospace, monospace';
 		context.textAlign = 'right';
@@ -113,5 +115,10 @@
 </script>
 
 <div class="w-full" style="height: {CHART_HEIGHT}px;">
-	<canvas bind:this={canvas} class="w-full h-full" style="height: {CHART_HEIGHT}px;" aria-label="Memory usage over time" role="img"></canvas>
+	<canvas
+		bind:this={canvas}
+		class="w-full h-full"
+		style="height: {CHART_HEIGHT}px;"
+		aria-label="Memory usage over time"
+	></canvas>
 </div>

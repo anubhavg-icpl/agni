@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let class: string = '';
+	export let className: string = '';
 </script>
 
-<div class="skeleton {class}" aria-hidden="true"></div>
+<div class="skeleton {className}" aria-hidden="true"></div>

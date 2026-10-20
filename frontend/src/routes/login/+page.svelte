@@ -31,9 +31,19 @@
 		if (success) goto('/');
 	}
 
+	function onPasswordInput(event: Event) {
+		password = (event.target as HTMLInputElement).value;
+	}
+
+	function onConfirmInput(event: Event) {
+		confirmPassword = (event.target as HTMLInputElement).value;
+	}
+
 	$: passwordMismatch = confirmPassword.length > 0 && password !== confirmPassword;
 	$: passwordTooShort = password.length > 0 && password.length < 8;
-	$: setupInvalid = $auth.setupRequired && (passwordMismatch || passwordTooShort || !username || !password || !confirmPassword);
+	$: setupInvalid =
+		$auth.setupRequired &&
+		(passwordMismatch || passwordTooShort || !username || !password || !confirmPassword);
 </script>
 
 <svelte:head>
@@ -42,7 +52,10 @@
 
 <div class="min-h-dvh grid lg:grid-cols-2">
 	<!-- Illustration panel: accent-soft tinted ground with the lockup -->
-	<div class="hidden lg:flex relative items-center justify-center" style="background: oklch(var(--primary) / 0.08);">
+	<div
+		class="hidden lg:flex relative items-center justify-center"
+		style="background: oklch(var(--primary) / 0.08);"
+	>
 		<div class="flex flex-col items-center gap-4">
 			<img src="/logo.png" alt="" class="w-12 h-12" aria-hidden="true" />
 			<div class="text-center">
@@ -69,7 +82,10 @@
 						</p>
 
 						{#if $auth.error}
-							<div class="mb-4 rounded-md border border-destructive/30 bg-destructive/10 p-3 flex items-start gap-2" role="alert">
+							<div
+								class="mb-4 rounded-md border border-destructive/30 bg-destructive/10 p-3 flex items-start gap-2"
+								role="alert"
+							>
 								<span class="text-destructive mt-0.5"><Icon name="ph-x-circle" size={16} /></span>
 								<p class="text-sm text-destructive">{$auth.error}</p>
 							</div>
@@ -93,8 +109,11 @@
 									<input
 										id="setup-password"
 										type={showPassword ? 'text' : 'password'}
-										bind:value={password}
-										class="input h-11 pr-10 {passwordTooShort ? 'border-destructive focus:ring-destructive/30' : ''}"
+										value={password}
+										on:input={onPasswordInput}
+										class="input h-11 pr-10 {passwordTooShort
+											? 'border-destructive focus:ring-destructive/30'
+											: ''}"
 										autocomplete="new-password"
 										minlength="8"
 										required
@@ -109,7 +128,9 @@
 									</button>
 								</div>
 								{#if passwordTooShort}
-									<p class="text-[13px] text-destructive mt-1.5">Password must be at least 8 characters.</p>
+									<p class="text-[13px] text-destructive mt-1.5">
+										Password must be at least 8 characters.
+									</p>
 								{/if}
 							</div>
 							<div>
@@ -117,8 +138,11 @@
 								<input
 									id="setup-confirm"
 									type={showPassword ? 'text' : 'password'}
-									bind:value={confirmPassword}
-									class="input h-11 {passwordMismatch ? 'border-destructive focus:ring-destructive/30' : ''}"
+									value={confirmPassword}
+									on:input={onConfirmInput}
+									class="input h-11 {passwordMismatch
+										? 'border-destructive focus:ring-destructive/30'
+										: ''}"
 									autocomplete="new-password"
 									required
 								/>
@@ -126,16 +150,27 @@
 									<p class="text-[13px] text-destructive mt-1.5">Passwords do not match.</p>
 								{/if}
 							</div>
-							<Button type="submit" variant="primary" fullWidth loading={$auth.loading} disabled={setupInvalid}>
+							<Button
+								type="submit"
+								variant="primary"
+								fullWidth
+								loading={$auth.loading}
+								disabled={setupInvalid}
+							>
 								Create admin account
 							</Button>
 						</form>
 					{:else}
 						<h1 class="text-lg font-semibold text-foreground">Sign in</h1>
-						<p class="text-sm text-muted-foreground mt-1 mb-6">Use your Agni administrator account.</p>
+						<p class="text-sm text-muted-foreground mt-1 mb-6">
+							Use your Agni administrator account.
+						</p>
 
 						{#if $auth.error}
-							<div class="mb-4 rounded-md border border-destructive/30 bg-destructive/10 p-3 flex items-start gap-2" role="alert">
+							<div
+								class="mb-4 rounded-md border border-destructive/30 bg-destructive/10 p-3 flex items-start gap-2"
+								role="alert"
+							>
 								<span class="text-destructive mt-0.5"><Icon name="ph-x-circle" size={16} /></span>
 								<p class="text-sm text-destructive">{$auth.error}</p>
 							</div>
@@ -159,7 +194,8 @@
 									<input
 										id="login-password"
 										type={showPassword ? 'text' : 'password'}
-										bind:value={password}
+										value={password}
+										on:input={onPasswordInput}
 										class="input h-11 pr-10"
 										autocomplete="current-password"
 										required
@@ -174,7 +210,13 @@
 									</button>
 								</div>
 							</div>
-							<Button type="submit" variant="primary" fullWidth loading={$auth.loading} disabled={!username || !password}>
+							<Button
+								type="submit"
+								variant="primary"
+								fullWidth
+								loading={$auth.loading}
+								disabled={!username || !password}
+							>
 								Sign in
 							</Button>
 						</form>

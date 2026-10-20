@@ -106,5 +106,10 @@
 </script>
 
 <div class="w-full" style="height: {CHART_HEIGHT}px;">
-	<canvas bind:this={canvas} class="w-full h-full" style="height: {CHART_HEIGHT}px;" aria-label="CPU usage over time" role="img"></canvas>
+	<canvas
+		bind:this={canvas}
+		class="w-full h-full"
+		style="height: {CHART_HEIGHT}px;"
+		aria-label="CPU usage over time"
+	></canvas>
 </div>

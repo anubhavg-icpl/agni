@@ -97,7 +97,9 @@
 					class="input w-full font-mono"
 					placeholder="/srv/jailer"
 				/>
-				<p class="text-sm text-muted-foreground mt-1">Base directory for jailer chroot environments</p>
+				<p class="text-sm text-muted-foreground mt-1">
+					Base directory for jailer chroot environments
+				</p>
 			</div>
 
 			<!-- UID/GID -->

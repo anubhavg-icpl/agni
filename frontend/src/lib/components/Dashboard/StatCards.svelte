@@ -46,6 +46,8 @@
 			<span class="text-xs font-medium text-muted-foreground">Errors</span>
 		</div>
 		<div class="text-2xl font-semibold tabular-nums leading-8 text-foreground">{errors}</div>
-		<p class="text-xs text-muted-foreground mt-1">{errors > 0 ? 'Needs attention' : 'No failures'}</p>
+		<p class="text-xs text-muted-foreground mt-1">
+			{errors > 0 ? 'Needs attention' : 'No failures'}
+		</p>
 	</div>
 </div>

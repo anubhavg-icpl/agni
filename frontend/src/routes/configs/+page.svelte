@@ -54,7 +54,10 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<PageHeader title="Templates" description="Saved VM configurations to reuse when creating a VM." />
+	<PageHeader
+		title="Templates"
+		description="Saved VM configurations to reuse when creating a VM."
+	/>
 
 	<div class="card">
 		{#if loading}
@@ -81,12 +84,25 @@
 				<table class="w-full text-sm">
 					<thead>
 						<tr class="border-b text-left">
-							<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground" scope="col">Name</th>
-							<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground" scope="col">Description</th>
-							<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground text-right" scope="col">vCPUs</th>
-							<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground text-right" scope="col">Memory</th>
-							<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground" scope="col">Kernel</th>
-							<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground" scope="col">Updated</th>
+							<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground" scope="col">Name</th
+							>
+							<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground" scope="col"
+								>Description</th
+							>
+							<th
+								class="py-2.5 px-4 text-xs font-medium text-muted-foreground text-right"
+								scope="col">vCPUs</th
+							>
+							<th
+								class="py-2.5 px-4 text-xs font-medium text-muted-foreground text-right"
+								scope="col">Memory</th
+							>
+							<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground" scope="col"
+								>Kernel</th
+							>
+							<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground" scope="col"
+								>Updated</th
+							>
 							<th class="py-2.5 px-4 w-0" scope="col"><span class="sr-only">Actions</span></th>
 						</tr>
 					</thead>
@@ -95,23 +111,36 @@
 							<tr class="border-b last:border-b-0 hover:bg-accent/50 transition-colors">
 								<td class="py-2.5 px-4">
 									<div class="font-medium text-foreground">{config.name}</div>
-									<div class="text-xs text-muted-foreground font-mono" title={config.id}>{config.id.slice(0, 8)}</div>
+									<div class="text-xs text-muted-foreground font-mono" title={config.id}>
+										{config.id.slice(0, 8)}
+									</div>
 								</td>
 								<td class="py-2.5 px-4 text-muted-foreground max-w-[240px]">
 									{#if config.description}
-										<span class="block truncate" title={config.description}>{config.description}</span>
+										<span class="block truncate" title={config.description}
+											>{config.description}</span
+										>
 									{:else}
 										<span class="text-muted-foreground/60">-</span>
 									{/if}
 								</td>
-								<td class="py-2.5 px-4 text-right tabular-nums text-muted-foreground">{config.config.cpus}</td>
-								<td class="py-2.5 px-4 text-right tabular-nums text-muted-foreground">{config.config.memory_mb} MB</td>
+								<td class="py-2.5 px-4 text-right tabular-nums text-muted-foreground"
+									>{config.config.cpus}</td
+								>
+								<td class="py-2.5 px-4 text-right tabular-nums text-muted-foreground"
+									>{config.config.memory_mb} MB</td
+								>
 								<td class="py-2.5 px-4 max-w-[180px]">
-									<span class="font-mono text-[13px] text-muted-foreground block truncate" title={config.config.kernel_path}>
+									<span
+										class="font-mono text-[13px] text-muted-foreground block truncate"
+										title={config.config.kernel_path}
+									>
 										{getFilename(config.config.kernel_path) || 'N/A'}
 									</span>
 								</td>
-								<td class="py-2.5 px-4 text-muted-foreground whitespace-nowrap">{formatDate(config.updated_at)}</td>
+								<td class="py-2.5 px-4 text-muted-foreground whitespace-nowrap"
+									>{formatDate(config.updated_at)}</td
+								>
 								<td class="py-2.5 px-4">
 									<div class="flex items-center justify-end">
 										<button
@@ -142,6 +171,8 @@
 >
 	<div slot="footer">
 		<Button variant="ghost" on:click={() => (deleteTarget = null)}>Cancel</Button>
-		<Button variant="destructive" loading={deleting} on:click={confirmDelete}>Delete template</Button>
+		<Button variant="destructive" loading={deleting} on:click={confirmDelete}
+			>Delete template</Button
+		>
 	</div>
 </Modal>

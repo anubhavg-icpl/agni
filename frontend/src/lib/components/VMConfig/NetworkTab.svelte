@@ -93,7 +93,11 @@
 	<div class="space-y-4">
 		<div class="flex items-center justify-between">
 			<h4 class="font-medium text-muted-foreground">Network Interfaces (TAP)</h4>
-			<button type="button" on:click={addNIC} class="h-8 px-3 text-[13px] font-medium rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/70 transition-colors">
+			<button
+				type="button"
+				on:click={addNIC}
+				class="h-8 px-3 text-[13px] font-medium rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/70 transition-colors"
+			>
 				<svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 					<path
 						stroke-linecap="round"
@@ -172,7 +176,11 @@
 	<div class="space-y-4">
 		<div class="flex items-center justify-between">
 			<h4 class="font-medium text-muted-foreground">Vsock Devices</h4>
-			<button type="button" on:click={addVsock} class="h-8 px-3 text-[13px] font-medium rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/70 transition-colors">
+			<button
+				type="button"
+				on:click={addVsock}
+				class="h-8 px-3 text-[13px] font-medium rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/70 transition-colors"
+			>
 				<svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 					<path
 						stroke-linecap="round"

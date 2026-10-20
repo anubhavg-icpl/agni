@@ -124,7 +124,9 @@
 		/>
 		<div>
 			<label for="disableSMT" class="font-medium">Disable SMT (Hyper-Threading)</label>
-			<p class="text-sm text-muted-foreground">Disable simultaneous multithreading for enhanced security</p>
+			<p class="text-sm text-muted-foreground">
+				Disable simultaneous multithreading for enhanced security
+			</p>
 		</div>
 	</div>
 

@@ -73,7 +73,8 @@
 				on:change={emitChange}
 				class="rounded bg-secondary border-input"
 			/>
-			<label for="rootDriveReadOnly" class="text-sm text-muted-foreground">Mount as read-only</label>
+			<label for="rootDriveReadOnly" class="text-sm text-muted-foreground">Mount as read-only</label
+			>
 		</div>
 	</div>
 
@@ -81,7 +82,11 @@
 	<div class="space-y-4">
 		<div class="flex items-center justify-between">
 			<h4 class="font-medium text-muted-foreground">Additional Drives</h4>
-			<button type="button" on:click={addDrive} class="h-8 px-3 text-[13px] font-medium rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/70 transition-colors">
+			<button
+				type="button"
+				on:click={addDrive}
+				class="h-8 px-3 text-[13px] font-medium rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/70 transition-colors"
+			>
 				<svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 					<path
 						stroke-linecap="round"
@@ -130,7 +135,9 @@
 							on:change={(e) => handleDriveReadOnlyChange(index, e)}
 							class="rounded bg-secondary border-input"
 						/>
-						<label for="drive-{index}-readonly" class="text-sm text-muted-foreground">Read-only</label>
+						<label for="drive-{index}-readonly" class="text-sm text-muted-foreground"
+							>Read-only</label
+						>
 					</div>
 				</div>
 			{/each}

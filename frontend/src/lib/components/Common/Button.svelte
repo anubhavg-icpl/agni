@@ -9,6 +9,7 @@
 	export let fullWidth = false;
 	// When href is set the control renders a link: navigation is links (Law 12)
 	export let href: string | undefined = undefined;
+	export let title: string | undefined = undefined;
 
 	const dispatch = createEventDispatcher();
 
@@ -35,7 +36,10 @@
 {#if href}
 	<a
 		{href}
-		class="inline-flex items-center justify-center rounded-md font-medium transition-colors duration-150 active:scale-[0.98] {variantClasses[variant]}
+		{title}
+		class="inline-flex items-center justify-center rounded-md font-medium transition-colors duration-150 active:scale-[0.98] {variantClasses[
+			variant
+		]}
 		{sizeClasses[size]} {fullWidth ? 'w-full' : ''}"
 	>
 		<slot />
@@ -43,6 +47,7 @@
 {:else}
 	<button
 		{type}
+		{title}
 		disabled={disabled || loading}
 		on:click={handleClick}
 		class="inline-flex items-center justify-center rounded-md font-medium transition-colors duration-150 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none
@@ -50,7 +55,15 @@
 	>
 		{#if loading}
 			<svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
-				<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
+				<circle
+					class="opacity-25"
+					cx="12"
+					cy="12"
+					r="10"
+					stroke="currentColor"
+					stroke-width="4"
+					fill="none"
+				/>
 				<path
 					class="opacity-75"
 					fill="currentColor"

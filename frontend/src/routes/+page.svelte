@@ -39,7 +39,12 @@
 	<section aria-label="Virtual machines">
 		<h2 class="text-lg font-semibold text-foreground">Virtual machines</h2>
 		<div class="mt-4">
-			<VMTable vms={$vms.vms} loading={$vms.loading} error={$vms.error} onRetry={() => vms.fetch()} />
+			<VMTable
+				vms={$vms.vms}
+				loading={$vms.loading}
+				error={$vms.error}
+				onRetry={() => vms.fetch()}
+			/>
 		</div>
 	</section>
 </div>

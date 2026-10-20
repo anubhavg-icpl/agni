@@ -5,7 +5,7 @@
 	// SvelteKit passes params to all route components
 	export let params: Record<string, string> = {};
 
-	$: status = $page.error?.status ?? 404;
+	$: status = $page.status ?? 404;
 	$: heading = status === 404 ? 'Page not found' : 'Something went wrong';
 	$: body =
 		status === 404

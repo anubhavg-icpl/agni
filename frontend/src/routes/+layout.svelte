@@ -81,7 +81,6 @@
 	<div class="min-h-dvh">
 		<!-- Mobile backdrop -->
 		{#if mobileOpen}
-			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<div
 				class="fixed inset-0 z-[200] bg-foreground/40 md:hidden"
 				transition:fade={{ duration: 150 }}
@@ -119,9 +118,15 @@
 			</div>
 		{/if}
 
-		<div class="flex flex-col min-h-dvh transition-[margin] duration-200 ease-out {collapsed ? 'md:ml-[76px]' : 'md:ml-[262px]'}">
+		<div
+			class="flex flex-col min-h-dvh transition-[margin] duration-200 ease-out {collapsed
+				? 'md:ml-[76px]'
+				: 'md:ml-[262px]'}"
+		>
 			<!-- Topbar: left side empty, controls right, user chip last -->
-			<header class="sticky top-0 z-50 h-[58px] shrink-0 border-b bg-background flex items-center justify-between px-4 gap-2">
+			<header
+				class="sticky top-0 z-50 h-[58px] shrink-0 border-b bg-background flex items-center justify-between px-4 gap-2"
+			>
 				<button
 					class="md:hidden h-9 w-9 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
 					on:click={() => (mobileOpen = true)}

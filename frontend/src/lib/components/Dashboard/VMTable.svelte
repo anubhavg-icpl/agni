@@ -48,7 +48,7 @@
 			title="Failed to load virtual machines"
 			description={error}
 			actionLabel="Try again"
-			{onRetry}
+			onAction={onRetry}
 		/>
 	{:else if vms.length === 0}
 		<EmptyState
@@ -69,11 +69,19 @@
 				<thead class="sticky top-0 bg-card">
 					<tr class="border-b text-left">
 						<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground" scope="col">Name</th>
-						<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground" scope="col">Status</th>
-						<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground text-right" scope="col">vCPUs</th>
-						<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground text-right" scope="col">Memory</th>
-						<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground" scope="col">Kernel</th>
-						<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground" scope="col">Created</th>
+						<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground" scope="col">Status</th
+						>
+						<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground text-right" scope="col"
+							>vCPUs</th
+						>
+						<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground text-right" scope="col"
+							>Memory</th
+						>
+						<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground" scope="col">Kernel</th
+						>
+						<th class="py-2.5 px-4 text-xs font-medium text-muted-foreground" scope="col"
+							>Created</th
+						>
 						<th class="py-2.5 px-4 w-0" scope="col"><span class="sr-only">Actions</span></th>
 					</tr>
 				</thead>
@@ -82,17 +90,28 @@
 						<tr class="border-b last:border-b-0 hover:bg-accent/50 transition-colors">
 							<td class="py-2.5 px-4">
 								<div class="font-medium text-foreground">{vm.name}</div>
-								<div class="text-xs text-muted-foreground font-mono" title={vm.id}>{vm.id.slice(0, 8)}</div>
+								<div class="text-xs text-muted-foreground font-mono" title={vm.id}>
+									{vm.id.slice(0, 8)}
+								</div>
 							</td>
 							<td class="py-2.5 px-4"><StatusBadge status={vm.status} /></td>
-							<td class="py-2.5 px-4 text-right tabular-nums text-muted-foreground">{vm.config.cpus}</td>
-							<td class="py-2.5 px-4 text-right tabular-nums text-muted-foreground">{vm.config.memory_mb} MB</td>
+							<td class="py-2.5 px-4 text-right tabular-nums text-muted-foreground"
+								>{vm.config.cpus}</td
+							>
+							<td class="py-2.5 px-4 text-right tabular-nums text-muted-foreground"
+								>{vm.config.memory_mb} MB</td
+							>
 							<td class="py-2.5 px-4 max-w-[180px]">
-								<span class="font-mono text-[13px] text-muted-foreground block truncate" title={vm.config.kernel_path}>
+								<span
+									class="font-mono text-[13px] text-muted-foreground block truncate"
+									title={vm.config.kernel_path}
+								>
 									{getFilename(vm.config.kernel_path) || 'N/A'}
 								</span>
 							</td>
-							<td class="py-2.5 px-4 text-muted-foreground whitespace-nowrap">{formatDate(vm.created_at)}</td>
+							<td class="py-2.5 px-4 text-muted-foreground whitespace-nowrap"
+								>{formatDate(vm.created_at)}</td
+							>
 							<td class="py-2.5 px-4">
 								<div class="flex items-center justify-end gap-1">
 									{#if vm.status === 'stopped' || vm.status === 'error'}
@@ -130,10 +149,25 @@
 											<Icon name="ph-stop" size={16} />
 										</button>
 									{:else}
-										<span class="text-muted-foreground inline-flex items-center px-2" title="{vm.status}">
+										<span
+											class="text-muted-foreground inline-flex items-center px-2"
+											title={vm.status}
+										>
 											<svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
-												<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
-												<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+												<circle
+													class="opacity-25"
+													cx="12"
+													cy="12"
+													r="10"
+													stroke="currentColor"
+													stroke-width="4"
+													fill="none"
+												/>
+												<path
+													class="opacity-75"
+													fill="currentColor"
+													d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+												/>
 											</svg>
 										</span>
 									{/if}

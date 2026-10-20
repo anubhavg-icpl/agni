@@ -182,12 +182,20 @@
 <div class="flex flex-col h-full">
 	<div class="flex items-center justify-between mb-4">
 		<div class="flex items-center gap-2">
-			<span class="w-2 h-2 rounded-full {connected ? 'bg-status-ok' : 'bg-status-error'}" aria-hidden="true"></span>
+			<span
+				class="w-2 h-2 rounded-full {connected ? 'bg-status-ok' : 'bg-status-error'}"
+				aria-hidden="true"
+			></span>
 			<span class="text-sm text-muted-foreground">{connected ? 'Connected' : 'Disconnected'}</span>
 		</div>
 
 		<div class="flex items-center gap-2">
-			<Button variant="secondary" size="sm" on:click={handlePauseToggle} title={paused ? 'Resume' : 'Pause'}>
+			<Button
+				variant="secondary"
+				size="sm"
+				on:click={handlePauseToggle}
+				title={paused ? 'Resume' : 'Pause'}
+			>
 				<Icon name={paused ? 'ph-play' : 'ph-pause'} size={16} />
 				{paused ? 'Resume' : 'Pause'}
 			</Button>
@@ -198,7 +206,10 @@
 
 	<LogFilter on:change={handleFilterChange} />
 
-	<div bind:this={logContainer} class="flex-1 bg-muted rounded-lg p-4 font-mono text-[13px] overflow-y-auto">
+	<div
+		bind:this={logContainer}
+		class="flex-1 bg-muted rounded-lg p-4 font-mono text-[13px] overflow-y-auto"
+	>
 		{#if error}
 			<p class="text-status-error-text">{error}</p>
 		{:else if filteredLogs.length === 0}
@@ -209,7 +220,9 @@
 			{#each filteredLogs as log}
 				<div class="flex gap-2 py-0.5 hover:bg-accent/50 rounded-sm">
 					<span class="text-muted-foreground shrink-0">{formatTime(log.timestamp)}</span>
-					<span class="shrink-0 w-16 {levelColors[log.level.toLowerCase()] || 'text-muted-foreground'}">
+					<span
+						class="shrink-0 w-16 {levelColors[log.level.toLowerCase()] || 'text-muted-foreground'}"
+					>
 						[{log.level.toUpperCase()}]
 					</span>
 					<span class="text-foreground break-all">{log.message}</span>

@@ -34,7 +34,12 @@
 <div class="flex flex-wrap items-center gap-3 mb-4">
 	<div class="flex items-center gap-2">
 		<label for="log-level" class="text-sm text-muted-foreground">Level</label>
-		<select id="log-level" bind:value={level} on:change={emitChange} class="input h-8 w-auto py-0 px-2 text-[13px]">
+		<select
+			id="log-level"
+			bind:value={level}
+			on:change={emitChange}
+			class="input h-8 w-auto py-0 px-2 text-[13px]"
+		>
 			{#each levels as levelOption}
 				<option value={levelOption.value}>{levelOption.label}</option>
 			{/each}

@@ -1,3 +1,7 @@
+# Unreleased
+
+* Rebuilt the web GUI on the Invinsense Interface Standard: OKLCH token set with light and dark themes, Geist and Geist Mono, Phosphor Bold icons, sidebar and topbar shell, professional copy throughout
+
 # 0.2.0
 
 * Upgraded to v1.0.0 of the firecracker-go-sdk
