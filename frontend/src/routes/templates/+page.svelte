@@ -11,8 +11,6 @@
 	import { formatBytes } from '$lib/utils/formatters';
 	import type { DeployTemplate, ImageJob } from '$lib/api/client';
 
-	export let params = {};
-
 	let modalOpen = false;
 	let deploying: DeployTemplate | null = null;
 	let vmName = '';
@@ -185,9 +183,15 @@
 					<div class="flex items-start justify-between gap-3">
 						<div class="flex items-center gap-2.5 min-w-0">
 							<span
-								class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground"
+								class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted"
+								aria-hidden="true"
 							>
-								<Icon name="ph-linux-logo" size={20} />
+								<img
+									src={t.logo === 'firecracker' ? '/logo.png' : `/brand/${t.logo}.svg`}
+									alt=""
+									class="h-5 w-5"
+									loading="lazy"
+								/>
 							</span>
 							<div class="min-w-0">
 								<h3 class="text-sm font-semibold truncate">{t.name}</h3>

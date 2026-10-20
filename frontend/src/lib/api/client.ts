@@ -335,6 +335,7 @@ export interface DeployTemplate {
 	name: string;
 	os: string;
 	version: string;
+	logo: string;
 	description: string;
 	category: 'os' | 'runtime';
 	arch: string;
