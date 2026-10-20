@@ -12,6 +12,7 @@ const (
 	KindRootfs  = "rootfs"
 	KindRuntime = "runtime"
 	KindKey     = "ssh-key"
+	KindInitrd  = "initrd"
 )
 
 // Artifact is one downloadable file that makes up a template.
@@ -257,6 +258,73 @@ func Catalog() []Template {
 				KernelOpts:   "root=/dev/vda console=ttyS0 reboot=k panic=1 pci=off",
 				DefaultCPUs:  2,
 				DefaultMemMB: 2048,
+				DocsURL:      "https://github.com/firecracker-microvm/firecracker/tree/main/docs",
+			},
+			{
+				ID:          "boottime-minimal",
+				Name:        "Boot-time benchmark microVM",
+				OS:          "Linux",
+				Version:     "minimal",
+				Logo:        "linux",
+				Description: "The tiny guest Firecracker CI uses for boot-time benchmarking. Minimal kernel and root filesystem, boots to a shell in milliseconds. Best for measuring cold-start time.",
+				Category:    "os",
+				Arch:        arch,
+				Artifacts: []Artifact{
+					{
+						Name:       "Kernel (benchmark build)",
+						Kind:       KindKernel,
+						Filename:   "vmlinux-bench.bin",
+						URL:        img + "/minimal/kernel/vmlinux.bin",
+						SizeHintMB: 21,
+					},
+					{
+						Name:       "Root filesystem (benchmark)",
+						Kind:       KindRootfs,
+						Filename:   "boottime-rootfs.ext4",
+						URL:        img + "/minimal/fsfiles/boottime-rootfs.ext4",
+						SizeHintMB: 30,
+					},
+				},
+				KernelOpts:   "console=ttyS0 reboot=k panic=1 pci=off",
+				DefaultCPUs:  1,
+				DefaultMemMB: 128,
+				DocsURL:      "https://github.com/firecracker-microvm/firecracker/tree/main/docs",
+			},
+			{
+				ID:          "initrd-micro",
+				Name:        "Initramfs micro boot",
+				OS:          "Linux",
+				Version:     "initrd",
+				Logo:        "linux",
+				Description: "No disk at all: the guest lives entirely in an initramfs loaded next to the kernel. The smallest, fastest boot Agni can deploy. The matching SSH key is saved alongside.",
+				Category:    "os",
+				Arch:        arch,
+				Artifacts: []Artifact{
+					{
+						Name:       "Kernel (initrd build)",
+						Kind:       KindKernel,
+						Filename:   "vmlinux-initrd.bin",
+						URL:        img + "/minimal_with_initrd/kernel/vmlinux.bin",
+						SizeHintMB: 16,
+					},
+					{
+						Name:       "Initramfs",
+						Kind:       KindInitrd,
+						Filename:   "initrd.img",
+						URL:        img + "/minimal_with_initrd/fsfiles/initrd.img",
+						SizeHintMB: 25,
+					},
+					{
+						Name:       "SSH key",
+						Kind:       KindKey,
+						Filename:   "initrd.img.id_rsa",
+						URL:        img + "/minimal_with_initrd/fsfiles/initrd.img.id_rsa",
+						SizeHintMB: 1,
+					},
+				},
+				KernelOpts:   "console=ttyS0 reboot=k panic=1 pci=off",
+				DefaultCPUs:  1,
+				DefaultMemMB: 128,
 				DocsURL:      "https://github.com/firecracker-microvm/firecracker/tree/main/docs",
 			},
 		}, catalog[len(catalog)-1])...)

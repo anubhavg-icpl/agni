@@ -140,7 +140,7 @@ func (h *TemplateHandler) Deploy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var kernelPath, rootfsPath string
+	var kernelPath, rootfsPath, initrdPath string
 	for _, state := range h.images.State(t) {
 		if !state.Ready {
 			respondError(w, http.StatusConflict, "The template images are not on disk yet. Download them from the Deploy page first.")
@@ -151,7 +151,17 @@ func (h *TemplateHandler) Deploy(w http.ResponseWriter, r *http.Request) {
 			kernelPath = state.Path
 		case templates.KindRootfs:
 			rootfsPath = state.Path
+		case templates.KindInitrd:
+			initrdPath = state.Path
 		}
+	}
+	if kernelPath == "" {
+		respondError(w, http.StatusInternalServerError, "The template does not define a kernel image.")
+		return
+	}
+	if rootfsPath == "" && initrdPath == "" {
+		respondError(w, http.StatusInternalServerError, "The template defines neither a root filesystem nor an initramfs.")
+		return
 	}
 
 	name := req.Name
@@ -171,6 +181,7 @@ func (h *TemplateHandler) Deploy(w http.ResponseWriter, r *http.Request) {
 		Name:       name,
 		KernelPath: kernelPath,
 		KernelOpts: t.KernelOpts,
+		InitrdPath: initrdPath,
 		RootDrive:  models.Drive{Path: rootfsPath, ReadOnly: false},
 		CPUs:       cpus,
 		MemoryMB:   mem,

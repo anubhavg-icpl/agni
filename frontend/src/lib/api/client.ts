@@ -298,7 +298,7 @@ export interface SystemInfo {
 
 export interface TemplateArtifact {
 	name: string;
-	kind: 'kernel' | 'rootfs' | 'runtime';
+	kind: 'kernel' | 'rootfs' | 'runtime' | 'initrd' | 'ssh-key';
 	filename: string;
 	url: string;
 	path: string;

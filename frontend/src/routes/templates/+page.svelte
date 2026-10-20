@@ -356,12 +356,22 @@
 							>{deploying.artifacts.find((a) => a.kind === 'kernel')?.filename}</span
 						>
 					</div>
-					<div class="flex justify-between gap-3">
-						<span>rootfs</span>
-						<span class="truncate"
-							>{deploying.artifacts.find((a) => a.kind === 'rootfs')?.filename}</span
-						>
-					</div>
+					{#if deploying.artifacts.find((a) => a.kind === 'rootfs')}
+						<div class="flex justify-between gap-3">
+							<span>rootfs</span>
+							<span class="truncate"
+								>{deploying.artifacts.find((a) => a.kind === 'rootfs')?.filename}</span
+							>
+						</div>
+					{/if}
+					{#if deploying.artifacts.find((a) => a.kind === 'initrd')}
+						<div class="flex justify-between gap-3">
+							<span>initrd</span>
+							<span class="truncate"
+								>{deploying.artifacts.find((a) => a.kind === 'initrd')?.filename}</span
+							>
+						</div>
+					{/if}
 					<div class="flex justify-between gap-3">
 						<span>boot</span>
 						<span class="truncate">{deploying.kernel_opts}</span>

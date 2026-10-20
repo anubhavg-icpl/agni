@@ -21,11 +21,11 @@ import (
 	"sync"
 	"time"
 
-	firecracker "github.com/firecracker-microvm/firecracker-go-sdk"
-	fcmodels "github.com/firecracker-microvm/firecracker-go-sdk/client/models"
 	"github.com/anubhavg-icpl/agni/internal/logging"
 	"github.com/anubhavg-icpl/agni/internal/storage"
 	"github.com/anubhavg-icpl/agni/pkg/models"
+	firecracker "github.com/firecracker-microvm/firecracker-go-sdk"
+	fcmodels "github.com/firecracker-microvm/firecracker-go-sdk/client/models"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 )
@@ -350,15 +350,17 @@ func (m *Manager) StopAll() {
 func (m *Manager) buildFirecrackerConfig(vm *models.VM) (firecracker.Config, error) {
 	cfg := vm.Config
 
-	// Build drives
-	drives := []fcmodels.Drive{
-		{
+	// Build drives. A guest booted purely from kernel + initramfs has no
+	// root drive at all, so an empty path means "no drives".
+	drives := []fcmodels.Drive{}
+	if cfg.RootDrive.Path != "" {
+		drives = append(drives, fcmodels.Drive{
 			DriveID:      firecracker.String("1"),
 			PathOnHost:   firecracker.String(cfg.RootDrive.Path),
 			IsReadOnly:   firecracker.Bool(cfg.RootDrive.ReadOnly),
 			IsRootDevice: firecracker.Bool(true),
 			Partuuid:     cfg.RootDrive.PartUUID,
-		},
+		})
 	}
 
 	for i, drive := range cfg.AdditionalDrives {
