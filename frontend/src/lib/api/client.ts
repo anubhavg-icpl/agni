@@ -134,6 +134,23 @@ class ApiClient {
 		await this.request('DELETE', `/configs/${id}`);
 	}
 
+	// Templates & deploy
+	async listTemplates(): Promise<TemplatesResponse> {
+		return this.request('GET', '/templates');
+	}
+
+	async prepareTemplate(id: string): Promise<{ job: ImageJob }> {
+		return this.request('POST', `/templates/${id}/prepare`);
+	}
+
+	async getImageJob(id: string): Promise<{ job: ImageJob }> {
+		return this.request('GET', `/images/jobs/${id}`);
+	}
+
+	async deployFromTemplate(data: DeployFromTemplateRequest): Promise<DeployResponse> {
+		return this.request('POST', '/vms/from-template', data);
+	}
+
 	// Health
 	async getHealth(): Promise<HealthStatus> {
 		return this.request('GET', '/health');
@@ -277,4 +294,76 @@ export interface SystemInfo {
 	arch: string;
 	num_cpu: number;
 	total_memory: number;
+}
+
+export interface TemplateArtifact {
+	name: string;
+	kind: 'kernel' | 'rootfs' | 'runtime';
+	filename: string;
+	url: string;
+	path: string;
+	ready: boolean;
+	size_bytes: number;
+	size_hint_mb: number;
+	tool_deps?: string[];
+}
+
+export interface ImageJobArtifact {
+	name: string;
+	filename: string;
+	kind: string;
+	state: 'pending' | 'downloading' | 'processing' | 'done' | 'error';
+	bytes_done: number;
+	bytes_total: number;
+	path?: string;
+	description?: string;
+}
+
+export interface ImageJob {
+	id: string;
+	template_id: string;
+	state: 'running' | 'done' | 'error';
+	phase: string;
+	artifacts: ImageJobArtifact[];
+	error?: string;
+	started_at: string;
+	finished_at?: string;
+}
+
+export interface DeployTemplate {
+	id: string;
+	name: string;
+	os: string;
+	version: string;
+	description: string;
+	category: 'os' | 'runtime';
+	arch: string;
+	kernel_opts: string;
+	default_cpus: number;
+	default_memory_mb: number;
+	docs_url: string;
+	artifacts: TemplateArtifact[];
+	ready: boolean;
+	latest_job?: ImageJob;
+}
+
+export interface TemplatesResponse {
+	templates: DeployTemplate[];
+	runtime: { installed: boolean; path?: string; version: string };
+	kvm_available: boolean;
+	images_dir: string;
+}
+
+export interface DeployFromTemplateRequest {
+	template_id: string;
+	name: string;
+	cpus: number;
+	memory_mb: number;
+	auto_start: boolean;
+}
+
+export interface DeployResponse {
+	vm: VM;
+	started: boolean;
+	start_error?: string;
 }

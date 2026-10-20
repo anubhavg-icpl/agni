@@ -23,6 +23,7 @@
 		{
 			section: 'Manage',
 			items: [
+				{ href: '/templates', label: 'Deploy', icon: 'ph-rocket-launch' },
 				{ href: '/vms', label: 'Virtual Machines', icon: 'ph-cubes' },
 				{ href: '/configs', label: 'Templates', icon: 'ph-files' }
 			]
