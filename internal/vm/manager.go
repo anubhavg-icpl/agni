@@ -14,10 +14,13 @@
 package vm
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
+	"strings"
 	"sync"
 	"time"
 
@@ -40,6 +43,7 @@ type RunningVM struct {
 	Machine    *firecracker.Machine
 	Cancel     context.CancelFunc
 	SocketPath string
+	Stdin      *os.File // write end of the serial console input pipe
 }
 
 // Manager manages multiple Firecracker VMs
@@ -124,15 +128,38 @@ func (m *Manager) Start(id string) error {
 		return err
 	}
 
+	// Remove a stale API socket left behind by a previous run (crash, kill
+	// -9, unclean shutdown); firecracker refuses to start when it exists.
+	if fcConfig.SocketPath != "" {
+		if err := os.Remove(fcConfig.SocketPath); err != nil && !os.IsNotExist(err) {
+			vm.Status = models.VMStatusError
+			vm.Error = err.Error()
+			_ = m.store.Update(vm)
+			return err
+		}
+	}
+
 	// Create context with cancel
 	ctx, cancel := context.WithCancel(context.Background())
+
+	// Serial console: guest output is mirrored to the log streamer (for the
+	// console and logs WebSockets) and to the Agni process stdout; guest
+	// input arrives through a pipe that the console API writes to.
+	stdinR, stdinW, err := os.Pipe()
+	if err != nil {
+		cancel()
+		vm.Status = models.VMStatusError
+		vm.Error = err.Error()
+		_ = m.store.Update(vm)
+		return err
+	}
 
 	// Build command
 	cmd := firecracker.VMCommandBuilder{}.
 		WithBin(fcBinary).
 		WithSocketPath(fcConfig.SocketPath).
-		WithStdin(os.Stdin).
-		WithStdout(os.Stdout).
+		WithStdin(stdinR).
+		WithStdout(&serialTee{vmID: id, streamer: m.logStreamer, out: os.Stdout}).
 		WithStderr(os.Stderr).
 		Build(ctx)
 
@@ -146,6 +173,8 @@ func (m *Manager) Start(id string) error {
 	machine, err := firecracker.NewMachine(ctx, fcConfig, machineOpts...)
 	if err != nil {
 		cancel()
+		_ = stdinW.Close()
+		_ = stdinR.Close()
 		vm.Status = models.VMStatusError
 		vm.Error = err.Error()
 		_ = m.store.Update(vm)
@@ -155,6 +184,8 @@ func (m *Manager) Start(id string) error {
 	// Start machine
 	if err := machine.Start(ctx); err != nil {
 		cancel()
+		_ = stdinW.Close()
+		_ = stdinR.Close()
 		vm.Status = models.VMStatusError
 		vm.Error = err.Error()
 		_ = m.store.Update(vm)
@@ -176,6 +207,7 @@ func (m *Manager) Start(id string) error {
 		Machine:    machine,
 		Cancel:     cancel,
 		SocketPath: fcConfig.SocketPath,
+		Stdin:      stdinW,
 	}
 
 	m.logger.Info().Str("vm_id", id).Msg("VM started")
@@ -194,6 +226,11 @@ func (m *Manager) waitForVM(id string, machine *firecracker.Machine, ctx context
 	}
 
 	m.mu.Lock()
+	if rv, ok := m.runningVMs[id]; ok {
+		if rv.Stdin != nil {
+			_ = rv.Stdin.Close()
+		}
+	}
 	delete(m.runningVMs, id)
 	m.mu.Unlock()
 
@@ -444,4 +481,52 @@ func (m *Manager) validateBinary(path string) (string, error) {
 		return "", fmt.Errorf("binary %q is not executable", path)
 	}
 	return path, nil
+}
+
+// WriteConsole sends raw input to the serial console of a running VM.
+func (m *Manager) WriteConsole(id string, data []byte) error {
+	m.mu.Lock()
+	rv, ok := m.runningVMs[id]
+	m.mu.Unlock()
+	if !ok || rv.Stdin == nil {
+		return fmt.Errorf("the VM is not running")
+	}
+	_, err := rv.Stdin.Write(data)
+	return err
+}
+
+// serialTee mirrors firecracker serial output to the host stdout and the log
+// streamer, splitting complete lines into log entries.
+type serialTee struct {
+	vmID     string
+	streamer *LogStreamer
+	out      io.Writer
+
+	mu  sync.Mutex
+	buf []byte
+}
+
+func (t *serialTee) Write(p []byte) (int, error) {
+	_, _ = t.out.Write(p)
+
+	t.mu.Lock()
+	t.buf = append(t.buf, p...)
+	for {
+		idx := bytes.IndexByte(t.buf, '\n')
+		if idx < 0 {
+			break
+		}
+		line := strings.TrimRight(string(t.buf[:idx]), "\r")
+		t.buf = t.buf[idx+1:]
+		if line != "" {
+			t.streamer.Publish(t.vmID, &models.LogEntry{
+				Timestamp: time.Now(),
+				Level:     "info",
+				Source:    "serial",
+				Message:   line,
+			})
+		}
+	}
+	t.mu.Unlock()
+	return len(p), nil
 }

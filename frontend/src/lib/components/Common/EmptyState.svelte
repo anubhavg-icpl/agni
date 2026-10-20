@@ -2,7 +2,7 @@
 	import Icon from './Icon.svelte';
 	import Button from './Button.svelte';
 
-	export let icon = 'ph-cubes';
+	export let icon = 'ph-cube-transparent';
 	export let title = '';
 	export let description = '';
 	export let actionLabel = '';

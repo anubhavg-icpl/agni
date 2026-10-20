@@ -17,12 +17,14 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/anubhavg-icpl/agni/internal/auth"
 	"github.com/anubhavg-icpl/agni/internal/vm"
 	"github.com/anubhavg-icpl/agni/pkg/models"
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/websocket"
+	zlog "github.com/rs/zerolog/log"
 )
 
 var upgrader = websocket.Upgrader{
@@ -150,4 +152,100 @@ func (h *WebSocketHandler) StreamLogs(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+// Console streams the VM serial console bidirectionally: guest output is
+// forwarded as text frames, client frames are written to the guest stdin.
+func (h *WebSocketHandler) Console(w http.ResponseWriter, r *http.Request) {
+	token := r.URL.Query().Get("token")
+	if token == "" {
+		authHeader := r.Header.Get("Authorization")
+		if strings.HasPrefix(authHeader, "Bearer ") {
+			token = strings.TrimPrefix(authHeader, "Bearer ")
+		}
+	}
+	if token == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	if _, err := h.authService.ValidateToken(token); err != nil {
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	vmID := chi.URLParam(r, "id")
+	if vmID == "" {
+		http.Error(w, "VM ID required", http.StatusBadRequest)
+		return
+	}
+	if _, err := h.vmManager.Get(vmID); err != nil {
+		http.Error(w, "VM not found", http.StatusNotFound)
+		return
+	}
+
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		return
+	}
+	defer conn.Close()
+
+	// Serial output goes to the client one line per text frame.
+	var writeMu sync.Mutex
+	writeFrame := func(text string) {
+		writeMu.Lock()
+		defer writeMu.Unlock()
+		_ = conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+		_ = conn.WriteMessage(websocket.TextMessage, []byte(text))
+	}
+	writeLine := func(text string) { writeFrame(text + "\n") }
+
+	// Reader: terminal input -> guest stdin. Closing signals the writer loop.
+	// Input problems never tear down the console: the user keeps the session
+	// and sees an inline notice instead of a reconnect loop.
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		for {
+			_, data, err := conn.ReadMessage()
+			if err != nil {
+				h.logClose(vmID, "read error", err)
+				return
+			}
+			if len(data) > 0 {
+				if err := h.vmManager.WriteConsole(vmID, data); err != nil {
+					writeLine("[agni] " + err.Error())
+				}
+			}
+		}
+	}()
+
+	sub := h.vmManager.GetLogStreamer().Subscribe(vmID, vm.LogFilter{})
+	defer h.vmManager.GetLogStreamer().Unsubscribe(sub.ID)
+
+	for {
+		select {
+		case entry, ok := <-sub.Channel:
+			if !ok {
+				h.logClose(vmID, "log channel closed", nil)
+				return
+			}
+			writeLine(entry.Message)
+		case <-done:
+			h.logClose(vmID, "client input loop ended", nil)
+			return
+		case <-r.Context().Done():
+			h.logClose(vmID, "request context done", r.Context().Err())
+			return
+		}
+	}
+}
+
+// logClose records why a console session ended, making reconnect loops
+// diagnosable in the server log.
+func (h *WebSocketHandler) logClose(vmID, reason string, err error) {
+	msg := reason
+	if err != nil {
+		msg += ": " + err.Error()
+	}
+	zlog.Warn().Str("vm_id", vmID).Str("component", "console").Msg("Console session ended: " + msg)
 }

@@ -105,7 +105,7 @@ func (s *Server) setupMiddleware() {
 	s.router.Use(func(next http.Handler) http.Handler {
 		timeout := chimiddleware.Timeout(60 * time.Second)(next)
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if strings.HasSuffix(r.URL.Path, "/logs") {
+			if strings.HasSuffix(r.URL.Path, "/logs") || strings.HasSuffix(r.URL.Path, "/console") {
 				next.ServeHTTP(w, r)
 				return
 			}
@@ -171,6 +171,7 @@ func (s *Server) setupRoutes() {
 	// WebSocket routes (with auth check in handler)
 	wsHandler := handlers.NewWebSocketHandler(s.vmManager, s.authService)
 	s.router.Get("/api/vms/{id}/logs", wsHandler.StreamLogs)
+	s.router.Get("/api/vms/{id}/console", wsHandler.Console)
 
 	// Serve embedded frontend assets if available
 	if s.config.Assets != nil {
