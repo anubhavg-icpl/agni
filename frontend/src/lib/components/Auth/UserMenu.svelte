@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { scale } from 'svelte/transition';
+	import Icon from '../Common/Icon.svelte';
 
 	export let username = '';
 
@@ -20,9 +21,8 @@
 		dispatch('logout');
 	}
 
-	function handleSettings() {
-		close();
-		dispatch('settings');
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'Escape') close();
 	}
 
 	function handleClickOutside(event: MouseEvent) {
@@ -33,74 +33,54 @@
 	}
 </script>
 
-<svelte:window on:click={handleClickOutside} />
+<svelte:window on:click={handleClickOutside} on:keydown={handleKeydown} />
 
 <div class="relative user-menu">
 	<button
 		on:click={toggle}
-		class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+		class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-accent transition-colors"
+		aria-haspopup="menu"
+		aria-expanded={open}
 	>
-		<div
-			class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-medium text-white"
+		<span
+			class="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[13px] font-medium"
+			aria-hidden="true"
 		>
 			{username.charAt(0).toUpperCase()}
-		</div>
-		<span class="text-sm text-gray-300 hidden sm:block">{username}</span>
-		<svg
-			class="w-4 h-4 text-gray-400 transition-transform {open ? 'rotate-180' : ''}"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke="currentColor"
-		>
-			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-		</svg>
+		</span>
+		<span class="text-[13px] font-medium text-foreground hidden sm:block">{username}</span>
+		<span class="text-muted-foreground transition-transform duration-150 {open ? 'rotate-180' : ''}" aria-hidden="true">
+			<Icon name="ph-caret-down" size={14} />
+		</span>
 	</button>
 
 	{#if open}
 		<div
 			transition:scale={{ duration: 150, start: 0.95 }}
-			class="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden z-50"
+			class="absolute right-0 mt-2 w-52 bg-popover border rounded-lg shadow-lg overflow-hidden z-[100]"
+			role="menu"
 		>
-			<div class="px-4 py-3 border-b border-gray-700">
-				<p class="text-sm font-medium text-white">{username}</p>
-				<p class="text-xs text-gray-400">Administrator</p>
+			<div class="px-4 py-3 border-b">
+				<p class="text-sm font-medium text-foreground">{username}</p>
+				<p class="text-xs text-muted-foreground mt-0.5">Administrator</p>
 			</div>
-
 			<div class="py-1">
-				<button
-					on:click={handleSettings}
-					class="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 flex items-center gap-2"
+				<a
+					href="/settings"
+					class="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent flex items-center gap-2"
+					role="menuitem"
+					on:click={close}
 				>
-					<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-						/>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-						/>
-					</svg>
+					<span class="text-muted-foreground"><Icon name="ph-gear-six" size={16} /></span>
 					Settings
-				</button>
-
+				</a>
 				<button
 					on:click={handleLogout}
-					class="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-700 flex items-center gap-2"
+					class="w-full px-4 py-2 text-left text-sm text-destructive hover:bg-accent flex items-center gap-2"
+					role="menuitem"
 				>
-					<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-						/>
-					</svg>
-					Sign Out
+					<Icon name="ph-sign-out" size={16} />
+					Sign out
 				</button>
 			</div>
 		</div>

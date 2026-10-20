@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import Icon from './Icon.svelte';
 
 	export let value = '';
 	export let label = '';
@@ -16,20 +17,14 @@
 		value = target.value;
 		dispatch('change', value);
 	}
-
-	function handleBrowse() {
-		// In a Wails app, this would trigger a native file dialog
-		// For now, we dispatch an event that can be handled by parent components
-		dispatch('browse');
-	}
 </script>
 
-<div class="space-y-1">
+<div class="space-y-2">
 	{#if label}
 		<label for={id} class="label">
 			{label}
 			{#if required}
-				<span class="text-red-400">*</span>
+				<span class="text-destructive" aria-hidden="true">*</span>
 			{/if}
 		</label>
 	{/if}
@@ -43,10 +38,7 @@
 				{placeholder}
 				{required}
 				on:input={handleInput}
-				on:blur
-				class="input w-full pr-10 font-mono text-sm {error
-					? 'border-red-500 focus:border-red-500'
-					: ''}"
+				class="input pr-8 font-mono text-[13px] {error ? 'border-destructive focus:ring-destructive/30' : ''}"
 			/>
 			{#if value}
 				<button
@@ -55,40 +47,24 @@
 						value = '';
 						dispatch('change', '');
 					}}
-					class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-					aria-label="Clear"
+					class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+					aria-label="Clear path"
 				>
-					<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M6 18L18 6M6 6l12 12"
-						/>
-					</svg>
+					<Icon name="ph-x" size={16} />
 				</button>
 			{/if}
 		</div>
-		<button
-			type="button"
-			on:click={handleBrowse}
-			class="btn btn-secondary px-3"
-			title="Browse files"
-		>
-			<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-				/>
-			</svg>
+		<button type="button" class="btn-secondary h-9 px-3 rounded-md border bg-secondary text-secondary-foreground hover:bg-secondary/70 transition-colors" title="Browse files">
+			<Icon name="ph-folder-open" size={16} />
 		</button>
 	</div>
 
 	{#if error}
-		<p class="text-sm text-red-400">{error}</p>
+		<p class="text-[13px] text-destructive flex items-center gap-1.5">
+			<Icon name="ph-warning-circle" size={14} />
+			{error}
+		</p>
 	{:else if hint}
-		<p class="text-sm text-gray-500">{hint}</p>
+		<p class="text-xs text-muted-foreground">{hint}</p>
 	{/if}
 </div>

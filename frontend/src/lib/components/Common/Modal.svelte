@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount, onDestroy } from 'svelte';
 	import { fade, scale } from 'svelte/transition';
+	import Icon from './Icon.svelte';
 
 	export let open = false;
 	export let title = '';
+	export let description = '';
 	export let size: 'sm' | 'md' | 'lg' | 'xl' = 'md';
-	export let closeOnBackdrop = true;
-	export let closeOnEscape = true;
+	// AlertDialog mode: an undoable-in-name-only decision never closes on
+	// backdrop or Escape without the explicit confirm or cancel
+	export let alert = false;
 
 	const dispatch = createEventDispatcher();
 
@@ -22,13 +25,13 @@
 	}
 
 	function handleBackdropClick(event: MouseEvent) {
-		if (closeOnBackdrop && event.target === event.currentTarget) {
+		if (!alert && event.target === event.currentTarget) {
 			close();
 		}
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
-		if (closeOnEscape && event.key === 'Escape' && open) {
+		if (event.key === 'Escape' && open && !alert) {
 			close();
 		}
 	}
@@ -45,65 +48,47 @@
 		}
 	});
 
-	$: if (open && typeof document !== 'undefined') {
-		document.body.style.overflow = 'hidden';
-	} else if (typeof document !== 'undefined') {
-		document.body.style.overflow = '';
+	$: if (typeof document !== 'undefined') {
+		document.body.style.overflow = open ? 'hidden' : '';
 	}
 </script>
 
 {#if open}
 	<div
-		class="fixed inset-0 z-50 flex items-center justify-center p-4"
+		class="fixed inset-0 z-[200] bg-foreground/40"
 		transition:fade={{ duration: 150 }}
 		on:click={handleBackdropClick}
-		role="dialog"
-		aria-modal="true"
-		aria-labelledby={title ? 'modal-title' : undefined}
-	>
-		<!-- Backdrop -->
-		<div class="absolute inset-0 bg-black/70" />
-
-		<!-- Modal content -->
+	></div>
+	<div class="fixed inset-0 z-[300] flex items-center justify-center p-4 pointer-events-none">
 		<div
-			class="relative bg-gray-800 rounded-lg shadow-xl w-full {sizeClasses[
-				size
-			]} max-h-[90vh] overflow-hidden flex flex-col"
-			transition:scale={{ duration: 150, start: 0.95 }}
+			class="relative bg-popover border rounded-xl shadow-lg w-full {sizeClasses[size]} max-h-[90vh] overflow-hidden flex flex-col pointer-events-auto"
+			transition:scale={{ duration: 200, start: 0.95 }}
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby={title ? 'modal-title' : undefined}
 		>
-			<!-- Header -->
-			{#if title || $$slots.header}
-				<div class="flex items-center justify-between px-6 py-4 border-b border-gray-700">
-					{#if $$slots.header}
-						<slot name="header" />
-					{:else}
-						<h2 id="modal-title" class="text-lg font-semibold text-white">{title}</h2>
+			<div class="flex items-start justify-between px-6 py-4 border-b">
+				<div>
+					<h2 id="modal-title" class="text-xl font-semibold leading-7 text-balance">{title}</h2>
+					{#if description}
+						<p class="text-sm text-muted-foreground mt-1">{description}</p>
 					{/if}
+				</div>
+				{#if !alert}
 					<button
 						on:click={close}
-						class="text-gray-400 hover:text-white transition-colors p-1 rounded hover:bg-gray-700"
-						aria-label="Close modal"
+						class="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-sm hover:bg-accent"
+						aria-label="Close dialog"
 					>
-						<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M6 18L18 6M6 6l12 12"
-							/>
-						</svg>
+						<Icon name="ph-x" size={20} />
 					</button>
-				</div>
-			{/if}
-
-			<!-- Body -->
+				{/if}
+			</div>
 			<div class="px-6 py-4 overflow-y-auto flex-1">
 				<slot />
 			</div>
-
-			<!-- Footer -->
 			{#if $$slots.footer}
-				<div class="px-6 py-4 border-t border-gray-700 bg-gray-800/50">
+				<div class="px-6 py-4 border-t bg-muted/50 flex justify-end gap-2">
 					<slot name="footer" />
 				</div>
 			{/if}
