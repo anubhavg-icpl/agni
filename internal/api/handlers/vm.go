@@ -180,10 +180,10 @@ func (h *VMHandler) Start(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if err == models.ErrVMAlreadyRunning {
-			respondError(w, http.StatusConflict, "It's already running. What more do you want from it?")
+			respondError(w, http.StatusConflict, "The VM is already running.")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "VM refused to start. Can't say we blame it")
+		respondError(w, http.StatusInternalServerError, "Failed to start the VM. Check that the kernel and root drive paths are valid and that the firecracker binary is installed.")
 		return
 	}
 
@@ -261,7 +261,7 @@ func (h *VMHandler) Metrics(w http.ResponseWriter, r *http.Request) {
 	metrics, err := h.manager.GetMetrics(id)
 	if err != nil {
 		if err == models.ErrVMNotRunning {
-			respondError(w, http.StatusConflict, "VM isn't running. No metrics for the lazy")
+			respondError(w, http.StatusConflict, "Metrics are available only while the VM is running.")
 			return
 		}
 		respondError(w, http.StatusInternalServerError, "Metrics collection failed. The numbers are shy")

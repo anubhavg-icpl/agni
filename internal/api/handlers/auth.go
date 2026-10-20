@@ -49,7 +49,7 @@ func (h *AuthHandler) Setup(w http.ResponseWriter, r *http.Request) {
 	user, err := h.authService.Setup(req.Username, req.Password)
 	if err != nil {
 		if err == models.ErrSetupAlreadyDone {
-			respondError(w, http.StatusConflict, "Someone already claimed the throne. You're too slow")
+			respondError(w, http.StatusConflict, "An administrator account already exists.")
 			return
 		}
 		respondError(w, http.StatusBadRequest, err.Error())

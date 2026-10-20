@@ -53,7 +53,7 @@ func JWTAuth(authService *auth.Service) func(next http.Handler) http.Handler {
 			// Validate token
 			claims, err := authService.ValidateToken(token)
 			if err != nil {
-				respondError(w, http.StatusUnauthorized, "Your token is as valid as a three-dollar bill")
+				respondError(w, http.StatusUnauthorized, "Session token is invalid or expired.")
 				return
 			}
 
