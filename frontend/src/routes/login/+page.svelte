@@ -8,9 +8,6 @@
 	import LoginScene from '$lib/components/Auth/LoginScene.svelte';
 	import { APP_VERSION } from '$lib/version';
 
-	// SvelteKit passes params to all route components
-	export let params: Record<string, string> = {};
-
 	let username = '';
 	let password = '';
 	let confirmPassword = '';

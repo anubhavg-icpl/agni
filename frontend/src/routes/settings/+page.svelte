@@ -9,9 +9,6 @@
 	import Skeleton from '$lib/components/Common/Skeleton.svelte';
 	import StatusBanner from '$lib/components/Common/StatusBanner.svelte';
 
-	// SvelteKit passes params to all route components
-	export let params: Record<string, string> = {};
-
 	let systemInfo: SystemInfo | null = null;
 	let loading = true;
 

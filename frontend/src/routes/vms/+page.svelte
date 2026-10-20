@@ -6,9 +6,6 @@
 	import Icon from '$lib/components/Common/Icon.svelte';
 	import VMTable from '$lib/components/Dashboard/VMTable.svelte';
 
-	// SvelteKit passes params to all route components
-	export let params: Record<string, string> = {};
-
 	onMount(() => {
 		vms.fetch();
 		const interval = setInterval(() => vms.fetch(), 5000);

@@ -9,9 +9,6 @@
 	import Modal from '$lib/components/Common/Modal.svelte';
 	import Icon from '$lib/components/Common/Icon.svelte';
 
-	// SvelteKit passes params to all route components
-	export let params: Record<string, string> = {};
-
 	let configs: ConfigTemplate[] = [];
 	let loading = true;
 	let error = '';

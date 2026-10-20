@@ -2,9 +2,6 @@
 	import { page } from '$app/stores';
 	import Button from '$lib/components/Common/Button.svelte';
 
-	// SvelteKit passes params to all route components
-	export let params: Record<string, string> = {};
-
 	$: status = $page.status ?? 404;
 	$: heading = status === 404 ? 'Page not found' : 'Something went wrong';
 	$: body =

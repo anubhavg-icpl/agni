@@ -12,9 +12,6 @@
 	import Icon from '$lib/components/Common/Icon.svelte';
 	import Toast from '$lib/components/Common/Toast.svelte';
 
-	// SvelteKit passes params to all route components
-	export let params: Record<string, string> = {};
-
 	let initialized = false;
 	let collapsed = false;
 	let mobileOpen = false;
