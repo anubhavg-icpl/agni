@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+if [ "$1" = "remove" ] && systemctl is-active --quiet agni 2>/dev/null; then
+	systemctl stop agni || true
+fi

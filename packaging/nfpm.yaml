@@ -1,0 +1,29 @@
+name: agni
+arch: amd64
+platform: linux
+version: ${VERSION}
+section: admin
+priority: optional
+maintainer: Anubhav Gain <anubhavg@infopercept.com>
+description: |
+  Agni - a Firecracker microVM manager with an embedded web UI.
+  Build, boot and console into 30+ Linux distribution templates from a
+  single static binary. KVM required.
+vendor: Anubhav Gain
+homepage: https://github.com/anubhavg-icpl/agni
+license: MIT
+contents:
+  - src: agni
+    dst: /usr/bin/agni
+  - src: packaging/agni.service
+    dst: /lib/systemd/system/agni.service
+  - src: packaging/README.md
+    dst: /usr/share/doc/agni/README.md
+# One POSIX script set for both formats (nfpm applies the top-level
+# scripts block to deb and rpm alike; rpm/ holds distro-flavored
+# equivalents kept in sync for manual packaging).
+scripts:
+  postinstall: packaging/deb/postinst
+  preremove: packaging/deb/prerm
+rpm:
+  packager: Anubhav Gain <anubhavg@infopercept.com>

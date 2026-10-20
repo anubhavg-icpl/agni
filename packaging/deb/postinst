@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+# Agni ships a single static binary that embeds the web UI.
+systemctl daemon-reload >/dev/null 2>&1 || true
+if systemctl is-enabled --quiet agni 2>/dev/null; then
+	systemctl restart agni || true
+fi
+echo "agni installed. Start it with: systemctl enable --now agni"

@@ -94,3 +94,11 @@ help:
 	@echo "  make dev      - Development mode (API + frontend dev server)"
 	@echo "  make test     - Run tests"
 	@echo "  make clean    - Clean build artifacts"
+
+VERSION ?= 0.0.0-dev
+
+.PHONY: package
+package: frontend-build
+	go build -tags gui -o agni .
+	nfpm package -f packaging/nfpm.yaml -p deb -t "dist/agni_$(VERSION)_amd64.deb"
+	nfpm package -f packaging/nfpm.yaml -p rpm -t "dist/agni_$(VERSION)_x86_64.rpm"

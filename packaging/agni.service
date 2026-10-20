@@ -1,0 +1,20 @@
+[Unit]
+Description=Agni - Firecracker microVM manager
+Documentation=https://github.com/anubhavg-icpl/agni
+After=network.target
+
+[Service]
+Type=simple
+User=root
+# agni has no subcommands; GUI mode is selected with --gui.
+# First login creates the admin account on the local console.
+ExecStart=/usr/bin/agni --gui --port 8080 --data-dir /var/lib/agni
+Restart=on-failure
+RestartSec=2
+LimitNOFILE=65536
+# Firecracker needs KVM and mounts ext4 rootfs images
+DeviceAllow=/dev/kvm rw
+DeviceAllow=block-device rw
+
+[Install]
+WantedBy=multi-user.target

@@ -6,6 +6,7 @@
 * Added destroy from any state: `DELETE /api/vms/{id}` force-stops a running VM first, and the trash action is always visible in the VM table and detail page
 * Added default VM configuration profiles (Micro, Standard, Performance, Heavy) seeded on first boot for `/configs`
 * Added packaging: `packaging/` with an nfpm config, systemd unit, and per-format script dirs; `.github/workflows/release.yml` publishes the binary plus deb and rpm packages on `v*` tags
+* Packaging verified end to end locally: nfpm builds `agni_0.3.0_amd64.deb` and `agni_0.3.0_x86_64.rpm`; deb/rpm inspected for metadata (maintainer Anubhav Gain), maintainer scripts, systemd unit, and the packaged binary boots and answers /api/health; unit ExecStart uses the real `--gui` flags
 * Fixed icons rendering as blank squares (double `ph-` prefix in Icon.svelte)
 * Fixed read-only OCI layer directories breaking extraction, and 0000-mode files (gshadow) breaking mkfs.ext4
 * Fixed init-less templates (Nix, Arch) missing /dev, /proc and mount(8): a static busybox is seeded into the image and PID 1 sets up mounts itself
