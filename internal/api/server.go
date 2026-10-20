@@ -236,7 +236,7 @@ func (s *Server) serveStaticFiles() {
 		}
 		s.logger.Debug().Str("path", filePath).Str("ext", ext).Str("contentType", contentType).Msg("Serving file")
 		w.Header().Set("Content-Type", contentType)
-		w.Write(content)
+		_, _ = w.Write(content)
 	})
 }
 
@@ -251,55 +251,6 @@ func getFileExt(path string) string {
 		}
 	}
 	return ""
-}
-
-// serveSPAIndex serves the index.html for SPA routing
-func (s *Server) serveSPAIndex(w http.ResponseWriter, r *http.Request, distFS fs.FS) {
-	content, err := fs.ReadFile(distFS, "index.html")
-	if err != nil {
-		http.NotFound(w, r)
-		return
-	}
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Write(content)
-}
-
-// getContentType returns the MIME type based on file extension
-func getContentType(path string) string {
-	ext := strings.ToLower(path[strings.LastIndex(path, ".")+1:])
-	switch ext {
-	case "html":
-		return "text/html; charset=utf-8"
-	case "css":
-		return "text/css; charset=utf-8"
-	case "js":
-		return "application/javascript; charset=utf-8"
-	case "json":
-		return "application/json; charset=utf-8"
-	case "png":
-		return "image/png"
-	case "jpg", "jpeg":
-		return "image/jpeg"
-	case "gif":
-		return "image/gif"
-	case "svg":
-		return "image/svg+xml"
-	case "ico":
-		return "image/x-icon"
-	case "woff":
-		return "font/woff"
-	case "woff2":
-		return "font/woff2"
-	case "ttf":
-		return "font/ttf"
-	case "webp":
-		return "image/webp"
-	case "wasm":
-		return "application/wasm"
-	default:
-		return "application/octet-stream"
-	}
 }
 
 // Start starts the HTTP server
