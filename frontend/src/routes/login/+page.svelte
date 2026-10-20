@@ -62,81 +62,11 @@
 	<title>{$auth.setupRequired ? 'Create admin account' : 'Sign in'} · Agni</title>
 </svelte:head>
 
-<div class="min-h-dvh grid lg:grid-cols-2">
-	<!-- Illustration panel: the Agni ember scene -->
-	<div
-		class="hidden lg:flex relative flex-col justify-between overflow-hidden p-10"
-		style="background: linear-gradient(180deg, #060302, #0b0503);"
-	>
+<!-- Both halves share the dark palette regardless of app theme -->
+<div class="dark min-h-dvh grid lg:grid-cols-2" style="background: #050505; color-scheme: dark;">
+	<!-- Illustration panel: the DataRain ember field, kept text-free -->
+	<div class="hidden lg:block relative overflow-hidden" style="background: #050302;">
 		<LoginScene />
-
-		<!-- Brand -->
-		<div class="relative z-10 flex flex-col items-start gap-6 pt-8">
-			<div class="flex items-center gap-4">
-				<img
-					src="/logo.png"
-					alt=""
-					class="w-12 h-12"
-					aria-hidden="true"
-					style="filter: drop-shadow(0 0 20px rgb(255 138 66 / 0.55));"
-				/>
-				<div>
-					<h2
-						class="text-[30px] leading-none font-semibold tracking-[0.14em] text-transparent bg-clip-text"
-						style="background-image: linear-gradient(120deg, #ffe3bd, #ffa14d 55%, #ff6b35);"
-					>
-						AGNI
-					</h2>
-					<p
-						class="text-[11px] font-medium uppercase tracking-[0.32em] mt-2"
-						style="color: rgb(255 190 140 / 0.75);"
-					>
-						Firecracker microVMs
-					</p>
-				</div>
-			</div>
-			<p
-				class="max-w-[40ch] text-[15px] leading-relaxed"
-				style="color: rgb(255 224 197 / 0.88); text-shadow: 0 1px 14px rgb(10 4 2 / 0.6);"
-			>
-				Real Linux machines, lit in seconds. Boot microVMs pulled straight from OCI
-				registries and drive them from a live serial console &mdash; no images to build,
-				no daemons to babysit.
-			</p>
-		</div>
-
-		<!-- Feature row anchored above the embers -->
-		<div class="relative z-10 flex items-end justify-between gap-6 pb-1">
-			<ul class="flex flex-col gap-2.5 text-[13px] font-medium">
-				<li
-					class="flex items-center gap-2.5"
-					style="color: rgb(255 214 182 / 0.92); text-shadow: 0 1px 12px rgb(10 4 2 / 0.6);"
-				>
-					<span style="color: rgb(255 158 92);"><Icon name="ph-fire" size={16} /></span>
-					34 distros, one click from their registries
-				</li>
-				<li
-					class="flex items-center gap-2.5"
-					style="color: rgb(255 214 182 / 0.92); text-shadow: 0 1px 12px rgb(10 4 2 / 0.6);"
-				>
-					<span style="color: rgb(255 158 92);"><Icon name="ph-terminal-window" size={16} /></span>
-					Interactive serial console with instant echo
-				</li>
-				<li
-					class="flex items-center gap-2.5"
-					style="color: rgb(255 214 182 / 0.92); text-shadow: 0 1px 12px rgb(10 4 2 / 0.6);"
-				>
-					<span style="color: rgb(255 158 92);"><Icon name="ph-lightning" size={16} /></span>
-					Firecracker boots in under a second
-				</li>
-			</ul>
-			<span
-				class="text-[11px] font-mono tracking-wider shrink-0"
-				style="color: rgb(255 190 140 / 0.55);"
-			>
-				{APP_VERSION}
-			</span>
-		</div>
 	</div>
 
 	<!-- Form side -->

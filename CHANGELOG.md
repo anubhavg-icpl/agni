@@ -1,6 +1,6 @@
 # Unreleased
 
-* Login brand panel now runs a DataRain field: thousands of fine ember lines fall through three divergence-free sway waves, a cursor obstacle sheds Lamb-Oseen vortex puffs with potential-flow deflection and a wake deficit, fast lines fire white-hot sparks, and a quarter-res bloom layer glows; adaptive quality holds 60fps, reduced motion renders one settled frame, and an autopilot ghost cursor keeps the field alive when no pointer is present (ported from the original React component)
+* Login brand panel is a text-free DataRain field: thousands of fine ember lines fall through three divergence-free sway waves, a cursor obstacle sheds Lamb-Oseen vortex puffs with potential-flow deflection and a wake deficit, fast lines fire white-hot sparks, and a quarter-res bloom layer glows; adaptive quality holds 60fps, reduced motion renders one settled frame, and an autopilot ghost cursor keeps the field alive when idle; branding sits on the sign-in side and both halves share one dark palette
 
 # 0.3.0
 
