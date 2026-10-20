@@ -66,7 +66,7 @@
 	<!-- Illustration panel: the Agni ember scene -->
 	<div
 		class="hidden lg:flex relative flex-col justify-between overflow-hidden p-10"
-		style="background: linear-gradient(180deg, hsl(16 40% 5%), hsl(14 50% 9%));"
+		style="background: linear-gradient(180deg, #060302, #0b0503);"
 	>
 		<LoginScene />
 

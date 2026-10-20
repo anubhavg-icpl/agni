@@ -1,6 +1,6 @@
 # Unreleased
 
-* Login redesigned as a cinematic ember scene: a GPU fragment-shader fire (rising fbm flame tongues, drifting embers, smoke wisps, breathing ground glow) paints the whole brand panel and blends into the UI, with a glowing AGNI wordmark, tagline and feature list, on a saturated hand-tuned fire palette (no filmic haze - only highlights above white get a soft knee); the animation loop now actually starts (the scene never received its initial visibility kick)
+* Login brand panel now runs a DataRain field: thousands of fine ember lines fall through three divergence-free sway waves, a cursor obstacle sheds Lamb-Oseen vortex puffs with potential-flow deflection and a wake deficit, fast lines fire white-hot sparks, and a quarter-res bloom layer glows; adaptive quality holds 60fps, reduced motion renders one settled frame, and an autopilot ghost cursor keeps the field alive when no pointer is present (ported from the original React component)
 
 # 0.3.0
 
