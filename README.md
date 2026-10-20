@@ -35,9 +35,68 @@ Agni is a powerful tool for managing Firecracker MicroVMs. It provides both a co
 - **REST API**: Full API access for automation and integration
 - **Responsive Design**: Works on desktop and mobile browsers
 
-<p align="center">
-  <img src="docs/images/logo-bg.png" alt="Agni Screenshot" width="600">
-</p>
+## Screenshots
+
+| Dashboard | Templates |
+|---|---|
+| ![Dashboard with stats, image storage and host dependency checks](docs/screenshots/dashboard.webp) | ![Template catalog with 34 distros](docs/screenshots/templates.webp) |
+
+| Serial console | Virtual machines |
+|---|---|
+| ![Interactive serial console on a NixOS guest](docs/screenshots/console.webp) | ![Virtual machine table](docs/screenshots/vms.webp) |
+
+| Config profiles | Login |
+|---|---|
+| ![Reusable VM configuration profiles](docs/screenshots/configs.webp) | ![Login screen](docs/screenshots/login.webp) |
+
+## Installation
+
+### Requirements
+
+- Linux host with KVM (`/dev/kvm`)
+- [`firecracker`](https://github.com/firecracker-microvm/firecracker/releases) binary in `$PATH`
+- `mkfs.ext4` and `tar` (image builder), `unsquashfs` optional (squashfs-based templates)
+
+The dashboard **Host environment** card checks all of these for you and tells you exactly what is missing.
+
+### Debian / Ubuntu (deb)
+
+```bash
+VER=0.3.0
+curl -fsSL -o agni_${VER}_amd64.deb \
+  https://github.com/anubhavg-icpl/agni/releases/download/v${VER}/agni_${VER}_amd64.deb
+sudo apt install ./agni_${VER}_amd64.deb
+```
+
+The package installs the binary and a systemd unit, then enables and starts Agni on `http://localhost:8080` with data in `/var/lib/agni`.
+
+### Fedora / RHEL / Arch (rpm)
+
+```bash
+VER=0.3.0
+curl -fsSL -o agni_${VER}_x86_64.rpm \
+  https://github.com/anubhavg-icpl/agni/releases/download/v${VER}/agni_${VER}_x86_64.rpm
+sudo dnf install ./agni_${VER}_x86_64.rpm
+```
+
+### Plain binary (any distro)
+
+```bash
+curl -fsSL -o agni \
+  https://github.com/anubhavg-icpl/agni/releases/latest/download/agni-linux-amd64
+chmod +x agni && sudo mv agni /usr/local/bin/
+agni --gui --port 8080 --data-dir /var/lib/agni
+```
+
+## Quick start (GUI)
+
+1. **Create your admin account** - on first run Agni asks you to create the admin user and shows the credentials back to you before continuing.
+2. **Prepare a template** - open **Templates**, pick any of the 34 distros (Rocky, AlmaLinux, CentOS, Oracle, Amazon Linux, Arch, Debian, Fedora, Nix, ...), and hit **Prepare**. Agni pulls the rootfs straight from the distro's OCI registry - no manual image downloads.
+3. **Deploy** - open **Deploy**, choose the template and a config profile (Micro, Standard, Performance, Heavy), name the VM, and deploy.
+4. **Use the console** - open the VM and type into the **Serial console**. The full boot log replays on connect, and the interactive shell supports echo, backspace and Ctrl-C.
+5. **Watch the host** - the dashboard shows live image storage usage and whether every host dependency is present.
+
+For CLI usage, keep reading below.
 
 ## Building
 
