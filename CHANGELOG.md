@@ -1,3 +1,7 @@
+# Unreleased
+
+* Login redesigned as a cinematic ember scene: a GPU fragment-shader fire (rising fbm flame tongues, drifting embers, smoke wisps, breathing ground glow) paints the whole brand panel and blends into the UI, with a glowing AGNI wordmark, tagline and feature list; the animation loop now actually starts (the scene never received its initial visibility kick)
+
 # 0.3.0
 
 * Added an OCI registry template builder: 13 new bootable distros (Rocky 8/9, AlmaLinux 8/9, CentOS Stream 9/10, Oracle Linux 9, Amazon Linux 2023, Arch, Debian 12/13, Fedora 42, Nix) pulled straight from their registries, 34 templates total

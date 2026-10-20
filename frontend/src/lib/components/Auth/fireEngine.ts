@@ -1,70 +1,133 @@
-// Fire engine for the Agni login panel. Architecture follows the UecWeb
-// living-shield engine: raw WebGL points in one interleaved buffer, a fade
-// quad that leaves short trails instead of clearing, per-theme palettes,
-// additive blending in dark and premultiplied normal blending in light, DPR
-// capped at 2, adaptive particle counts, a still frame for reduced motion,
-// and full teardown via WEBGL_lose_context.
-//
-// The scene is a single flame: pooled particles rise from a base line with
-// turbulent sway, cool down a fire ramp (hot core to deep red), and fade as
-// they taper, with a sparse twinkling ember layer above.
+// Fire engine for the Agni login panel: one full-panel fragment shader in
+// the spirit of skeeto's webgl-fire and the cinematic ember references -
+// the canvas paints the entire panel (deep night gradient, warm dome,
+// rising fbm flame tongues, drifting embers, faint smoke wisps) so the
+// flame blends into the UI instead of floating over it. One draw call per
+// frame; reduced motion renders one settled frame.
 
 export type FireTheme = 'dark' | 'light';
 
-type Rgb = readonly [number, number, number];
-type Palette = {
-	readonly add: boolean;
-	readonly core: Rgb;
-	readonly mid: Rgb;
-	readonly deep: Rgb;
-	readonly ember: Rgb;
-	readonly bg: Rgb;
+export type FireOptions = {
+	/** Legacy particle budget; only the quality tier (high/low) is honored. */
+	particles: number;
+	reducedMotion: boolean;
+	theme: FireTheme;
+	onReady?: () => void;
 };
 
-const PALETTES: Record<FireTheme, Palette> = {
-	dark: {
-		add: true,
-		core: [1, 0.96, 0.85],
-		mid: [1, 0.62, 0.2],
-		deep: [0.86, 0.16, 0.1],
-		ember: [1, 0.72, 0.3],
-		bg: [1, 0.55, 0.2]
-	},
-	light: {
-		add: false,
-		core: [0.78, 0.4, 0.04],
-		mid: [0.8, 0.32, 0.04],
-		deep: [0.66, 0.09, 0.06],
-		ember: [0.82, 0.42, 0.08],
-		bg: [0.85, 0.45, 0.12]
-	}
-};
-
-const TRAILS = 0.5;
-const TAU = Math.PI * 2;
-const FLAME_MIN = 2600;
-const FLAME_MAX = 5200;
-const EMBER_COUNT = 90;
-const STRIDE = 7;
-
-/** Fewer points where fill rate is scarce (dense high-DPI panels, small cores). */
+/** Lower octaves and resolution where fill rate or cores are scarce. */
 export function pickParticleCount(
 	dpr: number,
 	viewportWidth: number,
 	cores: number | undefined
 ): number {
-	if ((dpr > 1.5 && viewportWidth < 1440) || (cores !== undefined && cores <= 4)) return FLAME_MIN;
-	return FLAME_MAX;
+	if ((dpr > 1.5 && viewportWidth < 1440) || (cores !== undefined && cores <= 4)) return 2600;
+	return 5200;
 }
 
-const VERT = `attribute vec2 aPos; attribute vec4 aCol; attribute float aSize;
-uniform vec2 uRes; uniform float uDpr; varying vec4 vCol;
-void main(){ vec2 c=aPos/uRes*2.0-1.0; gl_Position=vec4(c.x,-c.y,0.0,1.0); gl_PointSize=max(1.0,aSize*uDpr); vCol=aCol; }`;
-const FRAG = `precision mediump float; varying vec4 vCol;
-void main(){ float d=length(gl_PointCoord-0.5); float a=pow(smoothstep(0.5,0.0,d),1.6)*vCol.a; gl_FragColor=vec4(vCol.rgb*a,a); }`;
-const FADE_VERT = 'attribute vec2 aQ; void main(){ gl_Position=vec4(aQ,0.0,1.0); }';
-const FADE_FRAG =
-	'precision mediump float; uniform float uFade; void main(){ gl_FragColor=vec4(0.0,0.0,0.0,uFade); }';
+const VERT = `attribute vec2 aQ;
+void main(){ gl_Position = vec4(aQ, 0.0, 1.0); }`;
+
+const FRAG = `precision highp float;
+uniform vec2 uRes;
+uniform float uTime;
+uniform float uDark;
+uniform float uOct;
+
+float hash(vec2 p){ p = fract(p*vec2(233.34, 851.73)); p += dot(p, p+23.45); return fract(p.x*p.y); }
+
+float noise(vec2 p){
+	vec2 i = floor(p), f = fract(p);
+	vec2 u = f*f*(3.0-2.0*f);
+	return mix(mix(hash(i), hash(i+vec2(1,0)), u.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), u.x), u.y);
+}
+
+float fbm(vec2 p){
+	float a = 0.5, s = 0.0;
+	for (int i = 0; i < 5; i++){
+		if (float(i) >= uOct) break;
+		s += a * noise(p);
+		p = p*2.03 + vec2(11.7, 5.3);
+		a *= 0.52;
+	}
+	return s;
+}
+
+// Blackbody-ish fire ramp: deep red -> orange -> yellow -> white-hot core.
+vec3 ramp(float t){
+	t = clamp(t, 0.0, 1.0);
+	float r = smoothstep(0.0, 0.35, t)*0.55 + pow(t, 1.3)*0.65;
+	float g = pow(t, 2.1)*1.15;
+	float b = pow(t, 7.0)*1.05 + smoothstep(0.86, 1.0, t)*0.35;
+	return vec3(r, g, b);
+}
+
+void main(){
+	vec2 uv = gl_FragCoord.xy / uRes;          // y up: 0 bottom, 1 top
+	float aspect = uRes.x / max(uRes.y, 1.0);
+	vec2 p = vec2(uv.x * aspect, uv.y);
+	float t = uTime;
+
+	// --- Flame field -------------------------------------------------------
+	vec2 q = vec2(p.x * 2.6, p.y * 2.2 - t * 1.35);
+	float w = fbm(q * 1.4 + vec2(0.0, -t * 0.22));
+	float n1 = fbm(q * 2.1 + w * 1.35);
+	float n2 = fbm(q * 5.6 - w * 0.8 + 7.3);
+
+	// Full-width fire bed, tallest behind the center (the wordmark sits above).
+	float center = mix(0.55, 1.0, exp(-pow((uv.x - 0.5) * 2.5, 2.0) * 2.2));
+	float bedWarp = sin(uv.x * 9.0 + t * 0.7) * 0.035 + (n2 - 0.5) * 0.16;
+	float tongue = (0.38 + 0.52 * n1) * center + 0.09;
+	float h = uv.y - bedWarp;
+	float body = smoothstep(tongue, 0.02, h);
+	float core = smoothstep(tongue * 0.4, 0.0, h) * (0.7 + 0.3 * n2);
+	float heat = clamp(body * (0.55 + 0.45 * n2) + core * 0.6, 0.0, 1.0);
+	heat *= 0.92 + 0.08 * sin(t * 11.0 + n1 * 6.2831);
+	float flameA = clamp(heat * 1.25 + core * 0.4, 0.0, 1.0);
+	flameA *= smoothstep(1.05, 0.5, uv.y + tongue * 0.3); // dissolve into the dark
+
+	// Breathing ground glow.
+	float breathe = 0.9 + 0.1 * sin(t * 0.9);
+	float glow = exp(-h * 5.0) * (0.4 + 0.6 * n1) * (0.55 + 0.45 * center) * breathe;
+
+	// Embers: soft rising cells, brighter and larger than plain specks.
+	vec2 esc = vec2(p.x * 24.0, uv.y * 9.0 - t * 1.4);
+	float sn = noise(esc);
+	float sn2 = noise(esc * 1.7 + 4.7);
+	float ember = smoothstep(0.82, 0.995, sn)
+		* smoothstep(0.95, 0.3, uv.y + 0.08 * sin(t * 0.7 + sn2 * 6.2831))
+		* (0.55 + 0.45 * sin(t * 9.0 + sn2 * 40.0));
+
+	// Smoke wisps drifting above the flames.
+	float smoke = fbm(vec2(p.x * 2.4 + n1, uv.y * 2.2 - t * 0.55))
+		* smoothstep(0.16, 0.72, uv.y);
+
+	// --- Compose -----------------------------------------------------------
+	vec3 col;
+	if (uDark > 0.5) {
+		// Night: near-black top dissolving into a warm dome above the fire.
+		vec3 bg = mix(vec3(0.012, 0.006, 0.004), vec3(0.055, 0.013, 0.005), pow(1.0 - uv.y, 1.6));
+		bg += vec3(0.10, 0.030, 0.008) * glow;
+		vec3 fire = ramp(heat) * (0.9 + 0.6 * core);
+		col = bg + fire * flameA * 1.2;
+		col += vec3(1.0, 0.55, 0.20) * ember * 1.5;
+		col = mix(col, vec3(0.016, 0.011, 0.008), smoke * 0.35); // wisps shade the glow
+		col = 1.0 - exp(-col * 1.35);                            // filmic rolloff
+	} else {
+		// Day: warm cream paper with an ochre flame sitting on soft amber.
+		vec3 bg = mix(vec3(0.99, 0.965, 0.93), vec3(0.955, 0.86, 0.74), pow(1.0 - uv.y, 1.5));
+		vec3 flame = ramp(heat) * vec3(0.86, 0.55, 0.30) + bg * 0.08;
+		col = mix(bg, flame, clamp(flameA * 0.9, 0.0, 1.0));
+		col += vec3(1.0, 0.7, 0.35) * ember * 0.55;
+		col = mix(col, vec3(0.90, 0.82, 0.72), smoke * 0.18);
+	}
+
+	// Gentle side vignette keeps the panel framed.
+	float vign = smoothstep(0.0, 0.18, uv.x) * smoothstep(1.0, 0.82, uv.x);
+	col = mix(col * 0.985, col, vign);
+
+	gl_FragColor = vec4(col, 1.0);
+}`;
 
 function compile(gl: WebGLRenderingContext, vs: string, fs: string): WebGLProgram {
 	const p = gl.createProgram();
@@ -87,55 +150,25 @@ function compile(gl: WebGLRenderingContext, vs: string, fs: string): WebGLProgra
 	return p;
 }
 
-export type FireOptions = {
-	particles: number;
-	reducedMotion: boolean;
-	theme: FireTheme;
-	onReady?: () => void;
-};
-
-interface Flame {
-	x: number;
-	y: number;
-	vx: number;
-	vy: number;
-	life: number;
-	maxLife: number;
-	size: number;
-	seed: number;
-}
-
 export class FireEngine {
 	private readonly gl: WebGLRenderingContext;
-	private readonly ptProg: WebGLProgram;
-	private readonly fadeProg: WebGLProgram;
+	private readonly prog: WebGLProgram;
 	private readonly quad: WebGLBuffer;
-	private readonly vbo: WebGLBuffer;
 	private readonly loc: {
-		pos: number;
-		col: number;
-		size: number;
 		q: number;
 		res: WebGLUniformLocation | null;
-		dpr: WebGLUniformLocation | null;
-		fade: WebGLUniformLocation | null;
+		time: WebGLUniformLocation | null;
+		dark: WebGLUniformLocation | null;
+		oct: WebGLUniformLocation | null;
 	};
-	private readonly opts: FireOptions;
-	private readonly rand: () => number = Math.random;
+	private readonly highQuality: boolean;
+	private readonly reducedMotion: boolean;
+	private onReady?: () => void;
 	private theme: FireTheme;
 
 	private W = 0;
 	private H = 0;
-	private dpr = 1;
-	private baseY = 0;
-	private cx = 0;
-
-	private flameCount = 0;
-	private flames: Flame[] = [];
-	private embers: Flame[] = [];
-	private buf = new Float32Array(0);
-
-	private t = 0;
+	private t = Math.random() * 20;
 	private raf = 0;
 	private last = 0;
 	private running = false;
@@ -143,62 +176,54 @@ export class FireEngine {
 	private visible = true;
 	private destroyed = false;
 
-	/** Throws when WebGL is unavailable; the caller keeps the static panel in that case. */
+	/** Throws when WebGL is unavailable; the caller keeps the static panel. */
 	constructor(
 		private readonly canvas: HTMLCanvasElement,
 		opts: FireOptions
 	) {
 		const gl = canvas.getContext('webgl', {
-			premultipliedAlpha: true,
-			preserveDrawingBuffer: true,
+			alpha: false,
 			antialias: false,
-			alpha: true
+			premultipliedAlpha: false
 		});
 		if (!gl) throw new Error('WebGL unavailable');
 		this.gl = gl;
-		this.opts = opts;
 		this.theme = opts.theme;
-		this.ptProg = compile(gl, VERT, FRAG);
-		this.fadeProg = compile(gl, FADE_VERT, FADE_FRAG);
+		this.reducedMotion = opts.reducedMotion;
+		this.highQuality = opts.particles >= 4000;
+		this.onReady = opts.onReady;
+		this.prog = compile(gl, VERT, FRAG);
 		const quad = gl.createBuffer();
-		const vbo = gl.createBuffer();
-		if (!quad || !vbo) throw new Error('createBuffer failed');
+		if (!quad) throw new Error('createBuffer failed');
 		this.quad = quad;
-		this.vbo = vbo;
 		gl.bindBuffer(gl.ARRAY_BUFFER, quad);
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
 		this.loc = {
-			pos: gl.getAttribLocation(this.ptProg, 'aPos'),
-			col: gl.getAttribLocation(this.ptProg, 'aCol'),
-			size: gl.getAttribLocation(this.ptProg, 'aSize'),
-			q: gl.getAttribLocation(this.fadeProg, 'aQ'),
-			res: gl.getUniformLocation(this.ptProg, 'uRes'),
-			dpr: gl.getUniformLocation(this.ptProg, 'uDpr'),
-			fade: gl.getUniformLocation(this.fadeProg, 'uFade')
+			q: gl.getAttribLocation(this.prog, 'aQ'),
+			res: gl.getUniformLocation(this.prog, 'uRes'),
+			time: gl.getUniformLocation(this.prog, 'uTime'),
+			dark: gl.getUniformLocation(this.prog, 'uDark'),
+			oct: gl.getUniformLocation(this.prog, 'uOct')
 		};
 	}
 
 	resize(cssW: number, cssH: number): void {
 		if (this.destroyed || cssW < 2 || cssH < 2) return;
-		this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+		const dpr = Math.min(window.devicePixelRatio || 1, this.highQuality ? 1.75 : 1.25);
+		let scale = dpr;
+		if (cssW * cssH * scale * scale > 2.6e6) scale *= Math.sqrt(2.6e6 / (cssW * cssH * scale * scale));
 		this.W = cssW;
 		this.H = cssH;
-		this.canvas.width = Math.round(cssW * this.dpr);
-		this.canvas.height = Math.round(cssH * this.dpr);
+		this.canvas.width = Math.max(2, Math.round(cssW * scale));
+		this.canvas.height = Math.max(2, Math.round(cssH * scale));
 		this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-		this.cx = cssW / 2;
-		this.baseY = cssH * 0.78;
-		this.build();
-		if (this.opts.reducedMotion || !this.running) this.still();
+		if (this.reducedMotion || !this.running) this.still();
 	}
 
-	/** Re-homes the palette in place; live particles carry over their positions. */
 	setTheme(theme: FireTheme): void {
 		if (theme === this.theme) return;
 		this.theme = theme;
-		this.gl.clearColor(0, 0, 0, 0);
-		this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-		if (this.opts.reducedMotion || !this.running) this.still();
+		if (this.reducedMotion || !this.running) this.still();
 	}
 
 	setVisible(visible: boolean): void {
@@ -211,206 +236,31 @@ export class FireEngine {
 		if (this.destroyed) return;
 		this.stop();
 		this.destroyed = true;
+		this.gl.deleteBuffer(this.quad);
+		this.gl.deleteProgram(this.prog);
+		this.gl.getExtension('WEBGL_lose_context')?.loseContext();
+	}
+
+	private render(): void {
 		const gl = this.gl;
-		gl.deleteBuffer(this.vbo);
-		gl.deleteBuffer(this.quad);
-		gl.deleteProgram(this.ptProg);
-		gl.deleteProgram(this.fadeProg);
-		gl.getExtension('WEBGL_lose_context')?.loseContext();
-	}
-
-	private build(): void {
-		if (this.W < 2 || this.H < 2) return;
-		const count = this.opts.particles;
-		if (this.flameCount !== count) {
-			this.flames = [];
-			for (let i = 0; i < count; i++) {
-				this.flames.push(this.spawnFlame({}, true));
-			}
-			this.embers = [];
-			for (let i = 0; i < EMBER_COUNT; i++) {
-				this.embers.push(this.spawnEmber({}, true));
-			}
-			this.flameCount = count;
-		}
-		// Halo points for every 4th flame plus embers
-		const capacity = (count + (count >> 2) + EMBER_COUNT + 32) * STRIDE;
-		this.buf = new Float32Array(capacity);
-		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vbo);
-		this.gl.bufferData(this.gl.ARRAY_BUFFER, this.buf.byteLength, this.gl.DYNAMIC_DRAW);
-		this.gl.clearColor(0, 0, 0, 0);
-		this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-	}
-
-	private spawnFlame(_p: Partial<Flame> = {}, warmup = false): Flame {
-		const angle = this.rand() * TAU;
-		const radius = Math.sqrt(this.rand()) * Math.min(this.W, this.H) * 0.035;
-		const maxLife = 1.1 + this.rand() * 1.1;
-		return {
-			x: this.cx + Math.cos(angle) * radius,
-			y: this.baseY + this.rand() * 6 + (warmup ? -this.rand() * this.H * 0.5 : 0),
-			vx: (this.rand() - 0.5) * 12,
-			vy: -(this.H * 0.16 + this.rand() * this.H * 0.1),
-			life: warmup ? this.rand() * maxLife : 0,
-			maxLife,
-			size: 5 + this.rand() * 8,
-			seed: this.rand() * 100
-		};
-	}
-
-	private spawnEmber(_p: Partial<Flame> = {}, warmup = false): Flame {
-		const maxLife = 2 + this.rand() * 1.6;
-		return {
-			x: this.cx + (this.rand() - 0.5) * 24,
-			y: this.baseY - 10 + (warmup ? -this.rand() * this.H * 0.45 : 0),
-			vx: (this.rand() - 0.5) * 46,
-			vy: -(this.H * 0.28 + this.rand() * this.H * 0.16),
-			life: warmup ? this.rand() * maxLife : 0,
-			maxLife,
-			size: 1.1 + this.rand() * 1.3,
-			seed: this.rand() * 100
-		};
-	}
-
-	private stepFlame(p: Flame, dt: number, i: number, out: number): number {
-		p.life += dt;
-		if (p.life >= p.maxLife) {
-			const next = this.spawnFlame(p);
-			p.x = next.x;
-			p.y = next.y;
-			p.vx = next.vx;
-			p.vy = next.vy;
-			p.life = next.life;
-			p.maxLife = next.maxLife;
-			p.size = next.size;
-			p.seed = next.seed;
-		}
-		const t = p.life / p.maxLife;
-
-		// Turbulent sway that keeps the column coherent near the base
-		const sway = Math.sin(this.t * 2.1 + p.seed + p.y * 0.012) * 26;
-		p.vx += (sway - p.vx) * Math.min(1, dt * 1.6);
-		p.x += p.vx * dt;
-		p.y += p.vy * dt;
-		p.vy -= 14 * dt; // buoyancy builds as the flame rises
-
-		const envelope = Math.sin(Math.PI * Math.pow(t, 0.62));
-		const flicker = 0.82 + 0.18 * Math.sin(this.t * 21 + p.seed * 5);
-		const alpha = Math.pow(1 - t, 1.35) * flicker;
-		const size = p.size * envelope;
-
-		const c = PALETTES[this.theme];
-		// Ramp: core -> mid -> deep by life
-		const k = t < 0.35 ? t / 0.35 : (t - 0.35) / 0.65;
-		let r: number, g: number, b: number;
-		if (t < 0.35) {
-			r = c.core[0] + (c.mid[0] - c.core[0]) * k;
-			g = c.core[1] + (c.mid[1] - c.core[1]) * k;
-			b = c.core[2] + (c.mid[2] - c.core[2]) * k;
-		} else {
-			r = c.mid[0] + (c.deep[0] - c.mid[0]) * k;
-			g = c.mid[1] + (c.deep[1] - c.mid[1]) * k;
-			b = c.mid[2] + (c.deep[2] - c.mid[2]) * k;
-		}
-
-		const put = (a: number, s: number): number => {
-			this.buf[out++] = p.x;
-			this.buf[out++] = p.y;
-			this.buf[out++] = r;
-			this.buf[out++] = g;
-			this.buf[out++] = b;
-			this.buf[out++] = a;
-			this.buf[out++] = s;
-			return out;
-		};
-
-		// A wide faint halo every 4th particle builds the glow body
-		if ((i & 3) === 0) out = put(alpha * 0.05, size * 6);
-		out = put(alpha, size);
-		return out;
-	}
-
-	private stepEmber(p: Flame, dt: number, out: number): number {
-		p.life += dt;
-		if (p.life >= p.maxLife) {
-			const next = this.spawnEmber(p);
-			p.x = next.x;
-			p.y = next.y;
-			p.vx = next.vx;
-			p.vy = next.vy;
-			p.life = next.life;
-			p.maxLife = next.maxLife;
-			p.size = next.size;
-			p.seed = next.seed;
-		}
-		const t = p.life / p.maxLife;
-
-		p.vy += 30 * dt; // sparks arc and fall back
-		p.vx *= 1 - 0.22 * dt;
-		p.x += p.vx * dt + Math.sin(this.t * 3 + p.seed) * 8 * dt;
-		p.y += p.vy * dt;
-
-		const twinkle = 0.6 + 0.4 * Math.sin(this.t * 17 + p.seed * 7);
-		const alpha = Math.pow(1 - t, 1.1) * twinkle;
-		const c = PALETTES[this.theme].ember;
-
-		this.buf[out++] = p.x;
-		this.buf[out++] = p.y;
-		this.buf[out++] = c[0];
-		this.buf[out++] = c[1];
-		this.buf[out++] = c[2];
-		this.buf[out++] = alpha;
-		this.buf[out++] = p.size * (1 - t * 0.4);
-		return out + 1;
-	}
-
-	private step(dt: number): void {
-		this.t += dt;
-		let out = 0;
-		for (let i = 0; i < this.flames.length; i++) {
-			out = this.stepFlame(this.flames[i], dt, i, out);
-		}
-		for (let i = 0; i < this.embers.length; i++) {
-			out = this.stepEmber(this.embers[i], dt, out);
-		}
-		this.render(out / STRIDE);
-	}
-
-	private render(count: number): void {
-		const gl = this.gl;
-		const L = this.loc;
-		gl.enable(gl.BLEND);
-		// Fade the previous frame instead of clearing: short fiery trails
-		gl.useProgram(this.fadeProg);
+		gl.useProgram(this.prog);
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.quad);
-		gl.enableVertexAttribArray(L.q);
-		gl.vertexAttribPointer(L.q, 2, gl.FLOAT, false, 0, 0);
-		gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA);
-		gl.uniform1f(L.fade, this.opts.reducedMotion ? 1 : 1 - TRAILS);
+		gl.enableVertexAttribArray(this.loc.q);
+		gl.vertexAttribPointer(this.loc.q, 2, gl.FLOAT, false, 0, 0);
+		gl.uniform2f(this.loc.res, this.canvas.width, this.canvas.height);
+		gl.uniform1f(this.loc.time, this.t);
+		gl.uniform1f(this.loc.dark, this.theme === 'dark' ? 1 : 0);
+		gl.uniform1f(this.loc.oct, this.highQuality ? 5 : 4);
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-		gl.disableVertexAttribArray(L.q);
-
-		gl.useProgram(this.ptProg);
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
-		gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.buf.subarray(0, count * STRIDE));
-		gl.enableVertexAttribArray(L.pos);
-		gl.vertexAttribPointer(L.pos, 2, gl.FLOAT, false, STRIDE * 4, 0);
-		gl.enableVertexAttribArray(L.col);
-		gl.vertexAttribPointer(L.col, 4, gl.FLOAT, false, STRIDE * 4, 8);
-		gl.enableVertexAttribArray(L.size);
-		gl.vertexAttribPointer(L.size, 1, gl.FLOAT, false, STRIDE * 4, 24);
-		gl.uniform2f(L.res, this.W, this.H);
-		gl.uniform1f(L.dpr, this.dpr);
-		gl.blendFunc(gl.ONE, PALETTES[this.theme].add ? gl.ONE : gl.ONE_MINUS_SRC_ALPHA);
-		gl.drawArrays(gl.POINTS, 0, count);
 		if (!this.readyFired) {
 			this.readyFired = true;
-			this.opts.onReady?.();
+			Promise.resolve().then(() => this.onReady?.());
 		}
 	}
 
 	private start(): void {
-		if (this.destroyed || this.running || this.opts.reducedMotion || !this.flameCount) return;
+		if (this.destroyed || this.running || this.reducedMotion || this.W < 2 || !this.visible)
+			return;
 		this.running = true;
 		this.last = performance.now();
 		this.raf = requestAnimationFrame(this.frame);
@@ -424,18 +274,17 @@ export class FireEngine {
 
 	private readonly frame = (now: number): void => {
 		if (!this.running) return;
-		const dt = Math.min(0.033, (now - this.last) / 1000);
+		const dt = Math.min(0.05, (now - this.last) / 1000);
 		this.last = now;
-		this.step(dt);
+		this.t += dt;
+		this.render();
 		this.raf = requestAnimationFrame(this.frame);
 	};
 
-	/** A settled single frame for reduced motion: a full flame, not a dead screen. */
+	/** One settled frame for reduced motion. */
 	private still(): void {
-		if (!this.flameCount) return;
-		for (let i = 0; i < 45; i++) this.step(1 / 60);
-		this.gl.clearColor(0, 0, 0, 0);
-		this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-		this.step(1 / 60);
+		if (this.W < 2) return;
+		this.t += 3.2;
+		this.render();
 	}
 }
