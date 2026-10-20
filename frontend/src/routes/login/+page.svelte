@@ -5,6 +5,7 @@
 	import { auth } from '$lib/stores/auth';
 	import Icon from '$lib/components/Common/Icon.svelte';
 	import Button from '$lib/components/Common/Button.svelte';
+	import LoginScene from '$lib/components/Auth/LoginScene.svelte';
 	import { APP_VERSION } from '$lib/version';
 
 	// SvelteKit passes params to all route components
@@ -51,12 +52,13 @@
 </svelte:head>
 
 <div class="min-h-dvh grid lg:grid-cols-2">
-	<!-- Illustration panel: accent-soft tinted ground with the lockup -->
+	<!-- Illustration panel: the Agni fire over a warm ground -->
 	<div
-		class="hidden lg:flex relative items-center justify-center"
-		style="background: oklch(var(--primary) / 0.08);"
+		class="hidden lg:flex relative items-center justify-center overflow-hidden"
+		style="background: oklch(var(--status-warn) / 0.06);"
 	>
-		<div class="flex flex-col items-center gap-4">
+		<LoginScene />
+		<div class="relative z-10 flex flex-col items-center gap-4">
 			<img src="/logo.png" alt="" class="w-12 h-12" aria-hidden="true" />
 			<div class="text-center">
 				<p class="text-2xl font-semibold text-foreground">Agni</p>
