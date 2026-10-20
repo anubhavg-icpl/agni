@@ -14,7 +14,7 @@
 package main
 
 // Version represents the major, minor, and patch version of Agni.
-const Version = "0.2.0"
+const Version = "0.3.0"
 
 // SupportedFirecrackerVersion is the firecracker version that the sdk supports
 const SupportedFirecrackerVersion = "1.0.0"

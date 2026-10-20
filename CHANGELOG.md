@@ -1,10 +1,11 @@
-# Unreleased
+# 0.3.0
 
 * Added an OCI registry template builder: 13 new bootable distros (Rocky 8/9, AlmaLinux 8/9, CentOS Stream 9/10, Oracle Linux 9, Amazon Linux 2023, Arch, Debian 12/13, Fedora 42, Nix) pulled straight from their registries, 34 templates total
 * Added dependency preflight: `GET /api/system/dependencies` and an Environment card on the dashboard flag missing host tools (firecracker, KVM, mkfs.ext4, tar, unsquashfs) before the first deploy instead of at deploy time
 * Added storage visibility: `GET /api/system/storage` and an Image storage card with per-template disk usage, cache size, and free disk
 * Added destroy from any state: `DELETE /api/vms/{id}` force-stops a running VM first, and the trash action is always visible in the VM table and detail page
 * Added default VM configuration profiles (Micro, Standard, Performance, Heavy) seeded on first boot for `/configs`
+* Added product screenshots (webp) plus installation and GUI quick-start guides to the README
 * Added packaging: `packaging/` with an nfpm config, systemd unit, and per-format script dirs; `.github/workflows/release.yml` publishes the binary plus deb and rpm packages on `v*` tags
 * Packaging verified end to end locally: nfpm builds `agni_0.3.0_amd64.deb` and `agni_0.3.0_x86_64.rpm`; deb/rpm inspected for metadata (maintainer Anubhav Gain), maintainer scripts, systemd unit, and the packaged binary boots and answers /api/health; unit ExecStart uses the real `--gui` flags
 * Fixed serial console showing nothing while typing: raw byte-level console forwarding (keystroke echoes stream live instead of after Enter) plus boot-log replay on connect, and `setsid cttyhack` gives shell-init guests a controlling tty (echo, backspace, Ctrl-C)
