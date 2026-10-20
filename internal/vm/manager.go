@@ -307,14 +307,17 @@ func (m *Manager) Shutdown(id string) error {
 	return nil
 }
 
-// Delete removes a VM (must be stopped first)
+// Delete destroys a VM from any state: a running guest is force-stopped
+// first, then the record is removed.
 func (m *Manager) Delete(id string) error {
 	m.mu.RLock()
 	_, isRunning := m.runningVMs[id]
 	m.mu.RUnlock()
 
 	if isRunning {
-		return fmt.Errorf("cannot delete running VM, stop it first")
+		if err := m.Stop(id); err != nil {
+			m.logger.Warn().Err(err).Str("vm_id", id).Msg("stop before delete failed, deleting anyway")
+		}
 	}
 
 	if err := m.store.Delete(id); err != nil {

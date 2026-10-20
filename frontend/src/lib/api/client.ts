@@ -159,6 +159,14 @@ class ApiClient {
 	async getSystemInfo(): Promise<SystemInfo> {
 		return this.request('GET', '/system/info');
 	}
+
+	async getStorageUsage(): Promise<SystemStorage> {
+		return this.request('GET', '/system/storage');
+	}
+
+	async getDependencies(): Promise<{ dependencies: Dependency[] }> {
+		return this.request('GET', '/system/dependencies');
+	}
 }
 
 export const api = new ApiClient();
@@ -367,4 +375,29 @@ export interface DeployResponse {
 	vm: VM;
 	started: boolean;
 	start_error?: string;
+}
+
+export interface StorageTemplateUsage {
+	id: string;
+	ready: boolean;
+	bytes: number;
+	is_cache: boolean;
+}
+
+export interface SystemStorage {
+	data_directory: string;
+	total_bytes: number;
+	cache_bytes: number;
+	disk_free_bytes: number;
+	disk_total_bytes: number;
+	templates: StorageTemplateUsage[];
+}
+
+export interface Dependency {
+	id: string;
+	label: string;
+	required: boolean;
+	available: boolean;
+	detail: string;
+	hint?: string;
 }

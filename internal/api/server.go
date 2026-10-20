@@ -28,7 +28,9 @@ import (
 	"github.com/anubhavg-icpl/agni/internal/images"
 	"github.com/anubhavg-icpl/agni/internal/logging"
 	"github.com/anubhavg-icpl/agni/internal/storage"
+	"github.com/anubhavg-icpl/agni/internal/templates"
 	"github.com/anubhavg-icpl/agni/internal/vm"
+	"github.com/anubhavg-icpl/agni/pkg/models"
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 )
@@ -120,6 +122,10 @@ func (s *Server) setupRoutes() {
 	healthHandler := handlers.NewHealthHandler(s.vmManager, s.startTime)
 	s.router.Get("/api/health", healthHandler.Health)
 	s.router.Get("/api/system/info", healthHandler.SystemInfo)
+	storageHandler := handlers.NewStorageHandler(s.config.Images, templates.Catalog)
+	s.router.Get("/api/system/storage", storageHandler.Usage)
+	dependenciesHandler := handlers.NewDependenciesHandler(s.config.Images)
+	s.router.Get("/api/system/dependencies", dependenciesHandler.Check)
 
 	// Auth routes
 	authHandler := handlers.NewAuthHandler(s.authService)
@@ -160,6 +166,7 @@ func (s *Server) setupRoutes() {
 
 		// Configs
 		configStore := storage.NewConfigStore(s.config.Store)
+		seedDefaultConfigs(configStore)
 		configHandler := handlers.NewConfigHandler(configStore)
 		r.Get("/api/configs", configHandler.List)
 		r.Post("/api/configs", configHandler.Create)
@@ -360,4 +367,33 @@ func (s *Server) GetAuthService() *auth.Service {
 // SetupRequired checks if initial setup is needed
 func (s *Server) SetupRequired() (bool, error) {
 	return s.authService.IsSetupRequired()
+}
+
+// seedDefaultConfigs populates sensible VM profiles on first run so the
+// Templates page is useful out of the box.
+func seedDefaultConfigs(store *storage.ConfigStore) {
+	existing, err := store.List()
+	if err != nil || len(existing) > 0 {
+		return
+	}
+	defaults := []struct {
+		id, name, description string
+		cpus, memMB           int64
+	}{
+		{"default-micro", "Micro", "1 vCPU, 256 MB. Tiny utilities and boot-time experiments.", 1, 256},
+		{"default-standard", "Standard", "2 vCPUs, 1 GB. General-purpose workloads.", 2, 1024},
+		{"default-performance", "Performance", "2 vCPUs, 2 GB. Builds and package installs.", 2, 2048},
+		{"default-heavy", "Heavy", "4 vCPUs, 4 GB. Compilers and heavy guests.", 4, 4096},
+	}
+	for _, d := range defaults {
+		_ = store.Create(&models.ConfigTemplate{
+			ID:          d.id,
+			Name:        d.name,
+			Description: d.description,
+			Config: models.VMConfig{
+				CPUs:     d.cpus,
+				MemoryMB: d.memMB,
+			},
+		})
+	}
 }

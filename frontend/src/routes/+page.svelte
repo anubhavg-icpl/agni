@@ -5,6 +5,8 @@
 	import Button from '$lib/components/Common/Button.svelte';
 	import Icon from '$lib/components/Common/Icon.svelte';
 	import StatCards from '$lib/components/Dashboard/StatCards.svelte';
+	import StorageCard from '$lib/components/Dashboard/StorageCard.svelte';
+	import DependenciesCard from '$lib/components/Dashboard/DependenciesCard.svelte';
 	import VMTable from '$lib/components/Dashboard/VMTable.svelte';
 
 	onMount(() => {
@@ -32,6 +34,11 @@
 	</PageHeader>
 
 	<StatCards vms={$vms.vms} />
+
+	<section class="grid grid-cols-1 xl:grid-cols-2 gap-4" aria-label="Host environment">
+		<StorageCard />
+		<DependenciesCard />
+	</section>
 
 	<section aria-label="Virtual machines">
 		<h2 class="text-lg font-semibold text-foreground">Virtual machines</h2>

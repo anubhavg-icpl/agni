@@ -9,6 +9,23 @@
 	import Button from '$lib/components/Common/Button.svelte';
 	import Icon from '$lib/components/Common/Icon.svelte';
 	import { formatDate, getFilename } from '$lib/utils/formatters';
+	import { goto } from '$app/navigation';
+	import Modal from '$lib/components/Common/Modal.svelte';
+
+	let destroyOpen = false;
+	let destroying = false;
+
+	async function destroyVM() {
+		if (!vm) return;
+		destroying = true;
+		try {
+			await api.deleteVM(vm.id);
+			goto('/vms');
+		} catch (e) {
+			actionError = `Failed to destroy VM: ${(e as Error).message}`;
+			destroying = false;
+		}
+	}
 
 	export let params: { id: string };
 
@@ -255,6 +272,10 @@
 						{/if}
 					</span>
 					<Button variant="secondary" size="sm" on:click={connectConsole}>Reconnect</Button>
+					<Button variant="destructive" size="sm" on:click={() => (destroyOpen = true)}>
+						<Icon name="ph-trash" size={16} />
+						Destroy
+					</Button>
 				</div>
 			</div>
 			<div class="relative">
@@ -332,3 +353,18 @@
 		padding: 4px;
 	}
 </style>
+
+{#if destroyOpen}
+	<Modal open={destroyOpen} title="Destroy virtual machine" on:close={() => (destroyOpen = false)}>
+		<p class="text-sm text-muted-foreground">
+			This force-stops and permanently deletes <span class="font-medium text-foreground">{vm?.name}</span>.
+			The template rootfs on disk is kept; only this VM is removed.
+		</p>
+		<div class="mt-5 flex justify-end gap-2">
+			<Button variant="secondary" size="sm" on:click={() => (destroyOpen = false)}>Cancel</Button>
+			<Button variant="destructive" size="sm" disabled={destroying} on:click={destroyVM}>
+				{destroying ? 'Destroying…' : 'Destroy VM'}
+			</Button>
+		</div>
+	</Modal>
+{/if}

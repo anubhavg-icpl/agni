@@ -140,14 +140,6 @@
 										>
 											<Icon name="ph-play" size={16} />
 										</button>
-										<button
-											class="icon-btn icon-btn-danger"
-											on:click={() => (deleteTarget = vm)}
-											aria-label="Delete {vm.name}"
-											title="Delete"
-										>
-											<Icon name="ph-trash" size={16} />
-										</button>
 									{:else if vm.status === 'running'}
 										<button
 											class="icon-btn"
@@ -185,6 +177,14 @@
 											</svg>
 										</span>
 									{/if}
+									<button
+										class="icon-btn icon-btn-danger"
+										on:click={() => (deleteTarget = vm)}
+										aria-label="Destroy {vm.name}"
+										title="Destroy (stops the VM if running)"
+									>
+										<Icon name="ph-trash" size={16} />
+									</button>
 								</div>
 							</td>
 						</tr>

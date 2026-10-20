@@ -851,12 +851,30 @@ func applyDirModes(rootDir string, modes map[string]os.FileMode) error {
 // a minimal /init that mounts the essentials and opens a root shell on ttyS0.
 func prepareShellInit(rootDir string) error {
 	script := `#!/bin/sh
-mount -t proc proc /proc 2>/dev/null
-mount -t sysfs sys /sys 2>/dev/null
-export PATH=/usr/bin:/usr/sbin:/bin:/sbin
-setsid sh -c 'exec sh -i </dev/ttyS0 >/dev/ttyS0 2>&1'
-poweroff -f
+# PID 1 inherits the kernel console (ttyS0), so no redirects are needed.
+# Container images have no /dev nodes or mount(8); a static busybox is
+# seeded at build time and provides both.
+BB=/bin/busybox
+[ -x "$BB" ] || BB=""
+mkdir_p() { if [ -n "$BB" ]; then $BB mkdir -p "$@"; else mkdir -p "$@"; fi; }
+do_mount() { if [ -n "$BB" ]; then $BB mount "$@"; else mount "$@"; fi; }
+mkdir_p /dev /proc /sys /run
+do_mount -t proc proc /proc
+do_mount -t sysfs sys /sys
+do_mount -t devtmpfs devtmpfs /dev
+export PATH=/nix/var/nix/profiles/default/bin:/usr/bin:/usr/sbin:/bin:/sbin
+# Restart the serial shell if it exits; the loop only ends when the VM stops.
+while true; do
+	/bin/sh -i
+done
 `
+	// Seed a static busybox (from the build host, when available) so the
+	// minimal container image gains mount(8) and core utilities at runtime.
+	if busybox, lerr := exec.LookPath("busybox"); lerr == nil {
+		if data, rerr := os.ReadFile(busybox); rerr == nil {
+			_ = os.WriteFile(filepath.Join(rootDir, "bin", "busybox"), data, 0755)
+		}
+	}
 	return os.WriteFile(filepath.Join(rootDir, "init"), []byte(script), 0755)
 }
 
@@ -931,11 +949,19 @@ func prepareUbuntuAutologin(rootDir string) error {
 // filesystem size is derived from the directory (plus headroom) because
 // mkfs.ext4 cannot infer a size for a not-yet-existing image file.
 func mkfsExt4FromDir(rootDir, ext4Path string) error {
-	var contentBytes, files int64
+	var contentBytes, files, dirs, links int64
 	err := filepath.Walk(rootDir, func(_ string, info os.FileInfo, err error) error {
-		if err == nil && info.Mode().IsRegular() {
+		if err != nil {
+			return err
+		}
+		switch {
+		case info.Mode().IsRegular():
 			contentBytes += info.Size()
 			files++
+		case info.IsDir():
+			dirs++
+		case info.Mode()&os.ModeSymlink != 0:
+			links++
 		}
 		return nil
 	})
@@ -943,25 +969,38 @@ func mkfsExt4FromDir(rootDir, ext4Path string) error {
 		return fmt.Errorf("sizing root filesystem: %w", err)
 	}
 
-	size := int64(float64(contentBytes)*1.4) + 16<<20
+	// Container images such as the Nix store are huge trees of small files,
+	// directories and symlinks; size the inode table from the real entry
+	// count instead of mkfs' default bytes-per-inode ratio, which exhausts
+	// inodes long before data blocks.
+	entries := files + dirs + links
+	inodes := int64(float64(entries)*1.5) + 16384
+
+	// Content with slack, plus room for the inode table itself and the
+	// ext4 journal, which the population step allocates out of the same pool.
+	size := int64(float64(contentBytes)*1.45) + 64<<20 + inodes*384
 	if min := int64(64 << 20); size < min {
 		size = min
 	}
 	sizeMB := (size + (1 << 20) - 1) >> 20
 
-	// Container images such as the Nix store are huge trees of small files;
-	// size the inode table from the real file count instead of mkfs' default
-	// bytes-per-inode ratio, which exhausts inodes long before data blocks.
-	inodes := int64(float64(files)*1.3) + 4096
-
-	tmp := ext4Path + ".new"
-	if out, err := runCmd("mkfs.ext4", "-q", "-F", "-d", rootDir, "-L", "root", "-N",
-		strconv.FormatInt(inodes, 10), tmp,
-		strconv.FormatInt(sizeMB, 10)+"M"); err != nil {
+	var lastErr error
+	// Huge trees can still surprise the estimate; if population runs out of
+	// blocks or inodes, retry with a doubled image instead of failing.
+	for attempt := 0; attempt < 3; attempt++ {
+		tmp := ext4Path + ".new"
+		out, err := runCmd("mkfs.ext4", "-q", "-F", "-d", rootDir, "-L", "root", "-N",
+			strconv.FormatInt(inodes, 10), tmp,
+			strconv.FormatInt(sizeMB, 10)+"M")
+		if err == nil {
+			return os.Rename(tmp, ext4Path)
+		}
 		_ = os.Remove(tmp)
-		return fmt.Errorf("mkfs.ext4 failed: %s: %w", out, err)
+		lastErr = fmt.Errorf("mkfs.ext4 failed (size %dMB, %d inodes): %s: %w", sizeMB, inodes, out, err)
+		sizeMB *= 2
+		inodes = inodes*3/2 + 4096
 	}
-	return os.Rename(tmp, ext4Path)
+	return lastErr
 }
 
 // prepareVoidSerial wires Void Linux's runit to spawn an autologin serial
