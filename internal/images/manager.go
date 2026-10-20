@@ -4,12 +4,15 @@
 package images
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"sync"
 	"time"
 
@@ -168,6 +171,14 @@ func NewManager(dataDir string, logger *logging.Logger, onRuntime func(string)) 
 func (m *Manager) Dir() string { return m.dir }
 
 func (m *Manager) artifactPath(t templates.Template, a templates.Artifact) string {
+	// Kernels are shared across templates (many catalog entries reference the
+	// same upstream kernel): store them in a URL-keyed cache so each kernel is
+	// downloaded to disk exactly once.
+	if a.Kind == templates.KindKernel {
+		sum := sha256.Sum256([]byte(a.URL))
+		key := hex.EncodeToString(sum[:])[:16]
+		return filepath.Join(m.dir, "_cache", key, a.Filename)
+	}
 	return filepath.Join(m.dir, t.ID, a.Filename)
 }
 
@@ -335,18 +346,30 @@ func (m *Manager) run(job *Job, t templates.Template) {
 		}
 
 		target := final
-		if a.PostProcess == "squashfs-to-ext4" {
+		switch a.PostProcess {
+		case "squashfs-to-ext4":
 			target = final + ".squashfs"
+		case "tar-to-ext4":
+			target = final + ".tar"
 		}
 		if err := m.download(job, i, a, target); err != nil {
 			job.fail(fmt.Errorf("downloading %s: %w", a.Name, err))
 			return
 		}
-		if a.PostProcess == "squashfs-to-ext4" {
+		switch a.PostProcess {
+		case "squashfs-to-ext4":
 			job.setArtifact(i, StateProcessing, "Converting squashfs to ext4")
 			job.setPhase(phaseConvert)
 			if err := m.squashfsToExt4(target, final); err != nil {
 				job.fail(fmt.Errorf("converting %s: %w", a.Name, err))
+				return
+			}
+			_ = os.Remove(target)
+		case "tar-to-ext4":
+			job.setArtifact(i, StateProcessing, "Building ext4 root filesystem")
+			job.setPhase(phaseConvert)
+			if err := m.tarToExt4(target, final, a.PostProcessArgs); err != nil {
+				job.fail(fmt.Errorf("building %s: %w", a.Name, err))
 				return
 			}
 			_ = os.Remove(target)
@@ -448,13 +471,135 @@ func (m *Manager) squashfsToExt4(squashPath, ext4Path string) error {
 	if out, err := runCmd("unsquashfs", "-q", "-d", rootDir, squashPath); err != nil {
 		return fmt.Errorf("unsquashfs failed: %s: %w", out, err)
 	}
+	return mkfsExt4FromDir(rootDir, ext4Path)
+}
+
+// tarToExt4 unpacks a distribution rootfs tarball (Alpine minirootfs, Ubuntu
+// Base) into a fresh ext4 image, applying the requested build tweaks first.
+func (m *Manager) tarToExt4(tarPath, ext4Path string, args []string) error {
+	workDir := ext4Path + ".work"
+	defer os.RemoveAll(workDir)
+
+	rootDir := filepath.Join(workDir, "root")
+	if err := os.MkdirAll(rootDir, 0755); err != nil {
+		return fmt.Errorf("creating work directory: %w", err)
+	}
+	if out, err := runCmd("tar", "-xf", tarPath, "-C", rootDir, "--numeric-owner", "-p"); err != nil {
+		return fmt.Errorf("tar extract failed: %s: %w", out, err)
+	}
+
+	for _, arg := range args {
+		switch arg {
+		case "alpine-init":
+			if err := prepareAlpineInit(rootDir); err != nil {
+				return err
+			}
+		case "ubuntu-autologin":
+			if err := prepareUbuntuAutologin(rootDir); err != nil {
+				return err
+			}
+		case "void-serial":
+			if err := prepareVoidSerial(rootDir); err != nil {
+				return err
+			}
+		}
+	}
+
+	return mkfsExt4FromDir(rootDir, ext4Path)
+}
+
+// prepareAlpineInit writes a busybox inittab that brings up the essential
+// mounts and a login getty on the serial console.
+func prepareAlpineInit(rootDir string) error {
+	inittab := `::sysinit:/bin/mount -t proc proc /proc
+::sysinit:/bin/mount -t sysfs sys /sys
+::sysinit:/bin/mount -o remount,rw /
+ttyS0::respawn:/sbin/getty -L 115200 ttyS0 vt100
+::ctrlaltdel:/sbin/reboot
+::shutdown:/bin/umount -a
+`
+	if err := os.WriteFile(filepath.Join(rootDir, "etc", "inittab"), []byte(inittab), 0644); err != nil {
+		return fmt.Errorf("writing inittab: %w", err)
+	}
+	// Permit root logins on the serial console.
+	f, err := os.OpenFile(filepath.Join(rootDir, "etc", "securetty"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err == nil {
+		_, _ = f.WriteString("ttyS0\n")
+		_ = f.Close()
+	}
+	return nil
+}
+
+// prepareUbuntuAutologin makes systemd's serial getty log in as root without
+// a password (Ubuntu Base ships with the root account locked).
+func prepareUbuntuAutologin(rootDir string) error {
+	dir := filepath.Join(rootDir, "etc", "systemd", "system", "serial-getty@ttyS0.service.d")
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return fmt.Errorf("creating systemd override: %w", err)
+	}
+	conf := "[Service]\nExecStart=\nExecStart=-/sbin/agetty --autologin root --noclear %I $TERM\n"
+	return os.WriteFile(filepath.Join(dir, "autologin.conf"), []byte(conf), 0644)
+}
+
+// mkfsExt4FromDir packs a root directory into a fresh ext4 image. The
+// filesystem size is derived from the directory (plus headroom) because
+// mkfs.ext4 cannot infer a size for a not-yet-existing image file.
+func mkfsExt4FromDir(rootDir, ext4Path string) error {
+	var contentBytes int64
+	err := filepath.Walk(rootDir, func(_ string, info os.FileInfo, err error) error {
+		if err == nil && info.Mode().IsRegular() {
+			contentBytes += info.Size()
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("sizing root filesystem: %w", err)
+	}
+
+	size := int64(float64(contentBytes)*1.4) + 16<<20
+	if min := int64(64 << 20); size < min {
+		size = min
+	}
+	sizeMB := (size + (1 << 20) - 1) >> 20
 
 	tmp := ext4Path + ".new"
-	if out, err := runCmd("mkfs.ext4", "-q", "-F", "-d", rootDir, "-L", "root", tmp); err != nil {
+	if out, err := runCmd("mkfs.ext4", "-q", "-F", "-d", rootDir, "-L", "root", tmp,
+		strconv.FormatInt(sizeMB, 10)+"M"); err != nil {
 		_ = os.Remove(tmp)
 		return fmt.Errorf("mkfs.ext4 failed: %s: %w", out, err)
 	}
 	return os.Rename(tmp, ext4Path)
+}
+
+// prepareVoidSerial wires Void Linux's runit to spawn an autologin serial
+// getty on ttyS0 (Void ROOTFS ships agetty but does not enable serial).
+func prepareVoidSerial(rootDir string) error {
+	svDir := filepath.Join(rootDir, "etc", "sv", "agetty-ttyS0")
+	if _, err := os.Stat(filepath.Join(svDir, "run")); err != nil {
+		if err := os.MkdirAll(svDir, 0755); err != nil {
+			return err
+		}
+		runScript := "#!/bin/sh\n[ -r conf ] && . ./conf\nexec agetty --noclear ${GETTY_ARGS} ttyS0 115200 vt100\n"
+		if err := os.WriteFile(filepath.Join(svDir, "run"), []byte(runScript), 0755); err != nil {
+			return err
+		}
+	}
+	conf := "GETTY_ARGS=\"--autologin root\"\n"
+	if err := os.WriteFile(filepath.Join(svDir, "conf"), []byte(conf), 0644); err != nil {
+		return err
+	}
+	// Enable the service in the default runlevel.
+	cur := filepath.Join(rootDir, "etc", "runit", "runsvdir", "current")
+	if err := os.MkdirAll(cur, 0755); err != nil {
+		return err
+	}
+	link := filepath.Join(cur, "agetty-ttyS0")
+	if _, err := os.Lstat(link); err != nil {
+		if err := os.Symlink("/etc/sv/agetty-ttyS0", link); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func runCmd(name string, args ...string) (string, error) {

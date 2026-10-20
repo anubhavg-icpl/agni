@@ -17,13 +17,14 @@ const (
 
 // Artifact is one downloadable file that makes up a template.
 type Artifact struct {
-	Name        string   `json:"name"`
-	Kind        string   `json:"kind"`
-	Filename    string   `json:"filename"`
-	URL         string   `json:"url"`
-	PostProcess string   `json:"post_process,omitempty"` // squashfs-to-ext4
-	ToolDeps    []string `json:"tool_deps,omitempty"`    // host tools required by PostProcess
-	SizeHintMB  int      `json:"size_hint_mb"`
+	Name            string   `json:"name"`
+	Kind            string   `json:"kind"`
+	Filename        string   `json:"filename"`
+	URL             string   `json:"url"`
+	PostProcess     string   `json:"post_process,omitempty"`      // squashfs-to-ext4 | tar-to-ext4
+	PostProcessArgs []string `json:"post_process_args,omitempty"` // build-time rootfs tweaks
+	ToolDeps        []string `json:"tool_deps,omitempty"`         // host tools required by PostProcess
+	SizeHintMB      int      `json:"size_hint_mb"`
 }
 
 // Template is a single-click deployable guest configuration.
@@ -328,6 +329,146 @@ func Catalog() []Template {
 				DocsURL:      "https://github.com/firecracker-microvm/firecracker/tree/main/docs",
 			},
 		}, catalog[len(catalog)-1])...)
+	}
+
+	// --- Rootfs tarball builds: Alpine minirootfs and Ubuntu Base. ---
+	// These guests have no prebuilt Firecracker images; Agni converts the
+	// official distribution tarball into an ext4 root filesystem at download
+	// time (needs only tar + mkfs.ext4 on the host).
+	if x86Only(arch) {
+		ciKernel := Artifact{
+			Name:       "Linux kernel 6.1",
+			Kind:       KindKernel,
+			Filename:   "vmlinux-6.1.128",
+			URL:        ci + "/vmlinux-6.1.128",
+			SizeHintMB: 130,
+		}
+		rootOpts := "console=ttyS0 reboot=k panic=1 pci=off root=/dev/vda rw"
+
+		alpineReleases := []struct{ ver, full string }{
+			{"3.22", "3.22.6"}, {"3.21", "3.21.8"}, {"3.20", "3.20.10"}, {"3.19", "3.19.9"},
+			{"3.18", "3.18.12"}, {"3.17", "3.17.10"}, {"3.16", "3.16.9"},
+		}
+		for _, r := range alpineReleases {
+			catalog = append(catalog, Template{
+				ID:           "alpine-" + r.ver,
+				Name:         "Alpine Linux " + r.ver,
+				OS:           "Alpine Linux",
+				Version:      r.ver,
+				Logo:         "alpinelinux",
+				Description:  "Alpine " + r.ver + " minirootfs built into an ext4 root filesystem at download time. Serial console, log in as root with no password.",
+				Category:     "os",
+				Arch:         arch,
+				KernelOpts:   rootOpts,
+				DefaultCPUs:  1,
+				DefaultMemMB: 128,
+				DocsURL:      "https://alpinelinux.org/releases/",
+				Artifacts: []Artifact{
+					ciKernel,
+					{
+						Name:            "Root filesystem",
+						Kind:            KindRootfs,
+						Filename:        "rootfs.ext4",
+						URL:             "https://dl-cdn.alpinelinux.org/alpine/v" + r.ver + "/releases/x86_64/alpine-minirootfs-" + r.full + "-x86_64.tar.gz",
+						PostProcess:     "tar-to-ext4",
+						PostProcessArgs: []string{"alpine-init"},
+						ToolDeps:        []string{"tar", "mkfs.ext4"},
+						SizeHintMB:      4,
+					},
+				},
+			})
+		}
+
+		ubuntuBases := []struct{ ver, full string }{
+			{"24.04", "24.04.5"}, {"22.04", "22.04.5"}, {"20.04", "20.04.5"}, {"18.04", "18.04.5"},
+		}
+		for _, r := range ubuntuBases {
+			catalog = append(catalog, Template{
+				ID:           "ubuntu-base-" + r.ver,
+				Name:         "Ubuntu " + r.ver + " Base",
+				OS:           "Ubuntu",
+				Version:      r.ver,
+				Logo:         "ubuntu",
+				Description:  "Official Ubuntu Base " + r.ver + " root filesystem built into ext4 at download time. The serial console auto-logs in as root.",
+				Category:     "os",
+				Arch:         arch,
+				KernelOpts:   rootOpts,
+				DefaultCPUs:  1,
+				DefaultMemMB: 512,
+				DocsURL:      "https://cdimage.ubuntu.com/ubuntu-base/releases/",
+				Artifacts: []Artifact{
+					ciKernel,
+					{
+						Name:            "Root filesystem",
+						Kind:            KindRootfs,
+						Filename:        "rootfs.ext4",
+						URL:             "https://cdimage.ubuntu.com/ubuntu-base/releases/" + r.ver + "/release/ubuntu-base-" + r.full + "-base-amd64.tar.gz",
+						PostProcess:     "tar-to-ext4",
+						PostProcessArgs: []string{"ubuntu-autologin"},
+						ToolDeps:        []string{"tar", "mkfs.ext4"},
+						SizeHintMB:      31,
+					},
+				},
+			})
+		}
+
+		// Void Linux ROOTFS: official tarball, runit init.
+		catalog = append(catalog, Template{
+			ID:           "void-current",
+			Name:         "Void Linux",
+			OS:           "Void Linux",
+			Version:      "2025.02.02",
+			Logo:         "",
+			Description:  "Official Void Linux ROOTFS built into ext4 at download time. The serial console auto-logs in as root (runit init).",
+			Category:     "os",
+			Arch:         arch,
+			KernelOpts:   rootOpts,
+			DefaultCPUs:  1,
+			DefaultMemMB: 256,
+			DocsURL:      "https://voidlinux.org/download/",
+			Artifacts: []Artifact{
+				ciKernel,
+				{
+					Name:            "Root filesystem",
+					Kind:            KindRootfs,
+					Filename:        "rootfs.ext4",
+					URL:             "https://repo-default.voidlinux.org/live/current/void-x86_64-ROOTFS-20250202.tar.xz",
+					PostProcess:     "tar-to-ext4",
+					PostProcessArgs: []string{"void-serial"},
+					ToolDeps:        []string{"tar", "mkfs.ext4", "xz"},
+					SizeHintMB:      210,
+				},
+			},
+		})
+
+		// Gentoo Stage 3 (systemd): official tarball.
+		catalog = append(catalog, Template{
+			ID:           "gentoo-systemd",
+			Name:         "Gentoo Stage 3 (systemd)",
+			OS:           "Gentoo",
+			Version:      "rolling",
+			Logo:         "",
+			Description:  "Official Gentoo stage3 systemd tarball built into ext4 at download time. Large download; serial console auto-logs in as root.",
+			Category:     "os",
+			Arch:         arch,
+			KernelOpts:   rootOpts,
+			DefaultCPUs:  2,
+			DefaultMemMB: 1024,
+			DocsURL:      "https://www.gentoo.org/downloads/",
+			Artifacts: []Artifact{
+				ciKernel,
+				{
+					Name:            "Root filesystem",
+					Kind:            KindRootfs,
+					Filename:        "rootfs.ext4",
+					URL:             "https://distfiles.gentoo.org/releases/amd64/autobuilds/current-stage3-amd64-systemd/stage3-amd64-systemd-20261018T124555Z.tar.xz",
+					PostProcess:     "tar-to-ext4",
+					PostProcessArgs: []string{"ubuntu-autologin"},
+					ToolDeps:        []string{"tar", "mkfs.ext4", "xz"},
+					SizeHintMB:      360,
+				},
+			},
+		})
 	}
 
 	return catalog
