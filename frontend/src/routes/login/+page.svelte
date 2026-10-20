@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { fade } from 'svelte/transition';
 	import { auth } from '$lib/stores/auth';
 	import Icon from '$lib/components/Common/Icon.svelte';
@@ -26,7 +27,17 @@
 	async function handleSetup() {
 		if (password !== confirmPassword || password.length < 8) return;
 		const success = await auth.setup(username, password);
-		if (success) goto('/');
+		if (success) {
+			// The auth store flips the layout branches mid-setup, which remounts
+			// this page and would drop component state. Carrying the signal in
+			// the URL survives every remount: the credentials panel renders on
+			// the next mount, after navigation completes.
+			goto('/login?created=1');
+		}
+	}
+
+	function finishSetup() {
+		goto('/');
 	}
 
 	function onPasswordInput(event: Event) {
@@ -37,6 +48,9 @@
 		confirmPassword = (event.target as HTMLInputElement).value;
 	}
 
+	// Reactive so a same-route navigation (?created=1) flips the view without a
+	// remount; the layout branch switch also re-evaluates it.
+	$: setupDone = $page.url.searchParams.get('created') === '1';
 	$: passwordMismatch = confirmPassword.length > 0 && password !== confirmPassword;
 	$: passwordTooShort = password.length > 0 && password.length < 8;
 	$: setupInvalid =
@@ -74,7 +88,47 @@
 				</div>
 
 				<div class="card p-6">
-					{#if $auth.setupRequired}
+					{#if setupDone}
+						<h1 class="text-lg font-semibold text-foreground">Admin account created</h1>
+						<p class="text-sm text-muted-foreground mt-1 mb-6">
+							Save these credentials - they are the only way to sign in to Agni on this
+							machine.
+						</p>
+						<div class="space-y-3 mb-6">
+							<div class="rounded-md border bg-accent p-3">
+								<p class="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Username</p>
+								{#if username}
+									<p class="font-mono text-sm text-foreground mt-1 break-all">{username}</p>
+								{:else}
+									<p class="text-sm text-muted-foreground mt-1">the username you just created</p>
+								{/if}
+							</div>
+							<div class="rounded-md border bg-accent p-3">
+								<div class="flex items-center justify-between">
+									<p class="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Password</p>
+									<button
+										type="button"
+										on:click={() => (showPassword = !showPassword)}
+										class="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-[11px]"
+										aria-label={showPassword ? 'Hide password' : 'Show password'}
+									>
+										<Icon name={showPassword ? 'ph-eye-slash' : 'ph-eye'} size={14} />
+										{showPassword ? 'Hide' : 'Show'}
+									</button>
+								</div>
+								{#if password}
+									<p class="font-mono text-sm text-foreground mt-1 break-all">
+										{showPassword ? password : '•'.repeat(Math.max(8, password.length))}
+									</p>
+								{:else}
+									<p class="text-sm text-muted-foreground mt-1">the password you just created</p>
+								{/if}
+							</div>
+						</div>
+						<Button variant="primary" fullWidth on:click={finishSetup}>
+							Continue to dashboard
+						</Button>
+					{:else if $auth.setupRequired}
 						<h1 class="text-lg font-semibold text-foreground">Create the admin account</h1>
 						<p class="text-sm text-muted-foreground mt-1 mb-6">
 							First run of Agni on this machine. Create an administrator to continue.

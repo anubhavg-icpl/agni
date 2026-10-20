@@ -219,17 +219,26 @@ func (h *WebSocketHandler) Console(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	sub := h.vmManager.GetLogStreamer().Subscribe(vmID, vm.LogFilter{})
-	defer h.vmManager.GetLogStreamer().Unsubscribe(sub.ID)
+	// Replay recent serial history so a reconnecting session keeps its
+	// boot context, then stream raw bytes live: keystroke echoes reach the
+	// browser the moment the guest writes them, not after a full line.
+	for _, entry := range h.vmManager.GetLogStreamer().GetRecentLogs(vmID, 200) {
+		if entry.Source == "serial" {
+			writeLine(entry.Message)
+		}
+	}
+
+	consoleCh, detach := h.vmManager.AttachConsole(vmID)
+	defer detach()
 
 	for {
 		select {
-		case entry, ok := <-sub.Channel:
+		case chunk, ok := <-consoleCh:
 			if !ok {
-				h.logClose(vmID, "log channel closed", nil)
+				h.logClose(vmID, "console channel closed", nil)
 				return
 			}
-			writeLine(entry.Message)
+			writeFrame(string(chunk))
 		case <-done:
 			h.logClose(vmID, "client input loop ended", nil)
 			return

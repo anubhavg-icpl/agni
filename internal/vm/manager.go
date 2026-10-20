@@ -54,6 +54,7 @@ type Manager struct {
 	logger      *logging.Logger
 	fcBinary    string
 	logStreamer *LogStreamer
+	consoleHub  *consoleHub
 }
 
 // NewManager creates a new VM Manager
@@ -63,6 +64,7 @@ func NewManager(store *storage.Store) *Manager {
 		runningVMs:  make(map[string]*RunningVM),
 		logger:      logging.GetLogger().WithComponent("vm-manager"),
 		logStreamer: NewLogStreamer(),
+		consoleHub:  newConsoleHub(),
 	}
 }
 
@@ -159,7 +161,7 @@ func (m *Manager) Start(id string) error {
 		WithBin(fcBinary).
 		WithSocketPath(fcConfig.SocketPath).
 		WithStdin(stdinR).
-		WithStdout(&serialTee{vmID: id, streamer: m.logStreamer, out: os.Stdout}).
+		WithStdout(&serialTee{vmID: id, streamer: m.logStreamer, console: m.consoleHub, out: os.Stdout}).
 		WithStderr(os.Stderr).
 		Build(ctx)
 
@@ -498,11 +500,14 @@ func (m *Manager) WriteConsole(id string, data []byte) error {
 	return err
 }
 
-// serialTee mirrors firecracker serial output to the host stdout and the log
-// streamer, splitting complete lines into log entries.
+// serialTee mirrors firecracker serial output to the host stdout, the log
+// streamer (complete lines, for the logs view) and the console hub (raw
+// bytes, so the interactive console echoes keystrokes as they are typed
+// instead of only after Enter).
 type serialTee struct {
 	vmID     string
 	streamer *LogStreamer
+	console  *consoleHub
 	out      io.Writer
 
 	mu  sync.Mutex
@@ -511,6 +516,9 @@ type serialTee struct {
 
 func (t *serialTee) Write(p []byte) (int, error) {
 	_, _ = t.out.Write(p)
+	if t.console != nil {
+		t.console.publish(t.vmID, p)
+	}
 
 	t.mu.Lock()
 	t.buf = append(t.buf, p...)
@@ -532,4 +540,47 @@ func (t *serialTee) Write(p []byte) (int, error) {
 	}
 	t.mu.Unlock()
 	return len(p), nil
+}
+
+// consoleHub fans raw serial bytes out to attached console sessions the
+// moment they arrive; partial lines are never buffered.
+type consoleHub struct {
+	mu   sync.Mutex
+	subs map[string]map[chan []byte]struct{}
+}
+
+func newConsoleHub() *consoleHub {
+	return &consoleHub{subs: make(map[string]map[chan []byte]struct{})}
+}
+
+func (h *consoleHub) publish(vmID string, p []byte) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	for ch := range h.subs[vmID] {
+		select {
+		case ch <- append([]byte(nil), p...):
+		default: // slow consumer: drop rather than block the serial reader
+		}
+	}
+}
+
+// AttachConsole subscribes to raw console output for a VM. The returned
+// detach function must be called when the session ends.
+func (m *Manager) AttachConsole(vmID string) (<-chan []byte, func()) {
+	ch := make(chan []byte, 64)
+	m.consoleHub.mu.Lock()
+	if m.consoleHub.subs[vmID] == nil {
+		m.consoleHub.subs[vmID] = make(map[chan []byte]struct{})
+	}
+	m.consoleHub.subs[vmID][ch] = struct{}{}
+	m.consoleHub.mu.Unlock()
+	detach := func() {
+		m.consoleHub.mu.Lock()
+		delete(m.consoleHub.subs[vmID], ch)
+		if len(m.consoleHub.subs[vmID]) == 0 {
+			delete(m.consoleHub.subs, vmID)
+		}
+		m.consoleHub.mu.Unlock()
+	}
+	return ch, detach
 }

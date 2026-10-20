@@ -863,9 +863,14 @@ do_mount -t proc proc /proc
 do_mount -t sysfs sys /sys
 do_mount -t devtmpfs devtmpfs /dev
 export PATH=/nix/var/nix/profiles/default/bin:/usr/bin:/usr/sbin:/bin:/sbin
-# Restart the serial shell if it exits; the loop only ends when the VM stops.
+# setsid cttyhack gives the shell a controlling tty on the serial console
+# (proper echo, backspace and Ctrl-C); restart it if it exits.
 while true; do
-	/bin/sh -i
+	if [ -n "$BB" ]; then
+		$BB setsid $BB cttyhack /bin/sh -i
+	else
+		/bin/sh -i
+	fi
 done
 `
 	// Seed a static busybox (from the build host, when available) so the

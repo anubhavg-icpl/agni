@@ -67,7 +67,7 @@
 			term?.focus();
 		};
 		sock.onmessage = (ev) => {
-			term?.write(String(ev.data).replace(/\r\n/g, '\n'));
+			term?.write(String(ev.data));
 		};
 		sock.onclose = () => {
 			connected = false;
