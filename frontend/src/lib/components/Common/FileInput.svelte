@@ -54,7 +54,7 @@
 				</button>
 			{/if}
 		</div>
-		<button type="button" class="btn-secondary h-9 px-3 rounded-md border bg-secondary text-secondary-foreground hover:bg-secondary/70 transition-colors" title="Browse files">
+		<button type="button" class="h-9 px-3 rounded-md border border-input bg-secondary text-secondary-foreground hover:bg-secondary/70 transition-colors" title="Browse files">
 			<Icon name="ph-folder-open" size={16} />
 		</button>
 	</div>

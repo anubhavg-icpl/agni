@@ -92,8 +92,8 @@
 	<!-- Network Interfaces -->
 	<div class="space-y-4">
 		<div class="flex items-center justify-between">
-			<h4 class="font-medium text-gray-300">Network Interfaces (TAP)</h4>
-			<button type="button" on:click={addNIC} class="btn btn-secondary text-sm px-3 py-1">
+			<h4 class="font-medium text-muted-foreground">Network Interfaces (TAP)</h4>
+			<button type="button" on:click={addNIC} class="h-8 px-3 text-[13px] font-medium rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/70 transition-colors">
 				<svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 					<path
 						stroke-linecap="round"
@@ -107,16 +107,16 @@
 		</div>
 
 		{#if networkInterfaces.length === 0}
-			<div class="text-sm text-gray-500 italic">No network interfaces configured</div>
+			<div class="text-sm text-muted-foreground italic">No network interfaces configured</div>
 		{:else}
 			{#each networkInterfaces as nic, index}
-				<div class="bg-gray-900 rounded-lg p-4 space-y-3">
+				<div class="bg-muted rounded-lg p-4 space-y-3">
 					<div class="flex items-center justify-between">
-						<span class="text-sm font-medium text-gray-400">Interface {index + 1}</span>
+						<span class="text-sm font-medium text-muted-foreground">Interface {index + 1}</span>
 						<button
 							type="button"
 							on:click={() => removeNIC(index)}
-							class="text-red-400 hover:text-red-300 text-sm"
+							class="text-destructive hover:text-destructive text-sm"
 						>
 							Remove
 						</button>
@@ -148,7 +148,7 @@
 								<button
 									type="button"
 									on:click={() => updateNIC(index, 'mac_address', generateMAC())}
-									class="btn btn-secondary text-xs px-2"
+									class="h-7 px-2 text-xs font-medium rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/70 transition-colors"
 									title="Generate random MAC"
 								>
 									<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -171,8 +171,8 @@
 	<!-- Vsock Devices -->
 	<div class="space-y-4">
 		<div class="flex items-center justify-between">
-			<h4 class="font-medium text-gray-300">Vsock Devices</h4>
-			<button type="button" on:click={addVsock} class="btn btn-secondary text-sm px-3 py-1">
+			<h4 class="font-medium text-muted-foreground">Vsock Devices</h4>
+			<button type="button" on:click={addVsock} class="h-8 px-3 text-[13px] font-medium rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/70 transition-colors">
 				<svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 					<path
 						stroke-linecap="round"
@@ -186,16 +186,16 @@
 		</div>
 
 		{#if vsockDevices.length === 0}
-			<div class="text-sm text-gray-500 italic">No vsock devices configured</div>
+			<div class="text-sm text-muted-foreground italic">No vsock devices configured</div>
 		{:else}
 			{#each vsockDevices as vsock, index}
-				<div class="bg-gray-900 rounded-lg p-4 space-y-3">
+				<div class="bg-muted rounded-lg p-4 space-y-3">
 					<div class="flex items-center justify-between">
-						<span class="text-sm font-medium text-gray-400">Vsock {index + 1}</span>
+						<span class="text-sm font-medium text-muted-foreground">Vsock {index + 1}</span>
 						<button
 							type="button"
 							on:click={() => removeVsock(index)}
-							class="text-red-400 hover:text-red-300 text-sm"
+							class="text-destructive hover:text-destructive text-sm"
 						>
 							Remove
 						</button>
@@ -212,7 +212,7 @@
 								class="input w-full text-sm"
 								min="3"
 							/>
-							<p class="text-xs text-gray-500 mt-1">Context ID (must be >= 3)</p>
+							<p class="text-xs text-muted-foreground mt-1">Context ID (must be >= 3)</p>
 						</div>
 						<div>
 							<label class="label text-sm" for="vsock-{index}-path">Unix Socket Path</label>
@@ -232,15 +232,15 @@
 	</div>
 
 	<!-- Network Summary -->
-	<div class="bg-gray-900 rounded-lg p-4">
-		<h4 class="text-sm font-medium text-gray-400 mb-2">Network Summary</h4>
+	<div class="bg-muted rounded-lg p-4">
+		<h4 class="text-sm font-medium text-muted-foreground mb-2">Network Summary</h4>
 		<div class="space-y-1 text-sm">
 			<div>
-				<span class="text-gray-500">NICs:</span>
+				<span class="text-muted-foreground">NICs:</span>
 				<span class="ml-2">{networkInterfaces.length}</span>
 			</div>
 			<div>
-				<span class="text-gray-500">Vsock Devices:</span>
+				<span class="text-muted-foreground">Vsock Devices:</span>
 				<span class="ml-2">{vsockDevices.length}</span>
 			</div>
 		</div>

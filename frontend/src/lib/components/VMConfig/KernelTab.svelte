@@ -68,7 +68,7 @@
 				<button
 					type="button"
 					on:click={() => applyPreset(preset.value)}
-					class="px-2 py-1 text-xs rounded bg-gray-700 text-gray-300 hover:bg-gray-600"
+					class="px-2 py-1 text-xs rounded bg-secondary text-muted-foreground hover:bg-secondary/70"
 				>
 					{preset.label}
 				</button>
@@ -105,32 +105,32 @@
 			class="input w-full h-24 font-mono text-sm"
 			placeholder={'{"key": "value"}'}
 		/>
-		<p class="text-sm text-gray-500 mt-1">
+		<p class="text-sm text-muted-foreground mt-1">
 			Optional JSON metadata accessible via MMDS (Microvm Metadata Service)
 		</p>
 	</div>
 
 	<!-- Kernel Summary -->
-	<div class="bg-gray-900 rounded-lg p-4">
-		<h4 class="text-sm font-medium text-gray-400 mb-2">Kernel Summary</h4>
+	<div class="bg-muted rounded-lg p-4">
+		<h4 class="text-sm font-medium text-muted-foreground mb-2">Kernel Summary</h4>
 		<div class="space-y-2 text-sm">
 			<div class="flex">
-				<span class="text-gray-500 w-24">Kernel:</span>
+				<span class="text-muted-foreground w-24">Kernel:</span>
 				<span class="font-mono text-xs truncate" title={kernelPath}>{kernelPath}</span>
 			</div>
 			{#if initrdPath}
 				<div class="flex">
-					<span class="text-gray-500 w-24">Initrd:</span>
+					<span class="text-muted-foreground w-24">Initrd:</span>
 					<span class="font-mono text-xs truncate" title={initrdPath}>{initrdPath}</span>
 				</div>
 			{/if}
 			<div class="flex">
-				<span class="text-gray-500 w-24">Log Level:</span>
+				<span class="text-muted-foreground w-24">Log Level:</span>
 				<span>{logLevel}</span>
 			</div>
 			<div>
-				<span class="text-gray-500">Boot Options:</span>
-				<div class="font-mono text-xs bg-gray-800 p-2 rounded mt-1 break-all">
+				<span class="text-muted-foreground">Boot Options:</span>
+				<div class="font-mono text-xs bg-secondary p-2 rounded mt-1 break-all">
 					{kernelOpts}
 				</div>
 			</div>

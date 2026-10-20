@@ -43,7 +43,7 @@
 				on:change={emitChange}
 				min="1"
 				max="32"
-				class="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+				class="flex-1 h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
 			/>
 			<input
 				type="number"
@@ -54,7 +54,7 @@
 				class="input w-20 text-center"
 			/>
 		</div>
-		<p class="text-sm text-gray-500 mt-1">Number of virtual CPU cores (1-32)</p>
+		<p class="text-sm text-muted-foreground mt-1">Number of virtual CPU cores (1-32)</p>
 	</div>
 
 	<!-- Memory -->
@@ -69,7 +69,7 @@
 				min="128"
 				max="32768"
 				step="128"
-				class="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+				class="flex-1 h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
 			/>
 			<input
 				type="number"
@@ -90,14 +90,14 @@
 						emitChange();
 					}}
 					class="px-2 py-1 text-xs rounded {memoryMB === preset
-						? 'bg-blue-600 text-white'
-						: 'bg-gray-700 text-gray-300 hover:bg-gray-600'}"
+						? 'bg-primary text-foreground'
+						: 'bg-secondary text-muted-foreground hover:bg-secondary/70'}"
 				>
 					{preset >= 1024 ? `${preset / 1024}GB` : `${preset}MB`}
 				</button>
 			{/each}
 		</div>
-		<p class="text-sm text-gray-500 mt-1">RAM allocation (128MB - 32GB)</p>
+		<p class="text-sm text-muted-foreground mt-1">RAM allocation (128MB - 32GB)</p>
 	</div>
 
 	<!-- CPU Template -->
@@ -108,7 +108,7 @@
 				<option value={template.value}>{template.label}</option>
 			{/each}
 		</select>
-		<p class="text-sm text-gray-500 mt-1">
+		<p class="text-sm text-muted-foreground mt-1">
 			Mask CPUID flags to emulate specific CPU types for compatibility
 		</p>
 	</div>
@@ -120,34 +120,34 @@
 			id="disableSMT"
 			bind:checked={disableSMT}
 			on:change={emitChange}
-			class="rounded bg-gray-700 border-gray-600 text-blue-600 focus:ring-blue-500"
+			class="rounded bg-secondary border-input text-primary-accent focus:ring-primary"
 		/>
 		<div>
 			<label for="disableSMT" class="font-medium">Disable SMT (Hyper-Threading)</label>
-			<p class="text-sm text-gray-500">Disable simultaneous multithreading for enhanced security</p>
+			<p class="text-sm text-muted-foreground">Disable simultaneous multithreading for enhanced security</p>
 		</div>
 	</div>
 
 	<!-- Summary -->
-	<div class="bg-gray-900 rounded-lg p-4">
-		<h4 class="text-sm font-medium text-gray-400 mb-2">Resource Summary</h4>
+	<div class="bg-muted rounded-lg p-4">
+		<h4 class="text-sm font-medium text-muted-foreground mb-2">Resource Summary</h4>
 		<div class="grid grid-cols-2 gap-2 text-sm">
 			<div>
-				<span class="text-gray-500">CPUs:</span>
+				<span class="text-muted-foreground">CPUs:</span>
 				<span class="ml-2">{cpus} {cpus === 1 ? 'core' : 'cores'}</span>
 			</div>
 			<div>
-				<span class="text-gray-500">Memory:</span>
+				<span class="text-muted-foreground">Memory:</span>
 				<span class="ml-2"
 					>{memoryMB >= 1024 ? `${(memoryMB / 1024).toFixed(1)} GB` : `${memoryMB} MB`}</span
 				>
 			</div>
 			<div>
-				<span class="text-gray-500">Template:</span>
+				<span class="text-muted-foreground">Template:</span>
 				<span class="ml-2">{cpuTemplate || 'Default'}</span>
 			</div>
 			<div>
-				<span class="text-gray-500">SMT:</span>
+				<span class="text-muted-foreground">SMT:</span>
 				<span class="ml-2">{disableSMT ? 'Disabled' : 'Enabled'}</span>
 			</div>
 		</div>

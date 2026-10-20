@@ -2,6 +2,8 @@
 	import { onMount, onDestroy, tick } from 'svelte';
 	import { api } from '$lib/api/client';
 	import LogFilter from './LogFilter.svelte';
+	import Button from '../Common/Button.svelte';
+	import Icon from '../Common/Icon.svelte';
 	import { formatTime } from '$lib/utils/formatters';
 
 	export let vmId: string;
@@ -27,17 +29,18 @@
 	let searchQuery = '';
 	let paused = false;
 
+	// Severity colours come from the status vocabulary
 	const levelColors: Record<string, string> = {
-		debug: 'text-gray-400',
-		info: 'text-blue-400',
-		warn: 'text-yellow-400',
-		warning: 'text-yellow-400',
-		error: 'text-red-400',
-		fatal: 'text-red-500'
+		debug: 'text-muted-foreground',
+		info: 'text-primary-accent',
+		warn: 'text-status-warn-text',
+		warning: 'text-status-warn-text',
+		error: 'text-status-error-text',
+		fatal: 'text-status-error-text'
 	};
 
 	function appendLog(entry: LogEntry) {
-		logs = [...logs, entry].slice(-1000); // Keep last 1000 logs
+		logs = [...logs, entry].slice(-1000);
 		applyFilters();
 		if (autoScroll) {
 			tick().then(scrollToBottom);
@@ -47,11 +50,9 @@
 	function parseLogMessage(raw: string): LogEntry | null {
 		try {
 			const data = JSON.parse(raw);
-			// Backend sends models.WebSocketMessage { type, payload }
 			if (data && typeof data === 'object' && data.type === 'log' && data.payload) {
 				return data.payload as LogEntry;
 			}
-			// Fallback: bare LogEntry
 			if (data && typeof data === 'object' && (data.message != null || data.level != null)) {
 				return data as LogEntry;
 			}
@@ -90,14 +91,13 @@
 		};
 
 		ws.onerror = () => {
-			error = 'WebSocket connection error';
+			error = 'WebSocket connection error.';
 			connected = false;
 		};
 
 		ws.onclose = () => {
 			connected = false;
 			if (destroyed) return;
-			// Attempt to reconnect after 3 seconds
 			reconnectTimer = setTimeout(() => {
 				if (!destroyed && (!ws || ws.readyState === WebSocket.CLOSED)) {
 					connect();
@@ -127,16 +127,12 @@
 
 	function applyFilters() {
 		filteredLogs = logs.filter((log) => {
-			// Level filter
 			if (levelFilter !== 'all' && log.level.toLowerCase() !== levelFilter) {
 				return false;
 			}
-
-			// Search filter
 			if (searchQuery && !log.message.toLowerCase().includes(searchQuery.toLowerCase())) {
 				return false;
 			}
-
 			return true;
 		});
 	}
@@ -184,73 +180,51 @@
 </script>
 
 <div class="flex flex-col h-full">
-	<!-- Header -->
 	<div class="flex items-center justify-between mb-4">
 		<div class="flex items-center gap-2">
-			<span class="w-2 h-2 rounded-full {connected ? 'bg-green-500' : 'bg-red-500'}"></span>
-			<span class="text-sm text-gray-400">
-				{connected ? 'Connected' : 'Disconnected'}
-			</span>
+			<span class="w-2 h-2 rounded-full {connected ? 'bg-status-ok' : 'bg-status-error'}" aria-hidden="true"></span>
+			<span class="text-sm text-muted-foreground">{connected ? 'Connected' : 'Disconnected'}</span>
 		</div>
 
 		<div class="flex items-center gap-2">
-			<button
-				on:click={handlePauseToggle}
-				class="btn btn-secondary text-sm px-3 py-1"
-				title={paused ? 'Resume' : 'Pause'}
-			>
-				{#if paused}
-					<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-						<path d="M8 5v14l11-7z" />
-					</svg>
-				{:else}
-					<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-						<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-					</svg>
-				{/if}
-			</button>
-			<button on:click={handleClear} class="btn btn-secondary text-sm px-3 py-1"> Clear </button>
-			<button on:click={handleExport} class="btn btn-secondary text-sm px-3 py-1"> Export </button>
+			<Button variant="secondary" size="sm" on:click={handlePauseToggle} title={paused ? 'Resume' : 'Pause'}>
+				<Icon name={paused ? 'ph-play' : 'ph-pause'} size={16} />
+				{paused ? 'Resume' : 'Pause'}
+			</Button>
+			<Button variant="secondary" size="sm" on:click={handleClear}>Clear</Button>
+			<Button variant="secondary" size="sm" on:click={handleExport}>Export</Button>
 		</div>
 	</div>
 
-	<!-- Filters -->
 	<LogFilter on:change={handleFilterChange} />
 
-	<!-- Log content -->
-	<div
-		bind:this={logContainer}
-		class="flex-1 bg-gray-900 rounded-lg p-4 font-mono text-sm overflow-y-auto"
-	>
+	<div bind:this={logContainer} class="flex-1 bg-muted rounded-lg p-4 font-mono text-[13px] overflow-y-auto">
 		{#if error}
-			<div class="text-red-400">{error}</div>
+			<p class="text-status-error-text">{error}</p>
 		{:else if filteredLogs.length === 0}
-			<div class="text-gray-500 text-center py-8">
-				{logs.length === 0 ? 'Waiting for logs...' : 'No logs match the current filters'}
-			</div>
+			<p class="text-muted-foreground text-center py-8">
+				{logs.length === 0 ? 'Waiting for logs' : 'No logs match the current filters'}
+			</p>
 		{:else}
 			{#each filteredLogs as log}
-				<div class="flex gap-2 py-0.5 hover:bg-gray-800/50">
-					<span class="text-gray-500 flex-shrink-0">{formatTime(log.timestamp)}</span>
-					<span
-						class="flex-shrink-0 w-14 {levelColors[log.level.toLowerCase()] || 'text-gray-400'}"
-					>
+				<div class="flex gap-2 py-0.5 hover:bg-accent/50 rounded-sm">
+					<span class="text-muted-foreground shrink-0">{formatTime(log.timestamp)}</span>
+					<span class="shrink-0 w-16 {levelColors[log.level.toLowerCase()] || 'text-muted-foreground'}">
 						[{log.level.toUpperCase()}]
 					</span>
-					<span class="text-gray-200 break-all">{log.message}</span>
+					<span class="text-foreground break-all">{log.message}</span>
 				</div>
 			{/each}
 		{/if}
 	</div>
 
-	<!-- Status bar -->
-	<div class="flex items-center justify-between mt-2 text-xs text-gray-500">
-		<span>{filteredLogs.length} / {logs.length} entries</span>
+	<div class="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+		<span class="tabular-nums">{filteredLogs.length} / {logs.length} entries</span>
 		{#if paused}
-			<span class="text-yellow-400">Paused</span>
+			<span class="text-status-warn-text">Paused</span>
 		{/if}
-		<label class="flex items-center gap-1">
-			<input type="checkbox" bind:checked={autoScroll} class="rounded" />
+		<label class="flex items-center gap-1.5">
+			<input type="checkbox" bind:checked={autoScroll} class="rounded-sm accent-primary" />
 			Auto-scroll
 		</label>
 	</div>

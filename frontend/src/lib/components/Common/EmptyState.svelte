@@ -7,6 +7,7 @@
 	export let description = '';
 	export let actionLabel = '';
 	export let actionHref: string | undefined = undefined;
+	export let onAction: (() => void) | undefined = undefined;
 </script>
 
 <div class="flex flex-col items-center justify-center text-center py-16 px-6">
@@ -19,7 +20,11 @@
 	{/if}
 	{#if actionLabel}
 		<div class="mt-6">
-			<Button variant="primary" size="md" href={actionHref}>{actionLabel}</Button>
+			{#if onAction}
+				<Button variant="primary" size="md" on:click={onAction}>{actionLabel}</Button>
+			{:else}
+				<Button variant="primary" size="md" href={actionHref}>{actionLabel}</Button>
+			{/if}
 		</div>
 	{/if}
 </div>

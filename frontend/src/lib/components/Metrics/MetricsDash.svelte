@@ -4,6 +4,8 @@
 	import CPUChart from './CPUChart.svelte';
 	import MemoryChart from './MemoryChart.svelte';
 	import { formatBytes, formatBytesPerSecond, formatPercent } from '$lib/utils/formatters';
+	import Skeleton from '../Common/Skeleton.svelte';
+	import StatusBanner from '../Common/StatusBanner.svelte';
 
 	export let vmId: string;
 
@@ -13,7 +15,7 @@
 	let error = '';
 	let pollInterval: ReturnType<typeof setInterval>;
 
-	const MAX_HISTORY = 60; // Keep 60 data points (1 minute at 1s interval)
+	const MAX_HISTORY = 60;
 
 	async function fetchMetrics() {
 		try {
@@ -21,7 +23,7 @@
 			metricsHistory = [...metricsHistory, metrics].slice(-MAX_HISTORY);
 			error = '';
 		} catch (e) {
-			error = (e as Error).message;
+			error = `Failed to load metrics: ${(e as Error).message}`;
 		} finally {
 			loading = false;
 		}
@@ -41,98 +43,103 @@
 
 <div class="space-y-6">
 	{#if loading && !metrics}
-		<div class="text-center py-8 text-gray-400">Loading metrics...</div>
-	{:else if error}
-		<div class="bg-red-500/20 text-red-400 border border-red-500/50 rounded-lg p-4">
-			{error}
+		<div class="space-y-3" aria-hidden="true">
+			{#each Array(3) as _}
+				<Skeleton class="h-5 w-1/2" />
+			{/each}
 		</div>
+	{:else if error && !metrics}
+		<StatusBanner variant="error" message={error} />
 	{:else if metrics}
-		<!-- Summary cards -->
+		{#if error}
+			<StatusBanner variant="warning" message="Showing the last received metrics. {error}" />
+		{/if}
+
 		<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-			<div class="card">
-				<div class="text-sm text-gray-400 mb-1">CPU Usage</div>
-				<div class="text-2xl font-bold text-blue-400">
-					{formatPercent(metrics.cpu_usage)}
+			<div class="rounded-lg border bg-card shadow-sm p-5">
+				<div class="flex items-center gap-2 mb-3">
+					<span class="h-2 w-2 rounded-full bg-primary" aria-hidden="true"></span>
+					<span class="text-xs font-medium text-muted-foreground">CPU usage</span>
 				</div>
+				<div class="text-2xl font-semibold tabular-nums leading-8 text-foreground">{formatPercent(metrics.cpu_usage)}</div>
 			</div>
-			<div class="card">
-				<div class="text-sm text-gray-400 mb-1">Memory Used</div>
-				<div class="text-2xl font-bold text-green-400">
-					{formatBytes(metrics.memory_used)}
+			<div class="rounded-lg border bg-card shadow-sm p-5">
+				<div class="flex items-center gap-2 mb-3">
+					<span class="h-2 w-2 rounded-full bg-primary" aria-hidden="true"></span>
+					<span class="text-xs font-medium text-muted-foreground">Memory used</span>
 				</div>
-				<div class="text-xs text-gray-500">
-					of {formatBytes(metrics.memory_total)}
-				</div>
+				<div class="text-2xl font-semibold tabular-nums leading-8 text-foreground">{formatBytes(metrics.memory_used)}</div>
+				<p class="text-xs text-muted-foreground mt-1">of {formatBytes(metrics.memory_total)}</p>
 			</div>
-			<div class="card">
-				<div class="text-sm text-gray-400 mb-1">Disk I/O</div>
-				<div class="text-lg font-bold">
-					<span class="text-green-400">{formatBytesPerSecond(metrics.disk_read_bytes)}</span>
-					<span class="text-gray-500 mx-1">/</span>
-					<span class="text-orange-400">{formatBytesPerSecond(metrics.disk_write_bytes)}</span>
+			<div class="rounded-lg border bg-card shadow-sm p-5">
+				<div class="flex items-center gap-2 mb-3">
+					<span class="h-2 w-2 rounded-full bg-primary" aria-hidden="true"></span>
+					<span class="text-xs font-medium text-muted-foreground">Disk I/O</span>
 				</div>
-				<div class="text-xs text-gray-500">read / write</div>
+				<div class="text-lg font-semibold tabular-nums text-foreground">
+					{formatBytesPerSecond(metrics.disk_read_bytes)} / {formatBytesPerSecond(metrics.disk_write_bytes)}
+				</div>
+				<p class="text-xs text-muted-foreground mt-1">read / write</p>
 			</div>
-			<div class="card">
-				<div class="text-sm text-gray-400 mb-1">Network I/O</div>
-				<div class="text-lg font-bold">
-					<span class="text-green-400">{formatBytesPerSecond(metrics.net_rx_bytes)}</span>
-					<span class="text-gray-500 mx-1">/</span>
-					<span class="text-orange-400">{formatBytesPerSecond(metrics.net_tx_bytes)}</span>
+			<div class="rounded-lg border bg-card shadow-sm p-5">
+				<div class="flex items-center gap-2 mb-3">
+					<span class="h-2 w-2 rounded-full bg-primary" aria-hidden="true"></span>
+					<span class="text-xs font-medium text-muted-foreground">Network I/O</span>
 				</div>
-				<div class="text-xs text-gray-500">rx / tx</div>
+				<div class="text-lg font-semibold tabular-nums text-foreground">
+					{formatBytesPerSecond(metrics.net_rx_bytes)} / {formatBytesPerSecond(metrics.net_tx_bytes)}
+				</div>
+				<p class="text-xs text-muted-foreground mt-1">rx / tx</p>
 			</div>
 		</div>
 
-		<!-- Charts -->
 		<div class="grid md:grid-cols-2 gap-6">
-			<div class="card">
-				<h3 class="text-lg font-medium mb-4">CPU Usage</h3>
+			<div class="card p-6">
+				<h3 class="text-lg font-semibold text-foreground mb-4">CPU usage</h3>
 				<CPUChart data={metricsHistory} />
 			</div>
-			<div class="card">
-				<h3 class="text-lg font-medium mb-4">Memory Usage</h3>
+			<div class="card p-6">
+				<h3 class="text-lg font-semibold text-foreground mb-4">Memory usage</h3>
 				<MemoryChart data={metricsHistory} />
 			</div>
 		</div>
 
-		<!-- Raw metrics -->
-		<div class="card">
-			<h3 class="text-lg font-medium mb-4">Raw Metrics</h3>
-			<div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+		<div class="card p-6">
+			<h3 class="text-lg font-semibold text-foreground mb-4">Raw metrics</h3>
+			<dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 				<div>
-					<span class="text-gray-400">CPU Usage:</span>
-					<span class="ml-2">{formatPercent(metrics.cpu_usage)}</span>
-				</div>
-				<div>
-					<span class="text-gray-400">Memory Used:</span>
-					<span class="ml-2">{formatBytes(metrics.memory_used)}</span>
+					<dt class="text-xs font-medium text-muted-foreground">CPU usage</dt>
+					<dd class="data text-foreground mt-1">{formatPercent(metrics.cpu_usage)}</dd>
 				</div>
 				<div>
-					<span class="text-gray-400">Memory Total:</span>
-					<span class="ml-2">{formatBytes(metrics.memory_total)}</span>
+					<dt class="text-xs font-medium text-muted-foreground">Memory used</dt>
+					<dd class="data text-foreground mt-1">{formatBytes(metrics.memory_used)}</dd>
 				</div>
 				<div>
-					<span class="text-gray-400">Disk Read:</span>
-					<span class="ml-2">{formatBytes(metrics.disk_read_bytes)}</span>
+					<dt class="text-xs font-medium text-muted-foreground">Memory total</dt>
+					<dd class="data text-foreground mt-1">{formatBytes(metrics.memory_total)}</dd>
 				</div>
 				<div>
-					<span class="text-gray-400">Disk Write:</span>
-					<span class="ml-2">{formatBytes(metrics.disk_write_bytes)}</span>
+					<dt class="text-xs font-medium text-muted-foreground">Disk read</dt>
+					<dd class="data text-foreground mt-1">{formatBytes(metrics.disk_read_bytes)}</dd>
 				</div>
 				<div>
-					<span class="text-gray-400">Net RX:</span>
-					<span class="ml-2">{formatBytes(metrics.net_rx_bytes)}</span>
+					<dt class="text-xs font-medium text-muted-foreground">Disk write</dt>
+					<dd class="data text-foreground mt-1">{formatBytes(metrics.disk_write_bytes)}</dd>
 				</div>
 				<div>
-					<span class="text-gray-400">Net TX:</span>
-					<span class="ml-2">{formatBytes(metrics.net_tx_bytes)}</span>
+					<dt class="text-xs font-medium text-muted-foreground">Net rx</dt>
+					<dd class="data text-foreground mt-1">{formatBytes(metrics.net_rx_bytes)}</dd>
 				</div>
-				<div class="col-span-2">
-					<span class="text-gray-400">Timestamp:</span>
-					<span class="ml-2">{new Date(metrics.timestamp).toLocaleTimeString()}</span>
+				<div>
+					<dt class="text-xs font-medium text-muted-foreground">Net tx</dt>
+					<dd class="data text-foreground mt-1">{formatBytes(metrics.net_tx_bytes)}</dd>
 				</div>
-			</div>
+				<div>
+					<dt class="text-xs font-medium text-muted-foreground">Timestamp</dt>
+					<dd class="data text-foreground mt-1">{new Date(metrics.timestamp).toLocaleTimeString()}</dd>
+				</div>
+			</dl>
 		</div>
 	{/if}
 </div>
