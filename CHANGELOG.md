@@ -1,6 +1,9 @@
 # Unreleased
 
 * Rebuilt the web GUI on the Invinsense Interface Standard: OKLCH token set with light and dark themes, Geist and Geist Mono, Phosphor Bold icons, sidebar and topbar shell, professional copy throughout
+* Added a Deploy page with one-click microVM templates: Alpine hello and Ubuntu 24.04 guest images plus the Firecracker v1.12.1 runtime, all pinned from the official CI asset bucket with streamed download progress and squashfs-to-ext4 conversion
+* Added image management endpoints (catalog, prepare jobs, deploy-from-template with auto-start) and automatic firecracker runtime pickup from the data directory
+* Switched the accent palette from ISOC blue to a Vercel-style monochrome: near-black primary on light, white primary on dark, neutral surfaces and borders
 
 # 0.2.0
 

@@ -36,7 +36,7 @@ func NewVMHandler(manager *vm.Manager) *VMHandler {
 func (h *VMHandler) List(w http.ResponseWriter, r *http.Request) {
 	vms, err := h.manager.List()
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "Failed to list VMs. The database is being dramatic")
+		respondError(w, http.StatusInternalServerError, "Failed to load VMs.")
 		return
 	}
 	respondJSON(w, http.StatusOK, vms)
@@ -46,19 +46,19 @@ func (h *VMHandler) List(w http.ResponseWriter, r *http.Request) {
 func (h *VMHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req models.CreateVMRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "Invalid request. Did you even try?")
+		respondError(w, http.StatusBadRequest, "Invalid request body.")
 		return
 	}
 
 	if req.Name == "" {
-		respondError(w, http.StatusBadRequest, "A VM needs a name. What were you planning to call it? 'Untitled-47'?")
+		respondError(w, http.StatusBadRequest, "A VM name is required.")
 		return
 	}
 
 	req.Config.Name = req.Name
 	vm, err := h.manager.Create(req.Config)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "VM creation failed. It's not you, it's... actually, it might be you")
+		respondError(w, http.StatusInternalServerError, "Failed to create the VM.")
 		return
 	}
 
@@ -69,17 +69,17 @@ func (h *VMHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (h *VMHandler) Get(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if id == "" {
-		respondError(w, http.StatusBadRequest, "VM ID is required. We're not mind readers here")
+		respondError(w, http.StatusBadRequest, "A VM ID is required.")
 		return
 	}
 
 	vm, err := h.manager.Get(id)
 	if err != nil {
 		if err == models.ErrVMNotFound {
-			respondError(w, http.StatusNotFound, "VM not found. Either it never existed or it ghosted you")
+			respondError(w, http.StatusNotFound, "VM not found.")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "Something went wrong. Classic")
+		respondError(w, http.StatusInternalServerError, "Failed to load the VM.")
 		return
 	}
 
@@ -90,29 +90,29 @@ func (h *VMHandler) Get(w http.ResponseWriter, r *http.Request) {
 func (h *VMHandler) Update(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if id == "" {
-		respondError(w, http.StatusBadRequest, "VM ID is required. Did you forget which VM you wanted to update?")
+		respondError(w, http.StatusBadRequest, "A VM ID is required.")
 		return
 	}
 
 	// Check if VM is running
 	if h.manager.IsRunning(id) {
-		respondError(w, http.StatusConflict, "Can't update a running VM. Stop it first, genius")
+		respondError(w, http.StatusConflict, "The VM is running. Stop it before updating its configuration.")
 		return
 	}
 
 	var req models.UpdateVMRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "Invalid request body. JSON is hard, we know")
+		respondError(w, http.StatusBadRequest, "Invalid request body.")
 		return
 	}
 
 	vm, err := h.manager.Get(id)
 	if err != nil {
 		if err == models.ErrVMNotFound {
-			respondError(w, http.StatusNotFound, "VM not found. Are you sure you created it?")
+			respondError(w, http.StatusNotFound, "VM not found.")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "Something went catastrophically wrong")
+		respondError(w, http.StatusInternalServerError, "Failed to update the VM.")
 		return
 	}
 
@@ -135,7 +135,7 @@ func (h *VMHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.manager.Update(vm); err != nil {
-		respondError(w, http.StatusInternalServerError, "Failed to save. The database rejected your changes")
+		respondError(w, http.StatusInternalServerError, "Failed to save the VM.")
 		return
 	}
 
@@ -146,22 +146,22 @@ func (h *VMHandler) Update(w http.ResponseWriter, r *http.Request) {
 func (h *VMHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if id == "" {
-		respondError(w, http.StatusBadRequest, "Which VM? Use your words")
+		respondError(w, http.StatusBadRequest, "A VM ID is required.")
 		return
 	}
 
 	if err := h.manager.Delete(id); err != nil {
 		if err == models.ErrVMNotFound {
-			respondError(w, http.StatusNotFound, "Can't delete what doesn't exist. Philosophy 101")
+			respondError(w, http.StatusNotFound, "VM not found.")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "Deletion failed. The VM is fighting back")
+		respondError(w, http.StatusInternalServerError, "Failed to delete the VM.")
 		return
 	}
 
 	respondJSON(w, http.StatusOK, models.VMActionResponse{
 		Success: true,
-		Message: "VM yeeted into the void. Gone. Reduced to atoms",
+		Message: "VM deleted.",
 		VMID:    id,
 	})
 }
@@ -170,13 +170,13 @@ func (h *VMHandler) Delete(w http.ResponseWriter, r *http.Request) {
 func (h *VMHandler) Start(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if id == "" {
-		respondError(w, http.StatusBadRequest, "Start what exactly? The suspense is killing us")
+		respondError(w, http.StatusBadRequest, "A VM ID is required.")
 		return
 	}
 
 	if err := h.manager.Start(id); err != nil {
 		if err == models.ErrVMNotFound {
-			respondError(w, http.StatusNotFound, "That VM is as real as your productivity today")
+			respondError(w, http.StatusNotFound, "VM not found.")
 			return
 		}
 		if err == models.ErrVMAlreadyRunning {
@@ -189,7 +189,7 @@ func (h *VMHandler) Start(w http.ResponseWriter, r *http.Request) {
 
 	respondJSON(w, http.StatusOK, models.VMActionResponse{
 		Success: true,
-		Message: "VM is alive! IT'S ALIVE!",
+		Message: "VM started.",
 		VMID:    id,
 	})
 }
@@ -198,26 +198,26 @@ func (h *VMHandler) Start(w http.ResponseWriter, r *http.Request) {
 func (h *VMHandler) Stop(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if id == "" {
-		respondError(w, http.StatusBadRequest, "Stop what? Be specific")
+		respondError(w, http.StatusBadRequest, "A VM ID is required.")
 		return
 	}
 
 	if err := h.manager.Stop(id); err != nil {
 		if err == models.ErrVMNotFound {
-			respondError(w, http.StatusNotFound, "Can't stop a VM that doesn't exist. Bold strategy")
+			respondError(w, http.StatusNotFound, "VM not found.")
 			return
 		}
 		if err == models.ErrVMNotRunning {
-			respondError(w, http.StatusConflict, "It's not running. You want us to stop it harder?")
+			respondError(w, http.StatusConflict, "The VM is not running.")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "Failed to stop. VM has gone rogue")
+		respondError(w, http.StatusInternalServerError, "Failed to stop the VM.")
 		return
 	}
 
 	respondJSON(w, http.StatusOK, models.VMActionResponse{
 		Success: true,
-		Message: "VM has been forcefully terminated. No mercy",
+		Message: "VM stopped.",
 		VMID:    id,
 	})
 }
@@ -226,26 +226,26 @@ func (h *VMHandler) Stop(w http.ResponseWriter, r *http.Request) {
 func (h *VMHandler) Shutdown(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if id == "" {
-		respondError(w, http.StatusBadRequest, "Shutdown requires a VM ID. We're not shutting down everything")
+		respondError(w, http.StatusBadRequest, "A VM ID is required.")
 		return
 	}
 
 	if err := h.manager.Shutdown(id); err != nil {
 		if err == models.ErrVMNotFound {
-			respondError(w, http.StatusNotFound, "That VM is already in a better place. Or it never existed")
+			respondError(w, http.StatusNotFound, "VM not found.")
 			return
 		}
 		if err == models.ErrVMNotRunning {
-			respondError(w, http.StatusConflict, "Can't shut down something that's already off. Logic, try it")
+			respondError(w, http.StatusConflict, "The VM is not running.")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "Graceful shutdown failed. Ironic")
+		respondError(w, http.StatusInternalServerError, "Graceful shutdown failed.")
 		return
 	}
 
 	respondJSON(w, http.StatusOK, models.VMActionResponse{
 		Success: true,
-		Message: "VM is shutting down gracefully. Unlike your code reviews",
+		Message: "Graceful shutdown requested.",
 		VMID:    id,
 	})
 }
@@ -254,7 +254,7 @@ func (h *VMHandler) Shutdown(w http.ResponseWriter, r *http.Request) {
 func (h *VMHandler) Metrics(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if id == "" {
-		respondError(w, http.StatusBadRequest, "Metrics for which VM? We have several")
+		respondError(w, http.StatusBadRequest, "A VM ID is required.")
 		return
 	}
 
@@ -264,7 +264,7 @@ func (h *VMHandler) Metrics(w http.ResponseWriter, r *http.Request) {
 			respondError(w, http.StatusConflict, "Metrics are available only while the VM is running.")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "Metrics collection failed. The numbers are shy")
+		respondError(w, http.StatusInternalServerError, "Failed to collect VM metrics.")
 		return
 	}
 

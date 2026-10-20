@@ -37,12 +37,12 @@ func NewAuthHandler(authService *auth.Service) *AuthHandler {
 func (h *AuthHandler) Setup(w http.ResponseWriter, r *http.Request) {
 	var req models.SetupRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "Can't even send valid JSON? We're off to a great start")
+		respondError(w, http.StatusBadRequest, "Invalid request body.")
 		return
 	}
 
 	if req.Username == "" || req.Password == "" {
-		respondError(w, http.StatusBadRequest, "Username and password. Both of them. It's not optional")
+		respondError(w, http.StatusBadRequest, "Username and password are required.")
 		return
 	}
 
@@ -68,22 +68,22 @@ func (h *AuthHandler) Setup(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req models.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "Your request is as malformed as your life choices")
+		respondError(w, http.StatusBadRequest, "Invalid request body.")
 		return
 	}
 
 	if req.Username == "" || req.Password == "" {
-		respondError(w, http.StatusBadRequest, "Username and password are required. This isn't rocket science")
+		respondError(w, http.StatusBadRequest, "Username and password are required.")
 		return
 	}
 
 	resp, err := h.authService.Login(req.Username, req.Password)
 	if err != nil {
 		if err == models.ErrInvalidCredentials {
-			respondError(w, http.StatusUnauthorized, "Wrong credentials. Did you forget already? Impressive")
+			respondError(w, http.StatusUnauthorized, "Invalid username or password.")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "Something broke. Probably your fault somehow")
+		respondError(w, http.StatusInternalServerError, "Authentication failed.")
 		return
 	}
 
@@ -96,7 +96,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) Status(w http.ResponseWriter, r *http.Request) {
 	setupRequired, err := h.authService.IsSetupRequired()
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "Database having an existential crisis")
+		respondError(w, http.StatusInternalServerError, "Authentication failed.")
 		return
 	}
 
@@ -109,7 +109,7 @@ func (h *AuthHandler) Status(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUser(r.Context())
 	if user == nil {
-		respondError(w, http.StatusUnauthorized, "Who are you? No seriously, we have no idea")
+		respondError(w, http.StatusUnauthorized, "Authentication required.")
 		return
 	}
 	safeUser := user.SafeUser()
@@ -122,13 +122,13 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get("Authorization")
 	parts := strings.Split(authHeader, " ")
 	if len(parts) != 2 {
-		respondError(w, http.StatusBadRequest, "Your authorization header is a disaster")
+		respondError(w, http.StatusBadRequest, "Invalid authorization header.")
 		return
 	}
 
 	token, expiresAt, err := h.authService.RefreshToken(parts[1])
 	if err != nil {
-		respondError(w, http.StatusUnauthorized, "This token is as expired as your excuses")
+		respondError(w, http.StatusUnauthorized, "Session token is invalid or expired.")
 		return
 	}
 
